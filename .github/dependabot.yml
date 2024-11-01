@@ -15,7 +15,9 @@ updates:
     commit-message:
       prefix: ci
   - package-ecosystem: npm
-    directory: /
+    directories:
+      - /
+      - /packages/*
     schedule:
       interval: weekly
       day: friday
