@@ -2,7 +2,7 @@
 name: E2E Proxy
 on:
   push:
-    branches: [main]
+    branches: ['**']
     paths:
       - 'dist/**'
       - '!**/*.md'
