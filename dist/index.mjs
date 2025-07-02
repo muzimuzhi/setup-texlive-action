@@ -93,18 +93,18 @@ var __callDispose = (stack, error, hasError) => {
     return _3 = Error(m3), _3.name = "SuppressedError", _3.error = e3, _3.suppressed = s3, _3;
   };
   var fail = (e3) => error = hasError ? new E3(e3, error, "An error was suppressed during disposal") : (hasError = true, e3);
-  var next2 = (it2) => {
+  var next = (it2) => {
     while (it2 = stack.pop()) {
       try {
         var result = it2[1] && it2[1].call(it2[2]);
-        if (it2[0]) return Promise.resolve(result).then(next2, (e3) => (fail(e3), next2()));
+        if (it2[0]) return Promise.resolve(result).then(next, (e3) => (fail(e3), next()));
       } catch (e3) {
         fail(e3);
       }
     }
     if (hasError) throw error;
   };
-  return next2();
+  return next();
 };
 
 // node_modules/@actions/core/lib/utils.js
@@ -174,11 +174,11 @@ var require_command = __commonJS({
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.issue = exports2.issueCommand = void 0;
-    var os5 = __importStar(__require("os"));
+    var os4 = __importStar(__require("os"));
     var utils_1 = require_utils();
     function issueCommand(command, properties, message) {
       const cmd = new Command(command, properties, message);
-      process.stdout.write(cmd.toString() + os5.EOL);
+      process.stdout.write(cmd.toString() + os4.EOL);
     }
     __name(issueCommand, "issueCommand");
     exports2.issueCommand = issueCommand;
@@ -268,18 +268,18 @@ var require_file_command = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.prepareKeyValueMessage = exports2.issueFileCommand = void 0;
     var crypto = __importStar(__require("crypto"));
-    var fs4 = __importStar(__require("fs"));
-    var os5 = __importStar(__require("os"));
+    var fs3 = __importStar(__require("fs"));
+    var os4 = __importStar(__require("os"));
     var utils_1 = require_utils();
     function issueFileCommand(command, message) {
       const filePath = process.env[`GITHUB_${command}`];
       if (!filePath) {
         throw new Error(`Unable to find environment variable for file command ${command}`);
       }
-      if (!fs4.existsSync(filePath)) {
+      if (!fs3.existsSync(filePath)) {
         throw new Error(`Missing file at path: ${filePath}`);
       }
-      fs4.appendFileSync(filePath, `${(0, utils_1.toCommandValue)(message)}${os5.EOL}`, {
+      fs3.appendFileSync(filePath, `${(0, utils_1.toCommandValue)(message)}${os4.EOL}`, {
         encoding: "utf8"
       });
     }
@@ -294,7 +294,7 @@ var require_file_command = __commonJS({
       if (convertedValue.includes(delimiter2)) {
         throw new Error(`Unexpected input: value should not contain the delimiter "${delimiter2}"`);
       }
-      return `${key}<<${delimiter2}${os5.EOL}${convertedValue}${os5.EOL}${delimiter2}`;
+      return `${key}<<${delimiter2}${os4.EOL}${convertedValue}${os4.EOL}${delimiter2}`;
     }
     __name(prepareKeyValueMessage, "prepareKeyValueMessage");
     exports2.prepareKeyValueMessage = prepareKeyValueMessage;
@@ -322,7 +322,7 @@ var require_proxy = __commonJS({
       if (proxyVar) {
         try {
           return new DecodedURL(proxyVar);
-        } catch (_a4) {
+        } catch (_a3) {
           if (!proxyVar.startsWith("http://") && !proxyVar.startsWith("https://"))
             return new DecodedURL(`http://${proxyVar}`);
         }
@@ -4403,7 +4403,7 @@ var require_util2 = __commonJS({
       if (input.length < MAXIMUM_ARGUMENT_LENGTH) {
         return String.fromCharCode(...input);
       }
-      return input.reduce((previous, current2) => previous + String.fromCharCode(current2), "");
+      return input.reduce((previous, current) => previous + String.fromCharCode(current), "");
     }
     __name(isomorphicDecode, "isomorphicDecode");
     function readableStreamClose(controller) {
@@ -9002,11 +9002,11 @@ var require_fixed_queue = __commonJS({
       }
       shift() {
         const tail = this.tail;
-        const next2 = tail.shift();
+        const next = tail.shift();
         if (tail.isEmpty() && tail.next !== null) {
           this.tail = tail.next;
         }
-        return next2;
+        return next;
       }
     };
   }
@@ -9275,6 +9275,14 @@ var require_pool = __commonJS({
         this[kOptions] = { ...util3.deepClone(options), connect, allowH2 };
         this[kOptions].interceptors = options.interceptors ? { ...options.interceptors } : void 0;
         this[kFactory] = factory;
+        this.on("connectionError", (origin2, targets, error) => {
+          for (const target of targets) {
+            const idx = this[kClients].indexOf(target);
+            if (idx !== -1) {
+              this[kClients].splice(idx, 1);
+            }
+          }
+        });
       }
       [kGetDispatcher]() {
         let dispatcher = this[kClients].find((dispatcher2) => !dispatcher2[kNeedDrain]);
@@ -11724,8 +11732,8 @@ var require_RetryHandler = __commonJS({
     var { RequestRetryError } = require_errors();
     var { isDisturbed, parseHeaders, parseRangeHeader } = require_util();
     function calculateRetryAfterHeader(retryAfter) {
-      const current2 = Date.now();
-      const diff = new Date(retryAfter).getTime() - current2;
+      const current = Date.now();
+      const diff = new Date(retryAfter).getTime() - current;
       return diff;
     }
     __name(calculateRetryAfterHeader, "calculateRetryAfterHeader");
@@ -12069,6 +12077,7 @@ var require_headers = __commonJS({
       isValidHeaderName,
       isValidHeaderValue
     } = require_util2();
+    var util3 = __require("util");
     var { webidl } = require_webidl();
     var assert2 = __require("assert");
     var kHeadersMap = Symbol("headers map");
@@ -12430,6 +12439,9 @@ var require_headers = __commonJS({
       [Symbol.toStringTag]: {
         value: "Headers",
         configurable: true
+      },
+      [util3.inspect.custom]: {
+        enumerable: false
       }
     });
     webidl.converters.HeadersInit = function(V2) {
@@ -16073,8 +16085,6 @@ var require_constants4 = __commonJS({
 var require_util6 = __commonJS({
   "node_modules/undici/lib/cookies/util.js"(exports2, module) {
     "use strict";
-    var assert2 = __require("assert");
-    var { kHeadersList } = require_symbols();
     function isCTLExcludingHtab(value) {
       if (value.length === 0) {
         return false;
@@ -16213,26 +16223,13 @@ var require_util6 = __commonJS({
       return out.join("; ");
     }
     __name(stringify, "stringify");
-    var kHeadersListNode;
-    function getHeadersList(headers) {
-      if (headers[kHeadersList]) {
-        return headers[kHeadersList];
-      }
-      if (!kHeadersListNode) {
-        kHeadersListNode = Object.getOwnPropertySymbols(headers).find(
-          (symbol) => symbol.description === "headers list"
-        );
-        assert2(kHeadersListNode, "Headers cannot be parsed");
-      }
-      const headersList = headers[kHeadersListNode];
-      assert2(headersList);
-      return headersList;
-    }
-    __name(getHeadersList, "getHeadersList");
     module.exports = {
       isCTLExcludingHtab,
-      stringify,
-      getHeadersList
+      validateCookieName,
+      validateCookiePath,
+      validateCookieValue,
+      toIMFDate,
+      stringify
     };
   }
 });
@@ -16384,7 +16381,7 @@ var require_cookies = __commonJS({
   "node_modules/undici/lib/cookies/index.js"(exports2, module) {
     "use strict";
     var { parseSetCookie } = require_parse();
-    var { stringify, getHeadersList } = require_util6();
+    var { stringify } = require_util6();
     var { webidl } = require_webidl();
     var { Headers } = require_headers();
     function getCookies(headers) {
@@ -16418,11 +16415,11 @@ var require_cookies = __commonJS({
     function getSetCookies(headers) {
       webidl.argumentLengthCheck(arguments, 1, { header: "getSetCookies" });
       webidl.brandCheck(headers, Headers, { strict: false });
-      const cookies = getHeadersList(headers).cookies;
+      const cookies = headers.getSetCookie();
       if (!cookies) {
         return [];
       }
-      return cookies.map((pair) => parseSetCookie(Array.isArray(pair) ? pair[1] : pair));
+      return cookies.map((pair) => parseSetCookie(pair));
     }
     __name(getSetCookies, "getSetCookies");
     function setCookie(headers, cookie) {
@@ -17322,18 +17319,18 @@ var require_receiver = __commonJS({
         const buffer2 = Buffer.allocUnsafe(n3);
         let offset = 0;
         while (offset !== n3) {
-          const next2 = this.#buffers[0];
-          const { length } = next2;
+          const next = this.#buffers[0];
+          const { length } = next;
           if (length + offset === n3) {
             buffer2.set(this.#buffers.shift(), offset);
             break;
           } else if (length + offset > n3) {
-            buffer2.set(next2.subarray(0, n3 - offset), offset);
-            this.#buffers[0] = next2.subarray(n3 - offset);
+            buffer2.set(next.subarray(0, n3 - offset), offset);
+            this.#buffers[0] = next.subarray(n3 - offset);
             break;
           } else {
             buffer2.set(this.#buffers.shift(), offset);
-            offset += next2.length;
+            offset += next.length;
           }
         }
         this.#byteOffset -= n3;
@@ -18494,8 +18491,8 @@ var require_lib = __commonJS({
       _performExponentialBackoff(retryNumber) {
         return __awaiter6(this, void 0, void 0, function* () {
           retryNumber = Math.min(ExponentialBackoffCeiling, retryNumber);
-          const ms2 = ExponentialBackoffTimeSlice * Math.pow(2, retryNumber);
-          return new Promise((resolve2) => setTimeout(() => resolve2(), ms2));
+          const ms = ExponentialBackoffTimeSlice * Math.pow(2, retryNumber);
+          return new Promise((resolve2) => setTimeout(() => resolve2(), ms));
         });
       }
       _processResponse(res, options) {
@@ -18742,7 +18739,7 @@ var require_oidc_utils = __commonJS({
         return runtimeUrl;
       }
       static getCall(id_token_url) {
-        var _a4;
+        var _a3;
         return __awaiter6(this, void 0, void 0, function* () {
           const httpclient = _OidcClient.createHttpClient();
           const res = yield httpclient.getJson(id_token_url).catch((error) => {
@@ -18752,7 +18749,7 @@ var require_oidc_utils = __commonJS({
  
         Error Message: ${error.message}`);
           });
-          const id_token = (_a4 = res.result) === null || _a4 === void 0 ? void 0 : _a4.value;
+          const id_token = (_a3 = res.result) === null || _a3 === void 0 ? void 0 : _a3.value;
           if (!id_token) {
             throw new Error("Response json body do not have ID Token field");
           }
@@ -18847,7 +18844,7 @@ var require_summary = __commonJS({
           }
           try {
             yield access2(pathFromEnv, fs_1.constants.R_OK | fs_1.constants.W_OK);
-          } catch (_a4) {
+          } catch (_a3) {
             throw new Error(`Unable to access summary file: '${pathFromEnv}'. Check if the file has correct read/write permissions.`);
           }
           this._filePath = pathFromEnv;
@@ -19192,15 +19189,15 @@ var require_io_util = __commonJS({
         step((generator = generator.apply(thisArg, _arguments || [])).next());
       });
     };
-    var _a4;
+    var _a3;
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.getCmdPath = exports2.tryGetExecutablePath = exports2.isRooted = exports2.isDirectory = exports2.exists = exports2.READONLY = exports2.UV_FS_O_EXLOCK = exports2.IS_WINDOWS = exports2.unlink = exports2.symlink = exports2.stat = exports2.rmdir = exports2.rm = exports2.rename = exports2.readlink = exports2.readdir = exports2.open = exports2.mkdir = exports2.lstat = exports2.copyFile = exports2.chmod = void 0;
-    var fs4 = __importStar(__require("fs"));
+    var fs3 = __importStar(__require("fs"));
     var path14 = __importStar(__require("path"));
-    _a4 = fs4.promises, exports2.chmod = _a4.chmod, exports2.copyFile = _a4.copyFile, exports2.lstat = _a4.lstat, exports2.mkdir = _a4.mkdir, exports2.open = _a4.open, exports2.readdir = _a4.readdir, exports2.readlink = _a4.readlink, exports2.rename = _a4.rename, exports2.rm = _a4.rm, exports2.rmdir = _a4.rmdir, exports2.stat = _a4.stat, exports2.symlink = _a4.symlink, exports2.unlink = _a4.unlink;
+    _a3 = fs3.promises, exports2.chmod = _a3.chmod, exports2.copyFile = _a3.copyFile, exports2.lstat = _a3.lstat, exports2.mkdir = _a3.mkdir, exports2.open = _a3.open, exports2.readdir = _a3.readdir, exports2.readlink = _a3.readlink, exports2.rename = _a3.rename, exports2.rm = _a3.rm, exports2.rmdir = _a3.rmdir, exports2.stat = _a3.stat, exports2.symlink = _a3.symlink, exports2.unlink = _a3.unlink;
     exports2.IS_WINDOWS = process.platform === "win32";
     exports2.UV_FS_O_EXLOCK = 268435456;
-    exports2.READONLY = fs4.constants.O_RDONLY;
+    exports2.READONLY = fs3.constants.O_RDONLY;
     function exists(fsPath) {
       return __awaiter6(this, void 0, void 0, function* () {
         try {
@@ -19310,8 +19307,8 @@ var require_io_util = __commonJS({
     }
     __name(isUnixExecutable, "isUnixExecutable");
     function getCmdPath() {
-      var _a5;
-      return (_a5 = process.env["COMSPEC"]) !== null && _a5 !== void 0 ? _a5 : `cmd.exe`;
+      var _a4;
+      return (_a4 = process.env["COMSPEC"]) !== null && _a4 !== void 0 ? _a4 : `cmd.exe`;
     }
     __name(getCmdPath, "getCmdPath");
     exports2.getCmdPath = getCmdPath;
@@ -19639,7 +19636,7 @@ var require_toolrunner = __commonJS({
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.argStringToArray = exports2.ToolRunner = void 0;
-    var os5 = __importStar(__require("os"));
+    var os4 = __importStar(__require("os"));
     var events = __importStar(__require("events"));
     var child = __importStar(__require("child_process"));
     var path14 = __importStar(__require("path"));
@@ -19697,12 +19694,12 @@ var require_toolrunner = __commonJS({
       _processLineBuffer(data, strBuffer, onLine) {
         try {
           let s3 = strBuffer + data.toString();
-          let n3 = s3.indexOf(os5.EOL);
+          let n3 = s3.indexOf(os4.EOL);
           while (n3 > -1) {
             const line = s3.substring(0, n3);
             onLine(line);
-            s3 = s3.substring(n3 + os5.EOL.length);
-            n3 = s3.indexOf(os5.EOL);
+            s3 = s3.substring(n3 + os4.EOL.length);
+            n3 = s3.indexOf(os4.EOL);
           }
           return s3;
         } catch (err) {
@@ -19871,7 +19868,7 @@ var require_toolrunner = __commonJS({
             }
             const optionsNonNull = this._cloneExecOptions(this.options);
             if (!optionsNonNull.silent && optionsNonNull.outStream) {
-              optionsNonNull.outStream.write(this._getCommandString(optionsNonNull) + os5.EOL);
+              optionsNonNull.outStream.write(this._getCommandString(optionsNonNull) + os4.EOL);
             }
             const state3 = new ExecState(optionsNonNull, this.toolPath);
             state3.on("debug", (message) => {
@@ -20152,13 +20149,13 @@ var require_exec = __commonJS({
     __name(exec2, "exec");
     exports2.exec = exec2;
     function getExecOutput2(commandLine, args, options) {
-      var _a4, _b2;
+      var _a3, _b2;
       return __awaiter6(this, void 0, void 0, function* () {
         let stdout2 = "";
         let stderr2 = "";
         const stdoutDecoder = new string_decoder_1.StringDecoder("utf8");
         const stderrDecoder = new string_decoder_1.StringDecoder("utf8");
-        const originalStdoutListener = (_a4 = options === null || options === void 0 ? void 0 : options.listeners) === null || _a4 === void 0 ? void 0 : _a4.stdout;
+        const originalStdoutListener = (_a3 = options === null || options === void 0 ? void 0 : options.listeners) === null || _a3 === void 0 ? void 0 : _a3.stdout;
         const originalStdErrListener = (_b2 = options === null || options === void 0 ? void 0 : options.listeners) === null || _b2 === void 0 ? void 0 : _b2.stderr;
         const stdErrListener = /* @__PURE__ */ __name((data) => {
           stderr2 += stderrDecoder.write(data);
@@ -20270,11 +20267,11 @@ var require_platform = __commonJS({
       };
     }), "getWindowsInfo");
     var getMacOsInfo = /* @__PURE__ */ __name(() => __awaiter6(void 0, void 0, void 0, function* () {
-      var _a4, _b2, _c2, _d2;
+      var _a3, _b2, _c2, _d2;
       const { stdout: stdout2 } = yield exec2.getExecOutput("sw_vers", void 0, {
         silent: true
       });
-      const version3 = (_b2 = (_a4 = stdout2.match(/ProductVersion:\s*(.+)/)) === null || _a4 === void 0 ? void 0 : _a4[1]) !== null && _b2 !== void 0 ? _b2 : "";
+      const version3 = (_b2 = (_a3 = stdout2.match(/ProductVersion:\s*(.+)/)) === null || _a3 === void 0 ? void 0 : _a3[1]) !== null && _b2 !== void 0 ? _b2 : "";
       const name2 = (_d2 = (_c2 = stdout2.match(/ProductName:\s*(.+)/)) === null || _c2 === void 0 ? void 0 : _c2[1]) !== null && _d2 !== void 0 ? _d2 : "";
       return {
         name: name2,
@@ -20379,7 +20376,7 @@ var require_core = __commonJS({
     var command_1 = require_command();
     var file_command_1 = require_file_command();
     var utils_1 = require_utils();
-    var os5 = __importStar(__require("os"));
+    var os4 = __importStar(__require("os"));
     var path14 = __importStar(__require("path"));
     var oidc_utils_1 = require_oidc_utils();
     var ExitCode;
@@ -20453,7 +20450,7 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       if (filePath) {
         return (0, file_command_1.issueFileCommand)("OUTPUT", (0, file_command_1.prepareKeyValueMessage)(name2, value));
       }
-      process.stdout.write(os5.EOL);
+      process.stdout.write(os4.EOL);
       (0, command_1.issueCommand)("set-output", { name: name2 }, (0, utils_1.toCommandValue)(value));
     }
     __name(setOutput3, "setOutput");
@@ -20495,7 +20492,7 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
     __name(notice2, "notice");
     exports2.notice = notice2;
     function info3(message) {
-      process.stdout.write(message + os5.EOL);
+      process.stdout.write(message + os4.EOL);
     }
     __name(info3, "info");
     exports2.info = info3;
@@ -21296,18 +21293,18 @@ var require_source_map_generator = __commonJS({
       var previousName = 0;
       var previousSource = 0;
       var result = "";
-      var next2;
+      var next;
       var mapping;
       var nameIdx;
       var sourceIdx;
       var mappings = this._mappings.toArray();
       for (var i3 = 0, len = mappings.length; i3 < len; i3++) {
         mapping = mappings[i3];
-        next2 = "";
+        next = "";
         if (mapping.generatedLine !== previousGeneratedLine) {
           previousGeneratedColumn = 0;
           while (mapping.generatedLine !== previousGeneratedLine) {
-            next2 += ";";
+            next += ";";
             previousGeneratedLine++;
           }
         } else {
@@ -21315,26 +21312,26 @@ var require_source_map_generator = __commonJS({
             if (!util3.compareByGeneratedPositionsInflated(mapping, mappings[i3 - 1])) {
               continue;
             }
-            next2 += ",";
+            next += ",";
           }
         }
-        next2 += base64VLQ.encode(mapping.generatedColumn - previousGeneratedColumn);
+        next += base64VLQ.encode(mapping.generatedColumn - previousGeneratedColumn);
         previousGeneratedColumn = mapping.generatedColumn;
         if (mapping.source != null) {
           sourceIdx = this._sources.indexOf(mapping.source);
-          next2 += base64VLQ.encode(sourceIdx - previousSource);
+          next += base64VLQ.encode(sourceIdx - previousSource);
           previousSource = sourceIdx;
-          next2 += base64VLQ.encode(mapping.originalLine - 1 - previousOriginalLine);
+          next += base64VLQ.encode(mapping.originalLine - 1 - previousOriginalLine);
           previousOriginalLine = mapping.originalLine - 1;
-          next2 += base64VLQ.encode(mapping.originalColumn - previousOriginalColumn);
+          next += base64VLQ.encode(mapping.originalColumn - previousOriginalColumn);
           previousOriginalColumn = mapping.originalColumn;
           if (mapping.name != null) {
             nameIdx = this._names.indexOf(mapping.name);
-            next2 += base64VLQ.encode(nameIdx - previousName);
+            next += base64VLQ.encode(nameIdx - previousName);
             previousName = nameIdx;
           }
         }
-        result += next2;
+        result += next;
       }
       return result;
     }, "SourceMapGenerator_serializeMappings");
@@ -22417,11 +22414,11 @@ var require_source_map_support = __commonJS({
     "use strict";
     var SourceMapConsumer = require_source_map().SourceMapConsumer;
     var path14 = __require("path");
-    var fs4;
+    var fs3;
     try {
-      fs4 = __require("fs");
-      if (!fs4.existsSync || !fs4.readFileSync) {
-        fs4 = null;
+      fs3 = __require("fs");
+      if (!fs3.existsSync || !fs3.readFileSync) {
+        fs3 = null;
       }
     } catch (err) {
     }
@@ -22499,7 +22496,7 @@ var require_source_map_support = __commonJS({
       }
       var contents = "";
       try {
-        if (!fs4) {
+        if (!fs3) {
           var xhr = new XMLHttpRequest();
           xhr.open(
             "GET",
@@ -22511,8 +22508,8 @@ var require_source_map_support = __commonJS({
           if (xhr.readyState === 4 && xhr.status === 200) {
             contents = xhr.responseText;
           }
-        } else if (fs4.existsSync(path15)) {
-          contents = fs4.readFileSync(path15, "utf8");
+        } else if (fs3.existsSync(path15)) {
+          contents = fs3.readFileSync(path15, "utf8");
         }
       } catch (er2) {
       }
@@ -22784,9 +22781,9 @@ var require_source_map_support = __commonJS({
         var line = +match3[2];
         var column = +match3[3];
         var contents = fileContentsCache[source];
-        if (!contents && fs4 && fs4.existsSync(source)) {
+        if (!contents && fs3 && fs3.existsSync(source)) {
           try {
-            contents = fs4.readFileSync(source, "utf8");
+            contents = fs3.readFileSync(source, "utf8");
           } catch (er2) {
             contents = "";
           }
@@ -22986,8 +22983,8 @@ var require_re = __commonJS({
     createToken("NONNUMERICIDENTIFIER", `\\d*[a-zA-Z-]${LETTERDASHNUMBER}*`);
     createToken("MAINVERSION", `(${src[t3.NUMERICIDENTIFIER]})\\.(${src[t3.NUMERICIDENTIFIER]})\\.(${src[t3.NUMERICIDENTIFIER]})`);
     createToken("MAINVERSIONLOOSE", `(${src[t3.NUMERICIDENTIFIERLOOSE]})\\.(${src[t3.NUMERICIDENTIFIERLOOSE]})\\.(${src[t3.NUMERICIDENTIFIERLOOSE]})`);
-    createToken("PRERELEASEIDENTIFIER", `(?:${src[t3.NUMERICIDENTIFIER]}|${src[t3.NONNUMERICIDENTIFIER]})`);
-    createToken("PRERELEASEIDENTIFIERLOOSE", `(?:${src[t3.NUMERICIDENTIFIERLOOSE]}|${src[t3.NONNUMERICIDENTIFIER]})`);
+    createToken("PRERELEASEIDENTIFIER", `(?:${src[t3.NONNUMERICIDENTIFIER]}|${src[t3.NUMERICIDENTIFIER]})`);
+    createToken("PRERELEASEIDENTIFIERLOOSE", `(?:${src[t3.NONNUMERICIDENTIFIER]}|${src[t3.NUMERICIDENTIFIERLOOSE]})`);
     createToken("PRERELEASE", `(?:-(${src[t3.PRERELEASEIDENTIFIER]}(?:\\.${src[t3.PRERELEASEIDENTIFIER]})*))`);
     createToken("PRERELEASELOOSE", `(?:-?(${src[t3.PRERELEASEIDENTIFIERLOOSE]}(?:\\.${src[t3.PRERELEASEIDENTIFIERLOOSE]})*))`);
     createToken("BUILDIDENTIFIER", `${LETTERDASHNUMBER}+`);
@@ -23077,7 +23074,7 @@ var require_semver = __commonJS({
     "use strict";
     var debug3 = require_debug();
     var { MAX_LENGTH, MAX_SAFE_INTEGER: MAX_SAFE_INTEGER2 } = require_constants6();
-    var { safeRe: re2, safeSrc: src, t: t3 } = require_re();
+    var { safeRe: re2, t: t3 } = require_re();
     var parseOptions = require_parse_options();
     var { compareIdentifiers } = require_identifiers();
     var SemVer = class _SemVer {
@@ -23225,8 +23222,7 @@ var require_semver = __commonJS({
             throw new Error("invalid increment argument: identifier is empty");
           }
           if (identifier) {
-            const r3 = new RegExp(`^${this.options.loose ? src[t3.PRERELEASELOOSE] : src[t3.PRERELEASE]}$`);
-            const match3 = `-${identifier}`.match(r3);
+            const match3 = `-${identifier}`.match(this.options.loose ? re2[t3.PRERELEASELOOSE] : re2[t3.PRERELEASE]);
             if (!match3 || match3[1] !== identifier) {
               throw new Error(`invalid identifier: ${identifier}`);
             }
@@ -23692,12 +23688,12 @@ var require_coerce = __commonJS({
         match3 = version3.match(options.includePrerelease ? re2[t3.COERCEFULL] : re2[t3.COERCE]);
       } else {
         const coerceRtlRegex = options.includePrerelease ? re2[t3.COERCERTLFULL] : re2[t3.COERCERTL];
-        let next2;
-        while ((next2 = coerceRtlRegex.exec(version3)) && (!match3 || match3.index + match3[0].length !== version3.length)) {
-          if (!match3 || next2.index + next2[0].length !== match3.index + match3[0].length) {
-            match3 = next2;
+        let next;
+        while ((next = coerceRtlRegex.exec(version3)) && (!match3 || match3.index + match3[0].length !== version3.length)) {
+          if (!match3 || next.index + next[0].length !== match3.index + match3[0].length) {
+            match3 = next;
           }
-          coerceRtlRegex.lastIndex = next2.index + next2[1].length + next2[2].length;
+          coerceRtlRegex.lastIndex = next.index + next[1].length + next[2].length;
         }
         coerceRtlRegex.lastIndex = -1;
       }
@@ -24887,12 +24883,12 @@ var require_manifest = __commonJS({
     exports2._readLinuxVersionFile = exports2._getOsVersion = exports2._findMatch = void 0;
     var semver = __importStar(require_semver2());
     var core_1 = require_core();
-    var os5 = __require("os");
+    var os4 = __require("os");
     var cp = __require("child_process");
-    var fs4 = __require("fs");
+    var fs3 = __require("fs");
     function _findMatch(versionSpec, stable, candidates, archFilter) {
       return __awaiter6(this, void 0, void 0, function* () {
-        const platFilter = os5.platform();
+        const platFilter = os4.platform();
         let result;
         let match3;
         let file;
@@ -24930,7 +24926,7 @@ var require_manifest = __commonJS({
     __name(_findMatch, "_findMatch");
     exports2._findMatch = _findMatch;
     function _getOsVersion() {
-      const plat = os5.platform();
+      const plat = os4.platform();
       let version3 = "";
       if (plat === "darwin") {
         version3 = cp.execSync("sw_vers -productVersion").toString();
@@ -24955,10 +24951,10 @@ var require_manifest = __commonJS({
       const lsbReleaseFile = "/etc/lsb-release";
       const osReleaseFile = "/etc/os-release";
       let contents = "";
-      if (fs4.existsSync(lsbReleaseFile)) {
-        contents = fs4.readFileSync(lsbReleaseFile).toString();
-      } else if (fs4.existsSync(osReleaseFile)) {
-        contents = fs4.readFileSync(osReleaseFile).toString();
+      if (fs3.existsSync(lsbReleaseFile)) {
+        contents = fs3.readFileSync(lsbReleaseFile).toString();
+      } else if (fs3.existsSync(osReleaseFile)) {
+        contents = fs3.readFileSync(osReleaseFile).toString();
       }
       return contents;
     }
@@ -25147,9 +25143,9 @@ var require_tool_cache = __commonJS({
     var core2 = __importStar(require_core());
     var io2 = __importStar(require_io());
     var crypto = __importStar(__require("crypto"));
-    var fs4 = __importStar(__require("fs"));
+    var fs3 = __importStar(__require("fs"));
     var mm = __importStar(require_manifest());
-    var os5 = __importStar(__require("os"));
+    var os4 = __importStar(__require("os"));
     var path14 = __importStar(__require("path"));
     var httpm = __importStar(require_lib());
     var semver = __importStar(require_semver2());
@@ -25198,7 +25194,7 @@ var require_tool_cache = __commonJS({
     exports2.downloadTool = downloadTool2;
     function downloadToolAttempt(url2, dest, auth, headers) {
       return __awaiter6(this, void 0, void 0, function* () {
-        if (fs4.existsSync(dest)) {
+        if (fs3.existsSync(dest)) {
           throw new Error(`Destination file path ${dest} already exists`);
         }
         const http2 = new httpm.HttpClient(userAgent, [], {
@@ -25222,7 +25218,7 @@ var require_tool_cache = __commonJS({
         const readStream = responseMessageFactory();
         let succeeded = false;
         try {
-          yield pipeline(readStream, fs4.createWriteStream(dest));
+          yield pipeline(readStream, fs3.createWriteStream(dest));
           core2.debug("download complete");
           succeeded = true;
           return dest;
@@ -25435,65 +25431,65 @@ var require_tool_cache = __commonJS({
       });
     }
     __name(extractZipNix, "extractZipNix");
-    function cacheDir2(sourceDir, tool, version3, arch5) {
+    function cacheDir2(sourceDir, tool, version3, arch6) {
       return __awaiter6(this, void 0, void 0, function* () {
         version3 = semver.clean(version3) || version3;
-        arch5 = arch5 || os5.arch();
-        core2.debug(`Caching tool ${tool} ${version3} ${arch5}`);
+        arch6 = arch6 || os4.arch();
+        core2.debug(`Caching tool ${tool} ${version3} ${arch6}`);
         core2.debug(`source dir: ${sourceDir}`);
-        if (!fs4.statSync(sourceDir).isDirectory()) {
+        if (!fs3.statSync(sourceDir).isDirectory()) {
           throw new Error("sourceDir is not a directory");
         }
-        const destPath = yield _createToolPath(tool, version3, arch5);
-        for (const itemName of fs4.readdirSync(sourceDir)) {
+        const destPath = yield _createToolPath(tool, version3, arch6);
+        for (const itemName of fs3.readdirSync(sourceDir)) {
           const s3 = path14.join(sourceDir, itemName);
           yield io2.cp(s3, destPath, { recursive: true });
         }
-        _completeToolPath(tool, version3, arch5);
+        _completeToolPath(tool, version3, arch6);
         return destPath;
       });
     }
     __name(cacheDir2, "cacheDir");
     exports2.cacheDir = cacheDir2;
-    function cacheFile(sourceFile, targetFile, tool, version3, arch5) {
+    function cacheFile(sourceFile, targetFile, tool, version3, arch6) {
       return __awaiter6(this, void 0, void 0, function* () {
         version3 = semver.clean(version3) || version3;
-        arch5 = arch5 || os5.arch();
-        core2.debug(`Caching tool ${tool} ${version3} ${arch5}`);
+        arch6 = arch6 || os4.arch();
+        core2.debug(`Caching tool ${tool} ${version3} ${arch6}`);
         core2.debug(`source file: ${sourceFile}`);
-        if (!fs4.statSync(sourceFile).isFile()) {
+        if (!fs3.statSync(sourceFile).isFile()) {
           throw new Error("sourceFile is not a file");
         }
-        const destFolder = yield _createToolPath(tool, version3, arch5);
+        const destFolder = yield _createToolPath(tool, version3, arch6);
         const destPath = path14.join(destFolder, targetFile);
         core2.debug(`destination file ${destPath}`);
         yield io2.cp(sourceFile, destPath);
-        _completeToolPath(tool, version3, arch5);
+        _completeToolPath(tool, version3, arch6);
         return destFolder;
       });
     }
     __name(cacheFile, "cacheFile");
     exports2.cacheFile = cacheFile;
-    function find(toolName, versionSpec, arch5) {
+    function find(toolName, versionSpec, arch6) {
       if (!toolName) {
         throw new Error("toolName parameter is required");
       }
       if (!versionSpec) {
         throw new Error("versionSpec parameter is required");
       }
-      arch5 = arch5 || os5.arch();
+      arch6 = arch6 || os4.arch();
       if (!isExplicitVersion(versionSpec)) {
-        const localVersions = findAllVersions(toolName, arch5);
+        const localVersions = findAllVersions(toolName, arch6);
         const match3 = evaluateVersions(localVersions, versionSpec);
         versionSpec = match3;
       }
       let toolPath = "";
       if (versionSpec) {
         versionSpec = semver.clean(versionSpec) || "";
-        const cachePath = path14.join(_getCacheDirectory(), toolName, versionSpec, arch5);
+        const cachePath = path14.join(_getCacheDirectory(), toolName, versionSpec, arch6);
         core2.debug(`checking cache: ${cachePath}`);
-        if (fs4.existsSync(cachePath) && fs4.existsSync(`${cachePath}.complete`)) {
-          core2.debug(`Found tool in cache ${toolName} ${versionSpec} ${arch5}`);
+        if (fs3.existsSync(cachePath) && fs3.existsSync(`${cachePath}.complete`)) {
+          core2.debug(`Found tool in cache ${toolName} ${versionSpec} ${arch6}`);
           toolPath = cachePath;
         } else {
           core2.debug("not found");
@@ -25503,16 +25499,16 @@ var require_tool_cache = __commonJS({
     }
     __name(find, "find");
     exports2.find = find;
-    function findAllVersions(toolName, arch5) {
+    function findAllVersions(toolName, arch6) {
       const versions2 = [];
-      arch5 = arch5 || os5.arch();
+      arch6 = arch6 || os4.arch();
       const toolPath = path14.join(_getCacheDirectory(), toolName);
-      if (fs4.existsSync(toolPath)) {
-        const children = fs4.readdirSync(toolPath);
+      if (fs3.existsSync(toolPath)) {
+        const children = fs3.readdirSync(toolPath);
         for (const child of children) {
           if (isExplicitVersion(child)) {
-            const fullPath = path14.join(toolPath, child, arch5 || "");
-            if (fs4.existsSync(fullPath) && fs4.existsSync(`${fullPath}.complete`)) {
+            const fullPath = path14.join(toolPath, child, arch6 || "");
+            if (fs3.existsSync(fullPath) && fs3.existsSync(`${fullPath}.complete`)) {
               versions2.push(child);
             }
           }
@@ -25549,7 +25545,7 @@ var require_tool_cache = __commonJS({
           versionsRaw = versionsRaw.replace(/^\uFEFF/, "");
           try {
             releases = JSON.parse(versionsRaw);
-          } catch (_a4) {
+          } catch (_a3) {
             core2.debug("Invalid json");
           }
         }
@@ -25558,7 +25554,7 @@ var require_tool_cache = __commonJS({
     }
     __name(getManifestFromRepo, "getManifestFromRepo");
     exports2.getManifestFromRepo = getManifestFromRepo;
-    function findFromManifest(versionSpec, stable, manifest, archFilter = os5.arch()) {
+    function findFromManifest(versionSpec, stable, manifest, archFilter = os4.arch()) {
       return __awaiter6(this, void 0, void 0, function* () {
         const match3 = yield mm._findMatch(versionSpec, stable, manifest, archFilter);
         return match3;
@@ -25576,9 +25572,9 @@ var require_tool_cache = __commonJS({
       });
     }
     __name(_createExtractFolder, "_createExtractFolder");
-    function _createToolPath(tool, version3, arch5) {
+    function _createToolPath(tool, version3, arch6) {
       return __awaiter6(this, void 0, void 0, function* () {
-        const folderPath = path14.join(_getCacheDirectory(), tool, semver.clean(version3) || version3, arch5 || "");
+        const folderPath = path14.join(_getCacheDirectory(), tool, semver.clean(version3) || version3, arch6 || "");
         core2.debug(`destination ${folderPath}`);
         const markerPath = `${folderPath}.complete`;
         yield io2.rmRF(folderPath);
@@ -25588,10 +25584,10 @@ var require_tool_cache = __commonJS({
       });
     }
     __name(_createToolPath, "_createToolPath");
-    function _completeToolPath(tool, version3, arch5) {
-      const folderPath = path14.join(_getCacheDirectory(), tool, semver.clean(version3) || version3, arch5 || "");
+    function _completeToolPath(tool, version3, arch6) {
+      const folderPath = path14.join(_getCacheDirectory(), tool, semver.clean(version3) || version3, arch6 || "");
       const markerPath = `${folderPath}.complete`;
-      fs4.writeFileSync(markerPath, "");
+      fs3.writeFileSync(markerPath, "");
       core2.debug("finished caching tool");
     }
     __name(_completeToolPath, "_completeToolPath");
@@ -26310,7 +26306,7 @@ var require_brace_expansion2 = __commonJS({
       var isSequence = isNumericSequence || isAlphaSequence;
       var isOptions = m3.body.indexOf(",") >= 0;
       if (!isSequence && !isOptions) {
-        if (m3.post.match(/,.*\}/)) {
+        if (m3.post.match(/,(?!,).*\}/)) {
           str = m3.pre + "{" + m3.body + escClose + m3.post;
           return expand2(str);
         }
@@ -26386,9 +26382,9 @@ var require_brace_expansion2 = __commonJS({
   }
 });
 
-// node_modules/minimatch/minimatch.js
+// node_modules/@actions/cache/node_modules/minimatch/minimatch.js
 var require_minimatch = __commonJS({
-  "node_modules/minimatch/minimatch.js"(exports2, module) {
+  "node_modules/@actions/cache/node_modules/minimatch/minimatch.js"(exports2, module) {
     "use strict";
     module.exports = minimatch2;
     minimatch2.Minimatch = Minimatch2;
@@ -26725,11 +26721,11 @@ var require_minimatch = __commonJS({
               escaping = false;
               continue;
             }
-            var cs2 = pattern.substring(classStart + 1, i3);
+            var cs = pattern.substring(classStart + 1, i3);
             try {
-              RegExp("[" + cs2 + "]");
+              RegExp("[" + cs + "]");
             } catch (er2) {
-              var sp = this.parse(cs2, SUBPARSE);
+              var sp = this.parse(cs, SUBPARSE);
               re2 = re2.substr(0, reClassStart) + "\\[" + sp[0] + "\\]";
               hasMagic = hasMagic || sp[1];
               inClass = false;
@@ -26750,8 +26746,8 @@ var require_minimatch = __commonJS({
         }
       }
       if (inClass) {
-        cs2 = pattern.substr(classStart + 1);
-        sp = this.parse(cs2, SUBPARSE);
+        cs = pattern.substr(classStart + 1);
+        sp = this.parse(cs, SUBPARSE);
         re2 = re2.substr(0, reClassStart) + "\\[" + sp[0];
         hasMagic = hasMagic || sp[1];
       }
@@ -27105,7 +27101,7 @@ var require_internal_pattern = __commonJS({
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.Pattern = void 0;
-    var os5 = __importStar(__require("os"));
+    var os4 = __importStar(__require("os"));
     var path14 = __importStar(__require("path"));
     var pathHelper = __importStar(require_internal_path_helper());
     var assert_1 = __importDefault(__require("assert"));
@@ -27201,7 +27197,7 @@ var require_internal_pattern = __commonJS({
         if (pattern === "." || pattern.startsWith(`.${path14.sep}`)) {
           pattern = _Pattern.globEscape(process.cwd()) + pattern.substr(1);
         } else if (pattern === "~" || pattern.startsWith(`~${path14.sep}`)) {
-          homedir = homedir || os5.homedir();
+          homedir = homedir || os4.homedir();
           assert_1.default(homedir, "Unable to determine HOME directory");
           assert_1.default(pathHelper.hasAbsoluteRoot(homedir), `Expected HOME directory to be a rooted path. Actual '${homedir}'`);
           pattern = _Pattern.globEscape(homedir) + pattern.substr(1);
@@ -27420,7 +27416,7 @@ var require_internal_globber = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.DefaultGlobber = void 0;
     var core2 = __importStar(require_core());
-    var fs4 = __importStar(__require("fs"));
+    var fs3 = __importStar(__require("fs"));
     var globOptionsHelper = __importStar(require_internal_glob_options_helper());
     var path14 = __importStar(__require("path"));
     var patternHelper = __importStar(require_internal_pattern_helper());
@@ -27441,7 +27437,7 @@ var require_internal_globber = __commonJS({
         return this.searchPaths.slice();
       }
       glob() {
-        var e_1, _a4;
+        var e_1, _a3;
         return __awaiter6(this, void 0, void 0, function* () {
           const result = [];
           try {
@@ -27453,7 +27449,7 @@ var require_internal_globber = __commonJS({
             e_1 = { error: e_1_1 };
           } finally {
             try {
-              if (_c2 && !_c2.done && (_a4 = _b2.return)) yield _a4.call(_b2);
+              if (_c2 && !_c2.done && (_a3 = _b2.return)) yield _a3.call(_b2);
             } finally {
               if (e_1) throw e_1.error;
             }
@@ -27475,7 +27471,7 @@ var require_internal_globber = __commonJS({
           for (const searchPath of patternHelper.getSearchPaths(patterns)) {
             core2.debug(`Search path '${searchPath}'`);
             try {
-              yield __await2(fs4.promises.lstat(searchPath));
+              yield __await2(fs3.promises.lstat(searchPath));
             } catch (err) {
               if (err.code === "ENOENT") {
                 continue;
@@ -27506,7 +27502,7 @@ var require_internal_globber = __commonJS({
                 continue;
               }
               const childLevel = item.level + 1;
-              const childItems = (yield __await2(fs4.promises.readdir(item.path))).map((x3) => new internal_search_state_1.SearchState(path14.join(item.path, x3), childLevel));
+              const childItems = (yield __await2(fs3.promises.readdir(item.path))).map((x3) => new internal_search_state_1.SearchState(path14.join(item.path, x3), childLevel));
               stack.push(...childItems.reverse());
             } else if (match3 & internal_match_kind_1.MatchKind.File) {
               yield yield __await2(item.path);
@@ -27541,7 +27537,7 @@ var require_internal_globber = __commonJS({
           let stats;
           if (options.followSymbolicLinks) {
             try {
-              stats = yield fs4.promises.stat(item.path);
+              stats = yield fs3.promises.stat(item.path);
             } catch (err) {
               if (err.code === "ENOENT") {
                 if (options.omitBrokenSymbolicLinks) {
@@ -27553,10 +27549,10 @@ var require_internal_globber = __commonJS({
               throw err;
             }
           } else {
-            stats = yield fs4.promises.lstat(item.path);
+            stats = yield fs3.promises.lstat(item.path);
           }
           if (stats.isDirectory() && options.followSymbolicLinks) {
-            const realPath = yield fs4.promises.realpath(item.path);
+            const realPath = yield fs3.promises.realpath(item.path);
             while (traversalChain.length >= item.level) {
               traversalChain.pop();
             }
@@ -27745,7 +27741,7 @@ var require_cacheUtils = __commonJS({
     var glob = __importStar(require_glob());
     var io2 = __importStar(require_io());
     var crypto = __importStar(__require("crypto"));
-    var fs4 = __importStar(__require("fs"));
+    var fs3 = __importStar(__require("fs"));
     var path14 = __importStar(__require("path"));
     var semver = __importStar(require_semver2());
     var util3 = __importStar(__require("util"));
@@ -27776,12 +27772,12 @@ var require_cacheUtils = __commonJS({
     __name(createTempDirectory, "createTempDirectory");
     exports2.createTempDirectory = createTempDirectory;
     function getArchiveFileSizeInBytes(filePath) {
-      return fs4.statSync(filePath).size;
+      return fs3.statSync(filePath).size;
     }
     __name(getArchiveFileSizeInBytes, "getArchiveFileSizeInBytes");
     exports2.getArchiveFileSizeInBytes = getArchiveFileSizeInBytes;
     function resolvePaths(patterns) {
-      var _a4, e_1, _b2, _c2;
+      var _a3, e_1, _b2, _c2;
       var _d2;
       return __awaiter6(this, void 0, void 0, function* () {
         const paths = [];
@@ -27790,7 +27786,7 @@ var require_cacheUtils = __commonJS({
           implicitDescendants: false
         });
         try {
-          for (var _e2 = true, _f = __asyncValues2(globber.globGenerator()), _g; _g = yield _f.next(), _a4 = _g.done, !_a4; _e2 = true) {
+          for (var _e2 = true, _f = __asyncValues2(globber.globGenerator()), _g; _g = yield _f.next(), _a3 = _g.done, !_a3; _e2 = true) {
             _c2 = _g.value;
             _e2 = false;
             const file = _c2;
@@ -27806,7 +27802,7 @@ var require_cacheUtils = __commonJS({
           e_1 = { error: e_1_1 };
         } finally {
           try {
-            if (!_e2 && !_a4 && (_b2 = _f.return)) yield _b2.call(_f);
+            if (!_e2 && !_a3 && (_b2 = _f.return)) yield _b2.call(_f);
           } finally {
             if (e_1) throw e_1.error;
           }
@@ -27818,7 +27814,7 @@ var require_cacheUtils = __commonJS({
     exports2.resolvePaths = resolvePaths;
     function unlinkFile(filePath) {
       return __awaiter6(this, void 0, void 0, function* () {
-        return util3.promisify(fs4.unlink)(filePath);
+        return util3.promisify(fs3.unlink)(filePath);
       });
     }
     __name(unlinkFile, "unlinkFile");
@@ -27867,7 +27863,7 @@ var require_cacheUtils = __commonJS({
     exports2.getCacheFileName = getCacheFileName;
     function getGnuTarPathOnWindows() {
       return __awaiter6(this, void 0, void 0, function* () {
-        if (fs4.existsSync(constants_1.GnuTarPathOnWindows)) {
+        if (fs3.existsSync(constants_1.GnuTarPathOnWindows)) {
           return constants_1.GnuTarPathOnWindows;
         }
         const versionOutput = yield getVersion2("tar");
@@ -27923,9 +27919,9 @@ var init_pipeline = __esm({
         __name(this, "HttpPipeline");
       }
       constructor(policies) {
-        var _a4;
+        var _a3;
         this._policies = [];
-        this._policies = (_a4 = policies === null || policies === void 0 ? void 0 : policies.slice(0)) !== null && _a4 !== void 0 ? _a4 : [];
+        this._policies = (_a3 = policies === null || policies === void 0 ? void 0 : policies.slice(0)) !== null && _a3 !== void 0 ? _a3 : [];
         this._orderedPolicies = void 0;
       }
       addPolicy(policy, options = {}) {
@@ -27959,9 +27955,9 @@ var init_pipeline = __esm({
       }
       sendRequest(httpClient, request3) {
         const policies = this.getOrderedPolicies();
-        const pipeline = policies.reduceRight((next2, policy) => {
+        const pipeline = policies.reduceRight((next, policy) => {
           return (req) => {
-            return policy.sendRequest(req, next2);
+            return policy.sendRequest(req, next);
           };
         }, (req) => httpClient.sendRequest(req));
         return pipeline(request3);
@@ -28124,12 +28120,12 @@ function enable(namespaces) {
   enabledNamespaces = [];
   skippedNamespaces = [];
   const wildcard = /\*/g;
-  const namespaceList = namespaces.split(",").map((ns2) => ns2.trim().replace(wildcard, ".*?"));
-  for (const ns2 of namespaceList) {
-    if (ns2.startsWith("-")) {
-      skippedNamespaces.push(new RegExp(`^${ns2.substr(1)}$`));
+  const namespaceList = namespaces.split(",").map((ns) => ns.trim().replace(wildcard, ".*?"));
+  for (const ns of namespaceList) {
+    if (ns.startsWith("-")) {
+      skippedNamespaces.push(new RegExp(`^${ns.substr(1)}$`));
     } else {
-      enabledNamespaces.push(new RegExp(`^${ns2}$`));
+      enabledNamespaces.push(new RegExp(`^${ns}$`));
     }
   }
   for (const instance of debuggers) {
@@ -28496,22 +28492,22 @@ import { randomUUID as v4RandomUUID } from "crypto";
 function randomUUID() {
   return uuidFunction();
 }
-var _a2, uuidFunction;
+var _a, uuidFunction;
 var init_uuidUtils = __esm({
   "node_modules/@azure/core-util/dist/esm/uuidUtils.js"() {
     "use strict";
-    uuidFunction = typeof ((_a2 = globalThis === null || globalThis === void 0 ? void 0 : globalThis.crypto) === null || _a2 === void 0 ? void 0 : _a2.randomUUID) === "function" ? globalThis.crypto.randomUUID.bind(globalThis.crypto) : v4RandomUUID;
+    uuidFunction = typeof ((_a = globalThis === null || globalThis === void 0 ? void 0 : globalThis.crypto) === null || _a === void 0 ? void 0 : _a.randomUUID) === "function" ? globalThis.crypto.randomUUID.bind(globalThis.crypto) : v4RandomUUID;
     __name(randomUUID, "randomUUID");
   }
 });
 
 // node_modules/@azure/core-util/dist/esm/checkEnvironment.js
-var _a3, _b, _c, _d, isBrowser, isWebWorker, isDeno, isBun, isNodeLike, isNode, isReactNative;
+var _a2, _b, _c, _d, isBrowser, isWebWorker, isDeno, isBun, isNodeLike, isNode, isReactNative;
 var init_checkEnvironment = __esm({
   "node_modules/@azure/core-util/dist/esm/checkEnvironment.js"() {
     "use strict";
     isBrowser = typeof window !== "undefined" && typeof window.document !== "undefined";
-    isWebWorker = typeof self === "object" && typeof (self === null || self === void 0 ? void 0 : self.importScripts) === "function" && (((_a3 = self.constructor) === null || _a3 === void 0 ? void 0 : _a3.name) === "DedicatedWorkerGlobalScope" || ((_b = self.constructor) === null || _b === void 0 ? void 0 : _b.name) === "ServiceWorkerGlobalScope" || ((_c = self.constructor) === null || _c === void 0 ? void 0 : _c.name) === "SharedWorkerGlobalScope");
+    isWebWorker = typeof self === "object" && typeof (self === null || self === void 0 ? void 0 : self.importScripts) === "function" && (((_a2 = self.constructor) === null || _a2 === void 0 ? void 0 : _a2.name) === "DedicatedWorkerGlobalScope" || ((_b = self.constructor) === null || _b === void 0 ? void 0 : _b.name) === "ServiceWorkerGlobalScope" || ((_c = self.constructor) === null || _c === void 0 ? void 0 : _c.name) === "SharedWorkerGlobalScope");
     isDeno = typeof Deno !== "undefined" && typeof Deno.version !== "undefined" && typeof Deno.version.deno !== "undefined";
     isBun = typeof Bun !== "undefined" && typeof Bun.version !== "undefined";
     isNodeLike = typeof globalThis.process !== "undefined" && Boolean(globalThis.process.version) && Boolean((_d = globalThis.process.versions) === null || _d === void 0 ? void 0 : _d.node);
@@ -28681,20 +28677,20 @@ var init_sanitizer = __esm({
 
 // node_modules/@azure/core-rest-pipeline/dist/esm/policies/logPolicy.js
 function logPolicy(options = {}) {
-  var _a4;
-  const logger6 = (_a4 = options.logger) !== null && _a4 !== void 0 ? _a4 : logger2.info;
+  var _a3;
+  const logger6 = (_a3 = options.logger) !== null && _a3 !== void 0 ? _a3 : logger2.info;
   const sanitizer = new Sanitizer({
     additionalAllowedHeaderNames: options.additionalAllowedHeaderNames,
     additionalAllowedQueryParameters: options.additionalAllowedQueryParameters
   });
   return {
     name: logPolicyName,
-    async sendRequest(request3, next2) {
+    async sendRequest(request3, next) {
       if (!logger6.enabled) {
-        return next2(request3);
+        return next(request3);
       }
       logger6(`Request: ${sanitizer.sanitize(request3)}`);
-      const response = await next2(request3);
+      const response = await next(request3);
       logger6(`Response status code: ${response.status}`);
       logger6(`Headers: ${sanitizer.sanitize(response.headers)}`);
       return response;
@@ -28717,13 +28713,13 @@ function redirectPolicy(options = {}) {
   const { maxRetries = 20 } = options;
   return {
     name: redirectPolicyName,
-    async sendRequest(request3, next2) {
-      const response = await next2(request3);
-      return handleRedirect(next2, response, maxRetries);
+    async sendRequest(request3, next) {
+      const response = await next(request3);
+      return handleRedirect(next, response, maxRetries);
     }
   };
 }
-async function handleRedirect(next2, response, maxRetries, currentRetries = 0) {
+async function handleRedirect(next, response, maxRetries, currentRetries = 0) {
   const { request: request3, status, headers } = response;
   const locationHeader = headers.get("location");
   if (locationHeader && (status === 300 || status === 301 && allowedRedirect.includes(request3.method) || status === 302 && allowedRedirect.includes(request3.method) || status === 303 && request3.method === "POST" || status === 307) && currentRetries < maxRetries) {
@@ -28735,8 +28731,8 @@ async function handleRedirect(next2, response, maxRetries, currentRetries = 0) {
       delete request3.body;
     }
     request3.headers.delete("Authorization");
-    const res = await next2(request3);
-    return handleRedirect(next2, res, maxRetries, currentRetries + 1);
+    const res = await next(request3);
+    return handleRedirect(next, res, maxRetries, currentRetries + 1);
   }
   return response;
 }
@@ -28752,7 +28748,7 @@ var init_redirectPolicy = __esm({
 });
 
 // node_modules/@azure/core-rest-pipeline/dist/esm/util/userAgentPlatform.js
-import * as os4 from "node:os";
+import * as os3 from "node:os";
 import * as process3 from "node:process";
 function getHeaderName() {
   return "User-Agent";
@@ -28768,7 +28764,7 @@ async function setPlatformSpecificData(map) {
       map.set("Node", versions2.node);
     }
   }
-  map.set("OS", `(${os4.arch()}-${os4.type()}-${os4.release()})`);
+  map.set("OS", `(${os3.arch()}-${os3.type()}-${os3.release()})`);
 }
 var init_userAgentPlatform = __esm({
   "node_modules/@azure/core-rest-pipeline/dist/esm/util/userAgentPlatform.js"() {
@@ -28824,11 +28820,11 @@ function userAgentPolicy(options = {}) {
   const userAgentValue = getUserAgentValue(options.userAgentPrefix);
   return {
     name: userAgentPolicyName,
-    async sendRequest(request3, next2) {
+    async sendRequest(request3, next) {
       if (!request3.headers.has(UserAgentHeaderName)) {
         request3.headers.set(UserAgentHeaderName, await userAgentValue);
       }
-      return next2(request3);
+      return next(request3);
     }
   };
 }
@@ -29046,10 +29042,10 @@ async function concat(sources) {
     const streams = sources.map((x3) => typeof x3 === "function" ? x3() : x3).map(toStream);
     return Readable.from(function() {
       return __asyncGenerator(this, arguments, function* () {
-        var _a4, e_1, _b2, _c2;
+        var _a3, e_1, _b2, _c2;
         for (const stream of streams) {
           try {
-            for (var _d2 = true, stream_1 = (e_1 = void 0, __asyncValues(stream)), stream_1_1; stream_1_1 = yield __await(stream_1.next()), _a4 = stream_1_1.done, !_a4; _d2 = true) {
+            for (var _d2 = true, stream_1 = (e_1 = void 0, __asyncValues(stream)), stream_1_1; stream_1_1 = yield __await(stream_1.next()), _a3 = stream_1_1.done, !_a3; _d2 = true) {
               _c2 = stream_1_1.value;
               _d2 = false;
               const chunk = _c2;
@@ -29059,7 +29055,7 @@ async function concat(sources) {
             e_1 = { error: e_1_1 };
           } finally {
             try {
-              if (!_d2 && !_a4 && (_b2 = stream_1.return)) yield __await(_b2.call(stream_1));
+              if (!_d2 && !_a3 && (_b2 = stream_1.return)) yield __await(_b2.call(stream_1));
             } finally {
               if (e_1) throw e_1.error;
             }
@@ -29146,16 +29142,16 @@ function assertValidBoundary(boundary) {
 function multipartPolicy() {
   return {
     name: multipartPolicyName,
-    async sendRequest(request3, next2) {
-      var _a4;
+    async sendRequest(request3, next) {
+      var _a3;
       if (!request3.multipartBody) {
-        return next2(request3);
+        return next(request3);
       }
       if (request3.body) {
         throw new Error("multipartBody and regular body cannot be set at the same time");
       }
       let boundary = request3.multipartBody.boundary;
-      const contentTypeHeader = (_a4 = request3.headers.get("Content-Type")) !== null && _a4 !== void 0 ? _a4 : "multipart/mixed";
+      const contentTypeHeader = (_a3 = request3.headers.get("Content-Type")) !== null && _a3 !== void 0 ? _a3 : "multipart/mixed";
       const parsedHeader = contentTypeHeader.match(/^(multipart\/[^ ;]+)(?:; *boundary=(.+))?$/);
       if (!parsedHeader) {
         throw new Error(`Got multipart request body, but content-type header was not multipart: ${contentTypeHeader}`);
@@ -29173,7 +29169,7 @@ function multipartPolicy() {
       request3.headers.set("Content-Type", `${contentType2}; boundary=${boundary}`);
       await buildRequestBody(request3, request3.multipartBody.parts, boundary);
       request3.multipartBody = void 0;
-      return next2(request3);
+      return next(request3);
     }
   };
 }
@@ -29201,11 +29197,11 @@ var init_multipartPolicy = __esm({
 function decompressResponsePolicy() {
   return {
     name: decompressResponsePolicyName,
-    async sendRequest(request3, next2) {
+    async sendRequest(request3, next) {
       if (request3.method !== "HEAD") {
         request3.headers.set("Accept-Encoding", "gzip,deflate");
       }
-      return next2(request3);
+      return next(request3);
     }
   };
 }
@@ -29313,7 +29309,7 @@ function getRetryAfterInMs(response) {
     const date = Date.parse(retryAfterHeader);
     const diff = date - Date.now();
     return Number.isFinite(diff) ? Math.max(0, diff) : void 0;
-  } catch (_a4) {
+  } catch (_a3) {
     return void 0;
   }
 }
@@ -29349,8 +29345,8 @@ var init_throttlingRetryStrategy = __esm({
 
 // node_modules/@azure/core-rest-pipeline/dist/esm/retryStrategies/exponentialRetryStrategy.js
 function exponentialRetryStrategy(options = {}) {
-  var _a4, _b2;
-  const retryInterval = (_a4 = options.retryDelayInMs) !== null && _a4 !== void 0 ? _a4 : DEFAULT_CLIENT_RETRY_INTERVAL;
+  var _a3, _b2;
+  const retryInterval = (_a3 = options.retryDelayInMs) !== null && _a3 !== void 0 ? _a3 : DEFAULT_CLIENT_RETRY_INTERVAL;
   const maxRetryInterval = (_b2 = options.maxRetryDelayInMs) !== null && _b2 !== void 0 ? _b2 : DEFAULT_CLIENT_MAX_RETRY_INTERVAL;
   return {
     name: "exponentialRetryStrategy",
@@ -29401,8 +29397,8 @@ function retryPolicy(strategies, options = { maxRetries: DEFAULT_RETRY_POLICY_CO
   const logger6 = options.logger || retryPolicyLogger;
   return {
     name: retryPolicyName,
-    async sendRequest(request3, next2) {
-      var _a4, _b2;
+    async sendRequest(request3, next) {
+      var _a3, _b2;
       let response;
       let responseError;
       let retryCount = -1;
@@ -29412,7 +29408,7 @@ function retryPolicy(strategies, options = { maxRetries: DEFAULT_RETRY_POLICY_CO
         responseError = void 0;
         try {
           logger6.info(`Retry ${retryCount}: Attempting to send request`, request3.requestId);
-          response = await next2(request3);
+          response = await next(request3);
           logger6.info(`Retry ${retryCount}: Received a response from request`, request3.requestId);
         } catch (e3) {
           logger6.error(`Retry ${retryCount}: Received an error from request`, request3.requestId);
@@ -29422,7 +29418,7 @@ function retryPolicy(strategies, options = { maxRetries: DEFAULT_RETRY_POLICY_CO
           }
           response = responseError.response;
         }
-        if ((_a4 = request3.abortSignal) === null || _a4 === void 0 ? void 0 : _a4.aborted) {
+        if ((_a3 = request3.abortSignal) === null || _a3 === void 0 ? void 0 : _a3.aborted) {
           logger6.error(`Retry ${retryCount}: Request aborted.`);
           const abortError = new AbortError2();
           throw abortError;
@@ -29494,11 +29490,11 @@ var init_retryPolicy = __esm({
 
 // node_modules/@azure/core-rest-pipeline/dist/esm/policies/defaultRetryPolicy.js
 function defaultRetryPolicy(options = {}) {
-  var _a4;
+  var _a3;
   return {
     name: defaultRetryPolicyName,
     sendRequest: retryPolicy([throttlingRetryStrategy(), exponentialRetryStrategy(options)], {
-      maxRetries: (_a4 = options.maxRetries) !== null && _a4 !== void 0 ? _a4 : DEFAULT_RETRY_POLICY_COUNT
+      maxRetries: (_a3 = options.maxRetries) !== null && _a3 !== void 0 ? _a3 : DEFAULT_RETRY_POLICY_COUNT
     }).sendRequest
   };
 }
@@ -29560,8 +29556,8 @@ var init_httpHeaders = __esm({
        * @param name - The name of the header. This value is case-insensitive.
        */
       get(name2) {
-        var _a4;
-        return (_a4 = this._headersMap.get(normalizeName(name2))) === null || _a4 === void 0 ? void 0 : _a4.value;
+        var _a3;
+        return (_a3 = this._headersMap.get(normalizeName(name2))) === null || _a3 === void 0 ? void 0 : _a3.value;
       }
       /**
        * Get whether or not this header collection contains a header entry for the provided header name.
@@ -29612,10 +29608,10 @@ var init_httpHeaders = __esm({
 
 // node_modules/@azure/core-rest-pipeline/dist/esm/policies/formDataPolicy.js
 function formDataToFormDataMap(formData) {
-  var _a4;
+  var _a3;
   const formDataMap = {};
   for (const [key, value] of formData.entries()) {
-    (_a4 = formDataMap[key]) !== null && _a4 !== void 0 ? _a4 : formDataMap[key] = [];
+    (_a3 = formDataMap[key]) !== null && _a3 !== void 0 ? _a3 : formDataMap[key] = [];
     formDataMap[key].push(value);
   }
   return formDataMap;
@@ -29623,7 +29619,7 @@ function formDataToFormDataMap(formData) {
 function formDataPolicy() {
   return {
     name: formDataPolicyName,
-    async sendRequest(request3, next2) {
+    async sendRequest(request3, next) {
       if (isNodeLike && typeof FormData !== "undefined" && request3.body instanceof FormData) {
         request3.formData = formDataToFormDataMap(request3.body);
         request3.body = void 0;
@@ -29637,7 +29633,7 @@ function formDataPolicy() {
         }
         request3.formData = void 0;
       }
-      return next2(request3);
+      return next(request3);
     }
   };
 }
@@ -29779,43 +29775,43 @@ var require_ms = __commonJS({
       }
     }
     __name(parse3, "parse");
-    function fmtShort(ms2) {
-      var msAbs = Math.abs(ms2);
+    function fmtShort(ms) {
+      var msAbs = Math.abs(ms);
       if (msAbs >= d3) {
-        return Math.round(ms2 / d3) + "d";
+        return Math.round(ms / d3) + "d";
       }
       if (msAbs >= h3) {
-        return Math.round(ms2 / h3) + "h";
+        return Math.round(ms / h3) + "h";
       }
       if (msAbs >= m3) {
-        return Math.round(ms2 / m3) + "m";
+        return Math.round(ms / m3) + "m";
       }
       if (msAbs >= s3) {
-        return Math.round(ms2 / s3) + "s";
+        return Math.round(ms / s3) + "s";
       }
-      return ms2 + "ms";
+      return ms + "ms";
     }
     __name(fmtShort, "fmtShort");
-    function fmtLong(ms2) {
-      var msAbs = Math.abs(ms2);
+    function fmtLong(ms) {
+      var msAbs = Math.abs(ms);
       if (msAbs >= d3) {
-        return plural(ms2, msAbs, d3, "day");
+        return plural(ms, msAbs, d3, "day");
       }
       if (msAbs >= h3) {
-        return plural(ms2, msAbs, h3, "hour");
+        return plural(ms, msAbs, h3, "hour");
       }
       if (msAbs >= m3) {
-        return plural(ms2, msAbs, m3, "minute");
+        return plural(ms, msAbs, m3, "minute");
       }
       if (msAbs >= s3) {
-        return plural(ms2, msAbs, s3, "second");
+        return plural(ms, msAbs, s3, "second");
       }
-      return ms2 + " ms";
+      return ms + " ms";
     }
     __name(fmtLong, "fmtLong");
-    function plural(ms2, msAbs, n3, name2) {
+    function plural(ms, msAbs, n3, name2) {
       var isPlural = msAbs >= n3 * 1.5;
-      return Math.round(ms2 / n3) + " " + name2 + (isPlural ? "s" : "");
+      return Math.round(ms / n3) + " " + name2 + (isPlural ? "s" : "");
     }
     __name(plural, "plural");
   }
@@ -29861,8 +29857,8 @@ var require_common = __commonJS({
           }
           const self2 = debug3;
           const curr = Number(/* @__PURE__ */ new Date());
-          const ms2 = curr - (prevTime || curr);
-          self2.diff = ms2;
+          const ms = curr - (prevTime || curr);
+          self2.diff = ms;
           self2.prev = prevTime;
           self2.curr = curr;
           prevTime = curr;
@@ -29930,11 +29926,11 @@ var require_common = __commonJS({
         createDebug.names = [];
         createDebug.skips = [];
         const split = (typeof namespaces === "string" ? namespaces : "").trim().replace(" ", ",").split(",").filter(Boolean);
-        for (const ns2 of split) {
-          if (ns2[0] === "-") {
-            createDebug.skips.push(ns2.slice(1));
+        for (const ns of split) {
+          if (ns[0] === "-") {
+            createDebug.skips.push(ns.slice(1));
           } else {
-            createDebug.names.push(ns2);
+            createDebug.names.push(ns);
           }
         }
       }
@@ -29983,8 +29979,8 @@ var require_common = __commonJS({
             return false;
           }
         }
-        for (const ns2 of createDebug.names) {
-          if (matchesTemplate(name2, ns2)) {
+        for (const ns of createDebug.names) {
+          if (matchesTemplate(name2, ns)) {
             return true;
           }
         }
@@ -30203,7 +30199,7 @@ var require_has_flag = __commonJS({
 var require_supports_color = __commonJS({
   "node_modules/supports-color/index.js"(exports2, module) {
     "use strict";
-    var os5 = __require("os");
+    var os4 = __require("os");
     var tty = __require("tty");
     var hasFlag = require_has_flag();
     var { env: env7 } = process;
@@ -30252,7 +30248,7 @@ var require_supports_color = __commonJS({
         return min;
       }
       if (process.platform === "win32") {
-        const osRelease = os5.release().split(".");
+        const osRelease = os4.release().split(".");
         if (Number(osRelease[0]) >= 10 && Number(osRelease[2]) >= 10586) {
           return Number(osRelease[2]) >= 14931 ? 3 : 2;
         }
@@ -30801,11 +30797,11 @@ var require_parse_proxy_response = __commonJS({
             }
             const key = header.slice(0, firstColon).toLowerCase();
             const value = header.slice(firstColon + 1).trimStart();
-            const current2 = headers[key];
-            if (typeof current2 === "string") {
-              headers[key] = [current2, value];
-            } else if (Array.isArray(current2)) {
-              current2.push(value);
+            const current = headers[key];
+            if (typeof current === "string") {
+              headers[key] = [current, value];
+            } else if (Array.isArray(current)) {
+              current.push(value);
             } else {
               headers[key] = value;
             }
@@ -31198,7 +31194,7 @@ function getUrlFromProxySettings(settings2) {
   let parsedProxyUrl;
   try {
     parsedProxyUrl = new URL(settings2.host);
-  } catch (_a4) {
+  } catch (_a3) {
     throw new Error(`Expecting a valid host string in proxy settings, but found "${settings2.host}".`);
   }
   parsedProxyUrl.port = String(settings2.port);
@@ -31240,14 +31236,14 @@ function proxyPolicy(proxySettings, options) {
   const cachedAgents = {};
   return {
     name: proxyPolicyName,
-    async sendRequest(request3, next2) {
-      var _a4;
-      if (!request3.proxySettings && defaultProxy && !isBypassed(request3.url, (_a4 = options === null || options === void 0 ? void 0 : options.customNoProxyList) !== null && _a4 !== void 0 ? _a4 : globalNoProxyList, (options === null || options === void 0 ? void 0 : options.customNoProxyList) ? void 0 : globalBypassedMap)) {
+    async sendRequest(request3, next) {
+      var _a3;
+      if (!request3.proxySettings && defaultProxy && !isBypassed(request3.url, (_a3 = options === null || options === void 0 ? void 0 : options.customNoProxyList) !== null && _a3 !== void 0 ? _a3 : globalNoProxyList, (options === null || options === void 0 ? void 0 : options.customNoProxyList) ? void 0 : globalBypassedMap)) {
         setProxyAgentOnRequest(request3, cachedAgents, defaultProxy);
       } else if (request3.proxySettings) {
         setProxyAgentOnRequest(request3, cachedAgents, getUrlFromProxySettings(request3.proxySettings));
       }
-      return next2(request3);
+      return next(request3);
     }
   };
 }
@@ -31282,11 +31278,11 @@ var init_proxyPolicy = __esm({
 function setClientRequestIdPolicy(requestIdHeaderName = "x-ms-client-request-id") {
   return {
     name: setClientRequestIdPolicyName,
-    async sendRequest(request3, next2) {
+    async sendRequest(request3, next) {
       if (!request3.headers.has(requestIdHeaderName)) {
         request3.headers.set(requestIdHeaderName, request3.requestId);
       }
-      return next2(request3);
+      return next(request3);
     }
   };
 }
@@ -31303,11 +31299,11 @@ var init_setClientRequestIdPolicy = __esm({
 function agentPolicy(agent) {
   return {
     name: agentPolicyName,
-    sendRequest: /* @__PURE__ */ __name(async (req, next2) => {
+    sendRequest: /* @__PURE__ */ __name(async (req, next) => {
       if (!req.agent) {
         req.agent = agent;
       }
-      return next2(req);
+      return next(req);
     }, "sendRequest")
   };
 }
@@ -31324,11 +31320,11 @@ var init_agentPolicy = __esm({
 function tlsPolicy(tlsSettings) {
   return {
     name: tlsPolicyName,
-    sendRequest: /* @__PURE__ */ __name(async (req, next2) => {
+    sendRequest: /* @__PURE__ */ __name(async (req, next) => {
       if (!req.tlsSettings) {
         req.tlsSettings = tlsSettings;
       }
-      return next2(req);
+      return next(req);
     }, "sendRequest")
   };
 }
@@ -31463,8 +31459,8 @@ var init_instrumenter = __esm({
 function createTracingClient(options) {
   const { namespace, packageName, packageVersion } = options;
   function startSpan(name2, operationOptions, spanOptions) {
-    var _a4;
-    const startSpanResult = getInstrumenter().startSpan(name2, Object.assign(Object.assign({}, spanOptions), { packageName, packageVersion, tracingContext: (_a4 = operationOptions === null || operationOptions === void 0 ? void 0 : operationOptions.tracingOptions) === null || _a4 === void 0 ? void 0 : _a4.tracingContext }));
+    var _a3;
+    const startSpanResult = getInstrumenter().startSpan(name2, Object.assign(Object.assign({}, spanOptions), { packageName, packageVersion, tracingContext: (_a3 = operationOptions === null || operationOptions === void 0 ? void 0 : operationOptions.tracingOptions) === null || _a3 === void 0 ? void 0 : _a3.tracingContext }));
     let tracingContext = startSpanResult.tracingContext;
     const span = startSpanResult.span;
     if (!tracingContext.getValue(knownContextKeys.namespace)) {
@@ -31593,10 +31589,10 @@ function tracingPolicy(options = {}) {
   const tracingClient2 = tryCreateTracingClient();
   return {
     name: tracingPolicyName,
-    async sendRequest(request3, next2) {
-      var _a4;
+    async sendRequest(request3, next) {
+      var _a3;
       if (!tracingClient2) {
-        return next2(request3);
+        return next(request3);
       }
       const userAgent = await userAgentPromise;
       const spanAttributes = {
@@ -31608,12 +31604,12 @@ function tracingPolicy(options = {}) {
       if (userAgent) {
         spanAttributes["http.user_agent"] = userAgent;
       }
-      const { span, tracingContext } = (_a4 = tryCreateSpan(tracingClient2, request3, spanAttributes)) !== null && _a4 !== void 0 ? _a4 : {};
+      const { span, tracingContext } = (_a3 = tryCreateSpan(tracingClient2, request3, spanAttributes)) !== null && _a3 !== void 0 ? _a3 : {};
       if (!span || !tracingContext) {
-        return next2(request3);
+        return next(request3);
       }
       try {
-        const response = await tracingClient2.withContext(tracingContext, next2, request3);
+        const response = await tracingClient2.withContext(tracingContext, next, request3);
         tryProcessResponse(span, response);
         return response;
       } catch (err) {
@@ -31708,7 +31704,7 @@ var init_tracingPolicy = __esm({
 
 // node_modules/@azure/core-rest-pipeline/dist/esm/createPipelineFromOptions.js
 function createPipelineFromOptions(options) {
-  var _a4;
+  var _a3;
   const pipeline = createEmptyPipeline();
   if (isNodeLike) {
     if (options.agent) {
@@ -31722,7 +31718,7 @@ function createPipelineFromOptions(options) {
   }
   pipeline.addPolicy(formDataPolicy(), { beforePolicies: [multipartPolicyName] });
   pipeline.addPolicy(userAgentPolicy(options.userAgentOptions));
-  pipeline.addPolicy(setClientRequestIdPolicy((_a4 = options.telemetryOptions) === null || _a4 === void 0 ? void 0 : _a4.clientRequestIdHeaderName));
+  pipeline.addPolicy(setClientRequestIdPolicy((_a3 = options.telemetryOptions) === null || _a3 === void 0 ? void 0 : _a3.clientRequestIdHeaderName));
   pipeline.addPolicy(multipartPolicy(), { afterPhase: "Deserialize" });
   pipeline.addPolicy(defaultRetryPolicy(options.retryOptions), { phase: "Retry" });
   pipeline.addPolicy(tracingPolicy(Object.assign(Object.assign({}, options.userAgentOptions), options.loggingOptions)), {
@@ -31897,7 +31893,7 @@ var init_nodeHttpClient = __esm({
        * @param request - The request to be made.
        */
       async sendRequest(request3) {
-        var _a4, _b2, _c2;
+        var _a3, _b2, _c2;
         const abortController = new AbortController();
         let abortListener;
         if (request3.abortSignal) {
@@ -31948,7 +31944,7 @@ var init_nodeHttpClient = __esm({
             clearTimeout(timeoutId);
           }
           const headers = getResponseHeaders(res);
-          const status = (_a4 = res.statusCode) !== null && _a4 !== void 0 ? _a4 : 0;
+          const status = (_a3 = res.statusCode) !== null && _a3 !== void 0 ? _a3 : 0;
           const response = {
             status,
             headers,
@@ -31988,9 +31984,9 @@ var init_nodeHttpClient = __esm({
               downloadStreamDone = isStreamComplete(responseStream);
             }
             Promise.all([uploadStreamDone, downloadStreamDone]).then(() => {
-              var _a5;
+              var _a4;
               if (abortListener) {
-                (_a5 = request3.abortSignal) === null || _a5 === void 0 ? void 0 : _a5.removeEventListener("abort", abortListener);
+                (_a4 = request3.abortSignal) === null || _a4 === void 0 ? void 0 : _a4.removeEventListener("abort", abortListener);
               }
             }).catch((e3) => {
               logger2.warning("Error when cleaning up abortListener on httpRequest", e3);
@@ -31999,13 +31995,13 @@ var init_nodeHttpClient = __esm({
         }
       }
       makeRequest(request3, abortController, body2) {
-        var _a4;
+        var _a3;
         const url2 = new URL(request3.url);
         const isInsecure = url2.protocol !== "https:";
         if (isInsecure && !request3.allowInsecureConnection) {
           throw new Error(`Cannot connect to ${request3.url} while allowInsecureConnection is false.`);
         }
-        const agent = (_a4 = request3.agent) !== null && _a4 !== void 0 ? _a4 : this.getOrCreateAgent(request3, isInsecure);
+        const agent = (_a3 = request3.agent) !== null && _a3 !== void 0 ? _a3 : this.getOrCreateAgent(request3, isInsecure);
         const options = {
           agent,
           hostname: url2.hostname,
@@ -32017,8 +32013,8 @@ var init_nodeHttpClient = __esm({
         return new Promise((resolve2, reject) => {
           const req = isInsecure ? http.request(options, resolve2) : https.request(options, resolve2);
           req.once("error", (err) => {
-            var _a5;
-            reject(new RestError(err.message, { code: (_a5 = err.code) !== null && _a5 !== void 0 ? _a5 : RestError.REQUEST_SEND_ERROR, request: request3 }));
+            var _a4;
+            reject(new RestError(err.message, { code: (_a4 = err.code) !== null && _a4 !== void 0 ? _a4 : RestError.REQUEST_SEND_ERROR, request: request3 }));
           });
           abortController.signal.addEventListener("abort", () => {
             const abortError = new AbortError2("The operation was aborted. Rejecting from abort signal callback while making request.");
@@ -32042,7 +32038,7 @@ var init_nodeHttpClient = __esm({
         });
       }
       getOrCreateAgent(request3, isInsecure) {
-        var _a4;
+        var _a3;
         const disableKeepAlive = request3.disableKeepAlive;
         if (isInsecure) {
           if (disableKeepAlive) {
@@ -32056,7 +32052,7 @@ var init_nodeHttpClient = __esm({
           if (disableKeepAlive && !request3.tlsSettings) {
             return https.globalAgent;
           }
-          const tlsSettings = (_a4 = request3.tlsSettings) !== null && _a4 !== void 0 ? _a4 : DEFAULT_TLS_SETTINGS;
+          const tlsSettings = (_a3 = request3.tlsSettings) !== null && _a3 !== void 0 ? _a3 : DEFAULT_TLS_SETTINGS;
           let agent = this.cachedHttpsAgents.get(tlsSettings);
           if (agent && agent.options.keepAlive === !disableKeepAlive) {
             return agent;
@@ -32106,10 +32102,10 @@ var init_pipelineRequest = __esm({
         __name(this, "PipelineRequestImpl");
       }
       constructor(options) {
-        var _a4, _b2, _c2, _d2, _e2, _f, _g;
+        var _a3, _b2, _c2, _d2, _e2, _f, _g;
         this.url = options.url;
         this.body = options.body;
-        this.headers = (_a4 = options.headers) !== null && _a4 !== void 0 ? _a4 : createHttpHeaders();
+        this.headers = (_a3 = options.headers) !== null && _a3 !== void 0 ? _a3 : createHttpHeaders();
         this.method = (_b2 = options.method) !== null && _b2 !== void 0 ? _b2 : "GET";
         this.timeout = (_c2 = options.timeout) !== null && _c2 !== void 0 ? _c2 : 0;
         this.multipartBody = options.multipartBody;
@@ -32169,7 +32165,7 @@ async function beginRefresh(getAccessToken, retryIntervalInMs, refreshTimeout) {
     if (Date.now() < refreshTimeout) {
       try {
         return await getAccessToken();
-      } catch (_a4) {
+      } catch (_a3) {
         return null;
       }
     } else {
@@ -32205,14 +32201,14 @@ function createTokenCycler(credential, tokenCyclerOptions) {
      * window and not already refreshing)
      */
     get shouldRefresh() {
-      var _a4;
+      var _a3;
       if (cycler.isRefreshing) {
         return false;
       }
       if ((token === null || token === void 0 ? void 0 : token.refreshAfterTimestamp) && token.refreshAfterTimestamp < Date.now()) {
         return true;
       }
-      return ((_a4 = token === null || token === void 0 ? void 0 : token.expiresOnTimestamp) !== null && _a4 !== void 0 ? _a4 : 0) - options.refreshWindowInMs < Date.now();
+      return ((_a3 = token === null || token === void 0 ? void 0 : token.expiresOnTimestamp) !== null && _a3 !== void 0 ? _a3 : 0) - options.refreshWindowInMs < Date.now();
     },
     /**
      * Produces true if the cycler MUST refresh (null or nearly-expired
@@ -32223,14 +32219,14 @@ function createTokenCycler(credential, tokenCyclerOptions) {
     }
   };
   function refresh(scopes, getTokenOptions) {
-    var _a4;
+    var _a3;
     if (!cycler.isRefreshing) {
       const tryGetAccessToken = /* @__PURE__ */ __name(() => credential.getToken(scopes, getTokenOptions), "tryGetAccessToken");
       refreshWorker = beginRefresh(
         tryGetAccessToken,
         options.retryIntervalInMs,
         // If we don't have a token, then we should timeout immediately
-        (_a4 = token === null || token === void 0 ? void 0 : token.expiresOnTimestamp) !== null && _a4 !== void 0 ? _a4 : Date.now()
+        (_a3 = token === null || token === void 0 ? void 0 : token.expiresOnTimestamp) !== null && _a3 !== void 0 ? _a3 : Date.now()
       ).then((_token) => {
         refreshWorker = null;
         token = _token;
@@ -32281,9 +32277,9 @@ var init_tokenCycler = __esm({
 });
 
 // node_modules/@azure/core-rest-pipeline/dist/esm/policies/bearerTokenAuthenticationPolicy.js
-async function trySendRequest(request3, next2) {
+async function trySendRequest(request3, next) {
   try {
-    return [await next2(request3), void 0];
+    return [await next(request3), void 0];
   } catch (e3) {
     if (isRestError(e3) && e3.response) {
       return [e3.response, e3];
@@ -32308,7 +32304,7 @@ function isChallengeResponse(response) {
   return response.status === 401 && response.headers.has("WWW-Authenticate");
 }
 async function authorizeRequestOnCaeChallenge(onChallengeOptions, caeClaims) {
-  var _a4;
+  var _a3;
   const { scopes } = onChallengeOptions;
   const accessToken = await onChallengeOptions.getAccessToken(scopes, {
     enableCae: true,
@@ -32317,15 +32313,15 @@ async function authorizeRequestOnCaeChallenge(onChallengeOptions, caeClaims) {
   if (!accessToken) {
     return false;
   }
-  onChallengeOptions.request.headers.set("Authorization", `${(_a4 = accessToken.tokenType) !== null && _a4 !== void 0 ? _a4 : "Bearer"} ${accessToken.token}`);
+  onChallengeOptions.request.headers.set("Authorization", `${(_a3 = accessToken.tokenType) !== null && _a3 !== void 0 ? _a3 : "Bearer"} ${accessToken.token}`);
   return true;
 }
 function bearerTokenAuthenticationPolicy(options) {
-  var _a4, _b2, _c2;
+  var _a3, _b2, _c2;
   const { credential, scopes, challengeCallbacks } = options;
   const logger6 = options.logger || logger2;
   const callbacks = {
-    authorizeRequest: (_b2 = (_a4 = challengeCallbacks === null || challengeCallbacks === void 0 ? void 0 : challengeCallbacks.authorizeRequest) === null || _a4 === void 0 ? void 0 : _a4.bind(challengeCallbacks)) !== null && _b2 !== void 0 ? _b2 : defaultAuthorizeRequest,
+    authorizeRequest: (_b2 = (_a3 = challengeCallbacks === null || challengeCallbacks === void 0 ? void 0 : challengeCallbacks.authorizeRequest) === null || _a3 === void 0 ? void 0 : _a3.bind(challengeCallbacks)) !== null && _b2 !== void 0 ? _b2 : defaultAuthorizeRequest,
     authorizeRequestOnChallenge: (_c2 = challengeCallbacks === null || challengeCallbacks === void 0 ? void 0 : challengeCallbacks.authorizeRequestOnChallenge) === null || _c2 === void 0 ? void 0 : _c2.bind(challengeCallbacks)
   };
   const getAccessToken = credential ? createTokenCycler(
@@ -32347,7 +32343,7 @@ function bearerTokenAuthenticationPolicy(options) {
      * - Process a challenge if the response contains it.
      * - Retrieve a token with the challenge information, then re-send the request.
      */
-    async sendRequest(request3, next2) {
+    async sendRequest(request3, next) {
       if (!request3.url.toLowerCase().startsWith("https://")) {
         throw new Error("Bearer token authentication is not permitted for non-TLS protected (non-https) URLs.");
       }
@@ -32360,7 +32356,7 @@ function bearerTokenAuthenticationPolicy(options) {
       let response;
       let error;
       let shouldSendRequest;
-      [response, error] = await trySendRequest(request3, next2);
+      [response, error] = await trySendRequest(request3, next);
       if (isChallengeResponse(response)) {
         let claims = getCaeChallengeClaims(response.headers.get("WWW-Authenticate"));
         if (claims) {
@@ -32379,7 +32375,7 @@ function bearerTokenAuthenticationPolicy(options) {
             logger: logger6
           }, parsedClaim);
           if (shouldSendRequest) {
-            [response, error] = await trySendRequest(request3, next2);
+            [response, error] = await trySendRequest(request3, next);
           }
         } else if (callbacks.authorizeRequestOnChallenge) {
           shouldSendRequest = await callbacks.authorizeRequestOnChallenge({
@@ -32390,7 +32386,7 @@ function bearerTokenAuthenticationPolicy(options) {
             logger: logger6
           });
           if (shouldSendRequest) {
-            [response, error] = await trySendRequest(request3, next2);
+            [response, error] = await trySendRequest(request3, next);
           }
           if (isChallengeResponse(response)) {
             claims = getCaeChallengeClaims(response.headers.get("WWW-Authenticate"));
@@ -32410,7 +32406,7 @@ function bearerTokenAuthenticationPolicy(options) {
                 logger: logger6
               }, parsedClaim);
               if (shouldSendRequest) {
-                [response, error] = await trySendRequest(request3, next2);
+                [response, error] = await trySendRequest(request3, next);
               }
             }
           }
@@ -32442,12 +32438,12 @@ function parseChallenges(challenges) {
   return parsedChallenges;
 }
 function getCaeChallengeClaims(challenges) {
-  var _a4;
+  var _a3;
   if (!challenges) {
     return;
   }
   const parsedChallenges = parseChallenges(challenges);
-  return (_a4 = parsedChallenges.find((x3) => x3.scheme === "Bearer" && x3.params.claims && x3.params.error === "insufficient_claims")) === null || _a4 === void 0 ? void 0 : _a4.params.claims;
+  return (_a3 = parsedChallenges.find((x3) => x3.scheme === "Bearer" && x3.params.claims && x3.params.error === "insufficient_claims")) === null || _a3 === void 0 ? void 0 : _a3.params.claims;
 }
 var bearerTokenAuthenticationPolicyName;
 var init_bearerTokenAuthenticationPolicy = __esm({
@@ -32575,9 +32571,9 @@ var init_esm7 = __esm({
 function createDisableKeepAlivePolicy() {
   return {
     name: disableKeepAlivePolicyName,
-    async sendRequest(request3, next2) {
+    async sendRequest(request3, next) {
       request3.disableKeepAlive = true;
-      return next2(request3);
+      return next(request3);
     }
   };
 }
@@ -32639,7 +32635,7 @@ function handleNullableResponseAndWrappableBody(responseObject) {
   }
 }
 function flattenResponse(fullResponse, responseSpec) {
-  var _a4, _b2;
+  var _a3, _b2;
   const parsedHeaders = fullResponse.parsedHeaders;
   if (fullResponse.request.method === "HEAD") {
     return Object.assign(Object.assign({}, parsedHeaders), { body: fullResponse.parsedBody });
@@ -32653,7 +32649,7 @@ function flattenResponse(fullResponse, responseSpec) {
   const modelProperties = expectedBodyTypeName === "Composite" && bodyMapper.type.modelProperties || {};
   const isPageableResponse = Object.keys(modelProperties).some((k3) => modelProperties[k3].serializedName === "");
   if (expectedBodyTypeName === "Sequence" || isPageableResponse) {
-    const arrayResponse = (_a4 = fullResponse.parsedBody) !== null && _a4 !== void 0 ? _a4 : [];
+    const arrayResponse = (_a3 = fullResponse.parsedBody) !== null && _a3 !== void 0 ? _a3 : [];
     for (const key of Object.keys(modelProperties)) {
       if (modelProperties[key].serializedName) {
         arrayResponse[key] = (_b2 = fullResponse.parsedBody) === null || _b2 === void 0 ? void 0 : _b2[key];
@@ -32844,7 +32840,7 @@ function serializeDateTypes(typeName, value, objectName) {
   return value;
 }
 function serializeSequenceType(serializer, mapper, object, objectName, isXml, options) {
-  var _a4;
+  var _a3;
   if (!Array.isArray(object)) {
     throw new Error(`${objectName} must be of type Array.`);
   }
@@ -32853,7 +32849,7 @@ function serializeSequenceType(serializer, mapper, object, objectName, isXml, op
     throw new Error(`element" metadata for an Array must be defined in the mapper and it must of type "object" in ${objectName}.`);
   }
   if (elementType.type.name === "Composite" && elementType.type.className) {
-    elementType = (_a4 = serializer.modelMappers[elementType.type.className]) !== null && _a4 !== void 0 ? _a4 : elementType;
+    elementType = (_a3 = serializer.modelMappers[elementType.type.className]) !== null && _a3 !== void 0 ? _a3 : elementType;
   }
   const tempArray = [];
   for (let i3 = 0; i3 < object.length; i3++) {
@@ -33018,8 +33014,8 @@ function isSpecialXmlProperty(propertyName, options) {
   return [XML_ATTRKEY, options.xml.xmlCharKey].includes(propertyName);
 }
 function deserializeCompositeType(serializer, mapper, responseBody, objectName, options) {
-  var _a4, _b2;
-  const xmlCharKey = (_a4 = options.xml.xmlCharKey) !== null && _a4 !== void 0 ? _a4 : XML_CHARKEY;
+  var _a3, _b2;
+  const xmlCharKey = (_a3 = options.xml.xmlCharKey) !== null && _a3 !== void 0 ? _a3 : XML_CHARKEY;
   if (getPolymorphicDiscriminatorRecursively(serializer, mapper)) {
     mapper = getPolymorphicMapper(serializer, mapper, responseBody, "serializedName");
   }
@@ -33141,7 +33137,7 @@ function deserializeDictionaryType(serializer, mapper, responseBody, objectName,
   return responseBody;
 }
 function deserializeSequenceType(serializer, mapper, responseBody, objectName, options) {
-  var _a4;
+  var _a3;
   let element = mapper.type.element;
   if (!element || typeof element !== "object") {
     throw new Error(`element" metadata for an Array must be defined in the mapper and it must of type "object" in ${objectName}`);
@@ -33151,7 +33147,7 @@ function deserializeSequenceType(serializer, mapper, responseBody, objectName, o
       responseBody = [responseBody];
     }
     if (element.type.name === "Composite" && element.type.className) {
-      element = (_a4 = serializer.modelMappers[element.type.className]) !== null && _a4 !== void 0 ? _a4 : element;
+      element = (_a3 = serializer.modelMappers[element.type.className]) !== null && _a3 !== void 0 ? _a3 : element;
     }
     const tempArray = [];
     for (let i3 = 0; i3 < responseBody.length; i3++) {
@@ -33179,7 +33175,7 @@ function getIndexDiscriminator(discriminators, discriminatorValue, typeName) {
   return void 0;
 }
 function getPolymorphicMapper(serializer, mapper, object, polymorphicPropertyName) {
-  var _a4;
+  var _a3;
   const polymorphicDiscriminator = getPolymorphicDiscriminatorRecursively(serializer, mapper);
   if (polymorphicDiscriminator) {
     let discriminatorName = polymorphicDiscriminator[polymorphicPropertyName];
@@ -33188,7 +33184,7 @@ function getPolymorphicMapper(serializer, mapper, object, polymorphicPropertyNam
         discriminatorName = discriminatorName.replace(/\\/gi, "");
       }
       const discriminatorValue = object[discriminatorName];
-      const typeName = (_a4 = mapper.type.uberParent) !== null && _a4 !== void 0 ? _a4 : mapper.type.className;
+      const typeName = (_a3 = mapper.type.uberParent) !== null && _a3 !== void 0 ? _a3 : mapper.type.className;
       if (typeof discriminatorValue === "string" && typeName) {
         const polymorphicMapper = getIndexDiscriminator(serializer.modelMappers.discriminators, discriminatorValue, typeName);
         if (polymorphicMapper) {
@@ -33281,10 +33277,10 @@ var init_serializer = __esm({
        * @returns A valid serialized Javascript object
        */
       serialize(mapper, object, objectName, options = { xml: {} }) {
-        var _a4, _b2, _c2;
+        var _a3, _b2, _c2;
         const updatedOptions = {
           xml: {
-            rootName: (_a4 = options.xml.rootName) !== null && _a4 !== void 0 ? _a4 : "",
+            rootName: (_a3 = options.xml.rootName) !== null && _a3 !== void 0 ? _a3 : "",
             includeRoot: (_b2 = options.xml.includeRoot) !== null && _b2 !== void 0 ? _b2 : false,
             xmlCharKey: (_c2 = options.xml.xmlCharKey) !== null && _c2 !== void 0 ? _c2 : XML_CHARKEY
           }
@@ -33350,10 +33346,10 @@ var init_serializer = __esm({
        * @returns A valid deserialized Javascript object
        */
       deserialize(mapper, responseBody, objectName, options = { xml: {} }) {
-        var _a4, _b2, _c2, _d2;
+        var _a3, _b2, _c2, _d2;
         const updatedOptions = {
           xml: {
-            rootName: (_a4 = options.xml.rootName) !== null && _a4 !== void 0 ? _a4 : "",
+            rootName: (_a3 = options.xml.rootName) !== null && _a3 !== void 0 ? _a3 : "",
             includeRoot: (_b2 = options.xml.includeRoot) !== null && _b2 !== void 0 ? _b2 : false,
             xmlCharKey: (_c2 = options.xml.xmlCharKey) !== null && _c2 !== void 0 ? _c2 : XML_CHARKEY
           },
@@ -33578,8 +33574,8 @@ var init_operationHelpers = __esm({
 
 // node_modules/@azure/core-client/dist/esm/deserializationPolicy.js
 function deserializationPolicy(options = {}) {
-  var _a4, _b2, _c2, _d2, _e2, _f, _g;
-  const jsonContentTypes = (_b2 = (_a4 = options.expectedContentTypes) === null || _a4 === void 0 ? void 0 : _a4.json) !== null && _b2 !== void 0 ? _b2 : defaultJsonContentTypes;
+  var _a3, _b2, _c2, _d2, _e2, _f, _g;
+  const jsonContentTypes = (_b2 = (_a3 = options.expectedContentTypes) === null || _a3 === void 0 ? void 0 : _a3.json) !== null && _b2 !== void 0 ? _b2 : defaultJsonContentTypes;
   const xmlContentTypes = (_d2 = (_c2 = options.expectedContentTypes) === null || _c2 === void 0 ? void 0 : _c2.xml) !== null && _d2 !== void 0 ? _d2 : defaultXmlContentTypes;
   const parseXML2 = options.parseXML;
   const serializerOptions = options.serializerOptions;
@@ -33592,8 +33588,8 @@ function deserializationPolicy(options = {}) {
   };
   return {
     name: deserializationPolicyName,
-    async sendRequest(request3, next2) {
-      const response = await next2(request3);
+    async sendRequest(request3, next) {
+      const response = await next(request3);
       return deserializeResponseBody(jsonContentTypes, xmlContentTypes, response, updatedOptions, parseXML2);
     }
   };
@@ -33673,7 +33669,7 @@ function isOperationSpecEmpty(operationSpec) {
   return expectedStatusCodes.length === 0 || expectedStatusCodes.length === 1 && expectedStatusCodes[0] === "default";
 }
 function handleErrorResponse(parsedResponse, operationSpec, responseSpec, options) {
-  var _a4, _b2, _c2, _d2, _e2;
+  var _a3, _b2, _c2, _d2, _e2;
   const isSuccessByStatus = 200 <= parsedResponse.status && parsedResponse.status < 300;
   const isExpectedStatusCode = isOperationSpecEmpty(operationSpec) ? isSuccessByStatus : !!responseSpec;
   if (isExpectedStatusCode) {
@@ -33686,7 +33682,7 @@ function handleErrorResponse(parsedResponse, operationSpec, responseSpec, option
     }
   }
   const errorResponseSpec = responseSpec !== null && responseSpec !== void 0 ? responseSpec : operationSpec.responses.default;
-  const initialErrorMessage = ((_a4 = parsedResponse.request.streamResponseStatusCodes) === null || _a4 === void 0 ? void 0 : _a4.has(parsedResponse.status)) ? `Unexpected status code: ${parsedResponse.status}` : parsedResponse.bodyAsText;
+  const initialErrorMessage = ((_a3 = parsedResponse.request.streamResponseStatusCodes) === null || _a3 === void 0 ? void 0 : _a3.has(parsedResponse.status)) ? `Unexpected status code: ${parsedResponse.status}` : parsedResponse.bodyAsText;
   const error = new RestError(initialErrorMessage, {
     statusCode: parsedResponse.status,
     request: parsedResponse.request,
@@ -33730,8 +33726,8 @@ function handleErrorResponse(parsedResponse, operationSpec, responseSpec, option
   return { error, shouldReturnResponse: false };
 }
 async function parse2(jsonContentTypes, xmlContentTypes, operationResponse, opts, parseXML2) {
-  var _a4;
-  if (!((_a4 = operationResponse.request.streamResponseStatusCodes) === null || _a4 === void 0 ? void 0 : _a4.has(operationResponse.status)) && operationResponse.bodyAsText) {
+  var _a3;
+  if (!((_a3 = operationResponse.request.streamResponseStatusCodes) === null || _a3 === void 0 ? void 0 : _a3.has(operationResponse.status)) && operationResponse.bodyAsText) {
     const text = operationResponse.bodyAsText;
     const contentType2 = operationResponse.headers.get("Content-Type") || "";
     const contentComponents = !contentType2 ? [] : contentType2.split(";").map((component) => component.toLowerCase());
@@ -33819,7 +33815,7 @@ function serializationPolicy(options = {}) {
   const stringifyXML2 = options.stringifyXML;
   return {
     name: serializationPolicyName,
-    async sendRequest(request3, next2) {
+    async sendRequest(request3, next) {
       const operationInfo = getOperationRequestInfo(request3);
       const operationSpec = operationInfo === null || operationInfo === void 0 ? void 0 : operationInfo.operationSpec;
       const operationArguments = operationInfo === null || operationInfo === void 0 ? void 0 : operationInfo.operationArguments;
@@ -33827,12 +33823,12 @@ function serializationPolicy(options = {}) {
         serializeHeaders(request3, operationArguments, operationSpec);
         serializeRequestBody(request3, operationArguments, operationSpec, stringifyXML2);
       }
-      return next2(request3);
+      return next(request3);
     }
   };
 }
 function serializeHeaders(request3, operationArguments, operationSpec) {
-  var _a4, _b2;
+  var _a3, _b2;
   if (operationSpec.headerParameters) {
     for (const headerParameter of operationSpec.headerParameters) {
       let headerValue = getOperationArgumentValueFromParameter(operationArguments, headerParameter);
@@ -33849,7 +33845,7 @@ function serializeHeaders(request3, operationArguments, operationSpec) {
       }
     }
   }
-  const customHeaders = (_b2 = (_a4 = operationArguments.options) === null || _a4 === void 0 ? void 0 : _a4.requestOptions) === null || _b2 === void 0 ? void 0 : _b2.customHeaders;
+  const customHeaders = (_b2 = (_a3 = operationArguments.options) === null || _a3 === void 0 ? void 0 : _a3.requestOptions) === null || _b2 === void 0 ? void 0 : _b2.customHeaders;
   if (customHeaders) {
     for (const customHeaderName of Object.keys(customHeaders)) {
       request3.headers.set(customHeaderName, customHeaders[customHeaderName]);
@@ -33859,8 +33855,8 @@ function serializeHeaders(request3, operationArguments, operationSpec) {
 function serializeRequestBody(request3, operationArguments, operationSpec, stringifyXML2 = function() {
   throw new Error("XML serialization unsupported!");
 }) {
-  var _a4, _b2, _c2, _d2, _e2;
-  const serializerOptions = (_a4 = operationArguments.options) === null || _a4 === void 0 ? void 0 : _a4.serializerOptions;
+  var _a3, _b2, _c2, _d2, _e2;
+  const serializerOptions = (_a3 = operationArguments.options) === null || _a3 === void 0 ? void 0 : _a3.serializerOptions;
   const updatedOptions = {
     xml: {
       rootName: (_b2 = serializerOptions === null || serializerOptions === void 0 ? void 0 : serializerOptions.xml.rootName) !== null && _b2 !== void 0 ? _b2 : "",
@@ -34017,9 +34013,9 @@ function replaceAll(input, replacements) {
   return result;
 }
 function calculateUrlReplacements(operationSpec, operationArguments, fallbackObject) {
-  var _a4;
+  var _a3;
   const result = /* @__PURE__ */ new Map();
-  if ((_a4 = operationSpec.urlParameters) === null || _a4 === void 0 ? void 0 : _a4.length) {
+  if ((_a3 = operationSpec.urlParameters) === null || _a3 === void 0 ? void 0 : _a3.length) {
     for (const urlParameter of operationSpec.urlParameters) {
       let urlParameterValue = getOperationArgumentValueFromParameter(operationArguments, urlParameter, fallbackObject);
       const parameterPathString = getPathStringFromParameter(urlParameter);
@@ -34062,10 +34058,10 @@ function appendPath(url2, pathToAppend) {
   return parsedUrl.toString();
 }
 function calculateQueryParameters(operationSpec, operationArguments, fallbackObject) {
-  var _a4;
+  var _a3;
   const result = /* @__PURE__ */ new Map();
   const sequenceParams = /* @__PURE__ */ new Set();
-  if ((_a4 = operationSpec.queryParameters) === null || _a4 === void 0 ? void 0 : _a4.length) {
+  if ((_a3 = operationSpec.queryParameters) === null || _a3 === void 0 ? void 0 : _a3.length) {
     for (const queryParameter of operationSpec.queryParameters) {
       if (queryParameter.mapper.type.name === "Sequence" && queryParameter.mapper.serializedName) {
         sequenceParams.add(queryParameter.mapper.serializedName);
@@ -34250,9 +34246,9 @@ var init_serviceClient = __esm({
        * @param options - The service client options that govern the behavior of the client.
        */
       constructor(options = {}) {
-        var _a4, _b2;
+        var _a3, _b2;
         this._requestContentType = options.requestContentType;
-        this._endpoint = (_a4 = options.endpoint) !== null && _a4 !== void 0 ? _a4 : options.baseUri;
+        this._endpoint = (_a3 = options.endpoint) !== null && _a3 !== void 0 ? _a3 : options.baseUri;
         if (options.baseUri) {
           logger3.warning("The baseUri option for SDK Clients has been deprecated, please use endpoint instead.");
         }
@@ -34429,7 +34425,7 @@ var init_authorizeRequestOnTenantChallenge = __esm({
     };
     __name(isUuid, "isUuid");
     authorizeRequestOnTenantChallenge = /* @__PURE__ */ __name(async (challengeOptions) => {
-      var _a4;
+      var _a3;
       const requestOptions = requestToOptions(challengeOptions.request);
       const challenge = getChallenge(challengeOptions.response);
       if (challenge) {
@@ -34443,7 +34439,7 @@ var init_authorizeRequestOnTenantChallenge = __esm({
         if (!accessToken) {
           return false;
         }
-        challengeOptions.request.headers.set(Constants.HeaderConstants.AUTHORIZATION, `${(_a4 = accessToken.tokenType) !== null && _a4 !== void 0 ? _a4 : "Bearer"} ${accessToken.token}`);
+        challengeOptions.request.headers.set(Constants.HeaderConstants.AUTHORIZATION, `${(_a3 = accessToken.tokenType) !== null && _a3 !== void 0 ? _a3 : "Bearer"} ${accessToken.token}`);
         return true;
       }
       return false;
@@ -34504,8 +34500,8 @@ function toPipelineRequest(webResource, options = {}) {
   }
 }
 function toWebResourceLike(request3, options) {
-  var _a4;
-  const originalRequest = (_a4 = options === null || options === void 0 ? void 0 : options.originalRequest) !== null && _a4 !== void 0 ? _a4 : request3;
+  var _a3;
+  const originalRequest = (_a3 = options === null || options === void 0 ? void 0 : options.originalRequest) !== null && _a3 !== void 0 ? _a3 : request3;
   const webResource = {
     url: request3.url,
     method: request3.method,
@@ -34787,9 +34783,9 @@ var init_extendedClient = __esm({
         __name(this, "ExtendedServiceClient");
       }
       constructor(options) {
-        var _a4, _b2;
+        var _a3, _b2;
         super(options);
-        if (((_a4 = options.keepAliveOptions) === null || _a4 === void 0 ? void 0 : _a4.enable) === false && !pipelineContainsDisableKeepAlivePolicy(this.pipeline)) {
+        if (((_a3 = options.keepAliveOptions) === null || _a3 === void 0 ? void 0 : _a3.enable) === false && !pipelineContainsDisableKeepAlivePolicy(this.pipeline)) {
           this.pipeline.addPolicy(createDisableKeepAlivePolicy());
         }
         if (((_b2 = options.redirectOptions) === null || _b2 === void 0 ? void 0 : _b2.handleRedirects) === false) {
@@ -34806,8 +34802,8 @@ var init_extendedClient = __esm({
        * @returns
        */
       async sendOperationRequest(operationArguments, operationSpec) {
-        var _a4;
-        const userProvidedCallBack = (_a4 = operationArguments === null || operationArguments === void 0 ? void 0 : operationArguments.options) === null || _a4 === void 0 ? void 0 : _a4.onResponse;
+        var _a3;
+        const userProvidedCallBack = (_a3 = operationArguments === null || operationArguments === void 0 ? void 0 : operationArguments.options) === null || _a3 === void 0 ? void 0 : _a3.onResponse;
         let lastResponse;
         function onResponse(rawResponse, flatResponse, error) {
           lastResponse = rawResponse;
@@ -34834,10 +34830,10 @@ function createRequestPolicyFactoryPolicy(factories) {
   const orderedFactories = factories.slice().reverse();
   return {
     name: requestPolicyFactoryPolicyName,
-    async sendRequest(request3, next2) {
+    async sendRequest(request3, next) {
       let httpPipeline = {
         async sendRequest(httpRequest) {
-          const response2 = await next2(toPipelineRequest(httpRequest));
+          const response2 = await next(toPipelineRequest(httpRequest));
           return toCompatResponse(response2, { createProxy: true });
         }
       };
@@ -35312,8 +35308,9 @@ var init_OptionsBuilder = __esm({
       transformAttributeName: false,
       updateTag: /* @__PURE__ */ __name(function(tagName, jPath, attrs) {
         return tagName;
-      }, "updateTag")
+      }, "updateTag"),
       // skipEmptyListItem: false
+      captureMetaData: false
     };
     buildOptions = /* @__PURE__ */ __name(function(options) {
       return Object.assign({}, defaultOptions3, options);
@@ -35322,10 +35319,15 @@ var init_OptionsBuilder = __esm({
 });
 
 // node_modules/fast-xml-parser/src/xmlparser/xmlNode.js
-var XmlNode;
+var METADATA_SYMBOL, XmlNode;
 var init_xmlNode = __esm({
   "node_modules/fast-xml-parser/src/xmlparser/xmlNode.js"() {
     "use strict";
+    if (typeof Symbol !== "function") {
+      METADATA_SYMBOL = "@@xmlMetadata";
+    } else {
+      METADATA_SYMBOL = Symbol("XML Node Metadata");
+    }
     XmlNode = class {
       static {
         __name(this, "XmlNode");
@@ -35339,13 +35341,20 @@ var init_xmlNode = __esm({
         if (key === "__proto__") key = "#__proto__";
         this.child.push({ [key]: val });
       }
-      addChild(node) {
+      addChild(node, startIndex) {
         if (node.tagname === "__proto__") node.tagname = "#__proto__";
         if (node[":@"] && Object.keys(node[":@"]).length > 0) {
           this.child.push({ [node.tagname]: node.child, [":@"]: node[":@"] });
         } else {
           this.child.push({ [node.tagname]: node.child });
         }
+        if (startIndex !== void 0) {
+          this.child[this.child.length - 1][METADATA_SYMBOL] = { startIndex };
+        }
+      }
+      /** symbol used for metadata */
+      static getMetaDataSymbol() {
+        return METADATA_SYMBOL;
       }
     };
   }
@@ -35675,14 +35684,15 @@ function buildAttributesMap(attrStr, jPath, tagName) {
     return attrs;
   }
 }
-function addChild(currentNode, childNode, jPath) {
+function addChild(currentNode, childNode, jPath, startIndex) {
+  if (!this.options.captureMetaData) startIndex = void 0;
   const result = this.options.updateTag(childNode.tagname, jPath, childNode[":@"]);
   if (result === false) {
   } else if (typeof result === "string") {
     childNode.tagname = result;
-    currentNode.addChild(childNode);
+    currentNode.addChild(childNode, startIndex);
   } else {
-    currentNode.addChild(childNode);
+    currentNode.addChild(childNode, startIndex);
   }
 }
 function saveTextToParentTag(textData, currentNode, jPath, isLeafNode) {
@@ -35939,7 +35949,7 @@ var init_OrderedObjParser = __esm({
               if (tagData.tagName !== tagData.tagExp && tagData.attrExpPresent) {
                 childNode[":@"] = this.buildAttributesMap(tagData.tagExp, jPath, tagData.tagName);
               }
-              this.addChild(currentNode, childNode, jPath);
+              this.addChild(currentNode, childNode, jPath, i3);
             }
             i3 = tagData.closeIndex + 1;
           } else if (xmlData.substr(i3 + 1, 3) === "!--") {
@@ -35989,6 +35999,7 @@ var init_OrderedObjParser = __esm({
             if (tagName !== xmlObj.tagname) {
               jPath += jPath ? "." + tagName : tagName;
             }
+            const startIndex = i3;
             if (this.isItStopNode(this.options.stopNodes, jPath, tagName)) {
               let tagContent = "";
               if (tagExp.length > 0 && tagExp.lastIndexOf("/") === tagExp.length - 1) {
@@ -36017,7 +36028,7 @@ var init_OrderedObjParser = __esm({
               }
               jPath = jPath.substr(0, jPath.lastIndexOf("."));
               childNode.add(this.options.textNodeName, tagContent);
-              this.addChild(currentNode, childNode, jPath);
+              this.addChild(currentNode, childNode, jPath, startIndex);
             } else {
               if (tagExp.length > 0 && tagExp.lastIndexOf("/") === tagExp.length - 1) {
                 if (tagName[tagName.length - 1] === "/") {
@@ -36034,7 +36045,7 @@ var init_OrderedObjParser = __esm({
                 if (tagName !== tagExp && attrExpPresent) {
                   childNode[":@"] = this.buildAttributesMap(tagExp, jPath, tagName);
                 }
-                this.addChild(currentNode, childNode, jPath);
+                this.addChild(currentNode, childNode, jPath, startIndex);
                 jPath = jPath.substr(0, jPath.lastIndexOf("."));
               } else {
                 const childNode = new XmlNode(tagName);
@@ -36042,7 +36053,7 @@ var init_OrderedObjParser = __esm({
                 if (tagName !== tagExp && attrExpPresent) {
                   childNode[":@"] = this.buildAttributesMap(tagExp, jPath, tagName);
                 }
-                this.addChild(currentNode, childNode, jPath);
+                this.addChild(currentNode, childNode, jPath, startIndex);
                 currentNode = childNode;
               }
               textData = "";
@@ -36107,6 +36118,9 @@ function compress(arr, options, jPath) {
     } else if (tagObj[property]) {
       let val = compress(tagObj[property], options, newJpath);
       const isLeaf = isLeafTag(val, options);
+      if (tagObj[METADATA_SYMBOL2] !== void 0) {
+        val[METADATA_SYMBOL2] = tagObj[METADATA_SYMBOL2];
+      }
       if (tagObj[":@"]) {
         assignAttributes(val, tagObj[":@"], newJpath, options);
       } else if (Object.keys(val).length === 1 && val[options.textNodeName] !== void 0 && !options.alwaysCreateTextNode) {
@@ -36166,9 +36180,12 @@ function isLeafTag(obj, options) {
   }
   return false;
 }
+var METADATA_SYMBOL2;
 var init_node2json = __esm({
   "node_modules/fast-xml-parser/src/xmlparser/node2json.js"() {
     "use strict";
+    init_xmlNode();
+    METADATA_SYMBOL2 = XmlNode.getMetaDataSymbol();
     __name(prettify, "prettify");
     __name(compress, "compress");
     __name(propName, "propName");
@@ -36186,6 +36203,7 @@ var init_XMLParser = __esm({
     init_OrderedObjParser();
     init_node2json();
     init_validator();
+    init_xmlNode();
     XMLParser = class {
       static {
         __name(this, "XMLParser");
@@ -36234,6 +36252,19 @@ var init_XMLParser = __esm({
         } else {
           this.externalEntities[key] = value;
         }
+      }
+      /**
+       * Returns a Symbol that can be used to access the metadata
+       * property on a node.
+       * 
+       * If Symbol is not available in the environment, an ordinary property is used
+       * and the name of the property is here returned.
+       * 
+       * The XMLMetaData property is only present when `captureMetaData`
+       * is true in the options.
+       */
+      static getMetaDataSymbol() {
+        return XmlNode.getMetaDataSymbol();
       }
     };
   }
@@ -36538,8 +36569,8 @@ var init_json2xml = __esm({
         } else {
           if (this.options.attributesGroupName && key === this.options.attributesGroupName) {
             const Ks = Object.keys(jObj[key]);
-            const L2 = Ks.length;
-            for (let j3 = 0; j3 < L2; j3++) {
+            const L3 = Ks.length;
+            for (let j3 = 0; j3 < L3; j3++) {
               attrStr += this.buildAttrPairStr(Ks[j3], "" + jObj[key][Ks[j3]]);
             }
           } else {
@@ -36647,17 +36678,17 @@ var init_xml_common = __esm({
 
 // node_modules/@azure/core-xml/dist/esm/xml.js
 function getCommonOptions(options) {
-  var _a4;
+  var _a3;
   return {
     attributesGroupName: XML_ATTRKEY2,
-    textNodeName: (_a4 = options.xmlCharKey) !== null && _a4 !== void 0 ? _a4 : XML_CHARKEY2,
+    textNodeName: (_a3 = options.xmlCharKey) !== null && _a3 !== void 0 ? _a3 : XML_CHARKEY2,
     ignoreAttributes: false,
     suppressBooleanAttributes: false
   };
 }
 function getSerializerOptions(options = {}) {
-  var _a4, _b2;
-  return Object.assign(Object.assign({}, getCommonOptions(options)), { attributeNamePrefix: "@_", format: true, suppressEmptyNode: true, indentBy: "", rootNodeName: (_a4 = options.rootName) !== null && _a4 !== void 0 ? _a4 : "root", cdataPropName: (_b2 = options.cdataPropName) !== null && _b2 !== void 0 ? _b2 : "__cdata" });
+  var _a3, _b2;
+  return Object.assign(Object.assign({}, getCommonOptions(options)), { attributeNamePrefix: "@_", format: true, suppressEmptyNode: true, indentBy: "", rootNodeName: (_a3 = options.rootName) !== null && _a3 !== void 0 ? _a3 : "root", cdataPropName: (_b2 = options.cdataPropName) !== null && _b2 !== void 0 ? _b2 : "__cdata" });
 }
 function getParserOptions(options = {}) {
   return Object.assign(Object.assign({}, getCommonOptions(options)), { parseAttributeValue: false, parseTagValue: false, attributeNamePrefix: "", stopNodes: options.stopNodes, processEntities: true, trimValues: false });
@@ -36789,8 +36820,8 @@ var SDK_VERSION2, SERVICE_VERSION, BLOCK_BLOB_MAX_UPLOAD_BLOB_BYTES, BLOCK_BLOB_
 var init_constants2 = __esm({
   "node_modules/@azure/storage-blob/dist-esm/storage-blob/src/utils/constants.js"() {
     "use strict";
-    SDK_VERSION2 = "12.26.0";
-    SERVICE_VERSION = "2025-01-05";
+    SDK_VERSION2 = "12.27.0";
+    SERVICE_VERSION = "2025-05-05";
     BLOCK_BLOB_MAX_UPLOAD_BLOB_BYTES = 256 * 1024 * 1024;
     BLOCK_BLOB_MAX_STAGE_BLOCK_BYTES = 4e3 * 1024 * 1024;
     BLOCK_BLOB_MAX_BLOCKS = 5e4;
@@ -37127,9 +37158,9 @@ function setURLParameter(url2, name2, value) {
   return urlParsed.toString();
 }
 function getURLParameter(url2, name2) {
-  var _a4;
+  var _a3;
   const urlParsed = new URL(url2);
-  return (_a4 = urlParsed.searchParams.get(name2)) !== null && _a4 !== void 0 ? _a4 : void 0;
+  return (_a3 = urlParsed.searchParams.get(name2)) !== null && _a3 !== void 0 ? _a3 : void 0;
 }
 function setURLHost(url2, host) {
   const urlParsed = new URL(url2);
@@ -37410,9 +37441,9 @@ function ConvertInternalResponseOfListBlobFlat(internalResponse) {
   } });
 }
 function ConvertInternalResponseOfListBlobHierarchy(internalResponse) {
-  var _a4;
+  var _a3;
   return Object.assign(Object.assign({}, internalResponse), { segment: {
-    blobPrefixes: (_a4 = internalResponse.segment.blobPrefixes) === null || _a4 === void 0 ? void 0 : _a4.map((blobPrefixInternal) => {
+    blobPrefixes: (_a3 = internalResponse.segment.blobPrefixes) === null || _a3 === void 0 ? void 0 : _a3.map((blobPrefixInternal) => {
       const blobPrefix = Object.assign(Object.assign({}, blobPrefixInternal), { name: BlobNameToString(blobPrefixInternal.name) });
       return blobPrefix;
     }),
@@ -38234,7 +38265,7 @@ var init_StorageSharedKeyCredentialPolicy = __esm({
       }
       /**
        * Retrieve header value according to shared key sign rules.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/authenticate-with-shared-key
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/authenticate-with-shared-key
        *
        * @param request -
        * @param headerName -
@@ -38447,16 +38478,16 @@ var init_cache = __esm({
 function storageBrowserPolicy() {
   return {
     name: storageBrowserPolicyName,
-    async sendRequest(request3, next2) {
+    async sendRequest(request3, next) {
       if (isNode) {
-        return next2(request3);
+        return next(request3);
       }
       if (request3.method === "GET" || request3.method === "HEAD") {
         request3.url = setURLParameter(request3.url, URLConstants.Parameters.FORCE_BROWSER_NO_CACHE, (/* @__PURE__ */ new Date()).getTime().toString());
       }
       request3.headers.delete(HeaderConstants.COOKIE);
       request3.headers.delete(HeaderConstants.CONTENT_LENGTH);
-      return next2(request3);
+      return next(request3);
     }
   };
 }
@@ -38474,15 +38505,15 @@ var init_StorageBrowserPolicyV2 = __esm({
 
 // node_modules/@azure/storage-blob/dist-esm/storage-blob/src/policies/StorageRetryPolicyV2.js
 function storageRetryPolicy(options = {}) {
-  var _a4, _b2, _c2, _d2, _e2, _f;
-  const retryPolicyType = (_a4 = options.retryPolicyType) !== null && _a4 !== void 0 ? _a4 : DEFAULT_RETRY_OPTIONS2.retryPolicyType;
+  var _a3, _b2, _c2, _d2, _e2, _f;
+  const retryPolicyType = (_a3 = options.retryPolicyType) !== null && _a3 !== void 0 ? _a3 : DEFAULT_RETRY_OPTIONS2.retryPolicyType;
   const maxTries = (_b2 = options.maxTries) !== null && _b2 !== void 0 ? _b2 : DEFAULT_RETRY_OPTIONS2.maxTries;
   const retryDelayInMs = (_c2 = options.retryDelayInMs) !== null && _c2 !== void 0 ? _c2 : DEFAULT_RETRY_OPTIONS2.retryDelayInMs;
   const maxRetryDelayInMs = (_d2 = options.maxRetryDelayInMs) !== null && _d2 !== void 0 ? _d2 : DEFAULT_RETRY_OPTIONS2.maxRetryDelayInMs;
   const secondaryHost = (_e2 = options.secondaryHost) !== null && _e2 !== void 0 ? _e2 : DEFAULT_RETRY_OPTIONS2.secondaryHost;
   const tryTimeoutInMs = (_f = options.tryTimeoutInMs) !== null && _f !== void 0 ? _f : DEFAULT_RETRY_OPTIONS2.tryTimeoutInMs;
   function shouldRetry({ isPrimaryRetry, attempt, response, error }) {
-    var _a5, _b3;
+    var _a4, _b3;
     if (attempt >= maxTries) {
       logger4.info(`RetryPolicy: Attempt(s) ${attempt} >= maxTries ${maxTries}, no further try.`);
       return false;
@@ -38500,7 +38531,7 @@ function storageRetryPolicy(options = {}) {
       }
     }
     if (response || error) {
-      const statusCode = (_b3 = (_a5 = response === null || response === void 0 ? void 0 : response.status) !== null && _a5 !== void 0 ? _a5 : error === null || error === void 0 ? void 0 : error.statusCode) !== null && _b3 !== void 0 ? _b3 : 0;
+      const statusCode = (_b3 = (_a4 = response === null || response === void 0 ? void 0 : response.status) !== null && _a4 !== void 0 ? _a4 : error === null || error === void 0 ? void 0 : error.statusCode) !== null && _b3 !== void 0 ? _b3 : 0;
       if (!isPrimaryRetry && statusCode === 404) {
         logger4.info(`RetryPolicy: Secondary access with 404, will retry.`);
         return true;
@@ -38533,7 +38564,7 @@ function storageRetryPolicy(options = {}) {
   __name(calculateDelay, "calculateDelay");
   return {
     name: storageRetryPolicyName,
-    async sendRequest(request3, next2) {
+    async sendRequest(request3, next) {
       if (tryTimeoutInMs) {
         request3.url = setURLParameter(request3.url, URLConstants.Parameters.TIMEOUT, String(Math.floor(tryTimeoutInMs / 1e3)));
       }
@@ -38551,7 +38582,7 @@ function storageRetryPolicy(options = {}) {
         error = void 0;
         try {
           logger4.info(`RetryPolicy: =====> Try=${attempt} ${isPrimaryRetry ? "Primary" : "Secondary"}`);
-          response = await next2(request3);
+          response = await next(request3);
           secondaryHas404 = secondaryHas404 || !isPrimaryRetry && response.status === 404;
         } catch (e3) {
           if (isRestError(e3)) {
@@ -38702,9 +38733,9 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
   __name(getCanonicalizedResourceString, "getCanonicalizedResourceString");
   return {
     name: storageSharedKeyCredentialPolicyName,
-    async sendRequest(request3, next2) {
+    async sendRequest(request3, next) {
       signRequest(request3);
-      return next2(request3);
+      return next(request3);
     }
   };
 }
@@ -38796,9 +38827,9 @@ function storageCorrectContentLengthPolicy() {
   __name(correctContentLength, "correctContentLength");
   return {
     name: storageCorrectContentLengthPolicyName,
-    async sendRequest(request3, next2) {
+    async sendRequest(request3, next) {
       correctContentLength(request3);
-      return next2(request3);
+      return next(request3);
     }
   };
 }
@@ -38853,7 +38884,7 @@ function processDownlevelPipeline(pipeline) {
   return void 0;
 }
 function getCoreClientOptions(pipeline) {
-  var _a4;
+  var _a3;
   const _b2 = pipeline.options, { httpClient: v1Client } = _b2, restOptions = __rest(_b2, ["httpClient"]);
   let httpClient = pipeline._coreHttpClient;
   if (!httpClient) {
@@ -38902,7 +38933,7 @@ function getCoreClientOptions(pipeline) {
     if (isTokenCredential(credential)) {
       corePipeline.addPolicy(bearerTokenAuthenticationPolicy({
         credential,
-        scopes: (_a4 = restOptions.audience) !== null && _a4 !== void 0 ? _a4 : StorageOAuthScopes,
+        scopes: (_a3 = restOptions.audience) !== null && _a3 !== void 0 ? _a3 : StorageOAuthScopes,
         challengeCallbacks: { authorizeRequestOnChallenge: authorizeRequestOnTenantChallenge }
       }), { phase: "Sign" });
     } else if (credential instanceof StorageSharedKeyCredential) {
@@ -47680,7 +47711,7 @@ var init_parameters = __esm({
     version2 = {
       parameterPath: "version",
       mapper: {
-        defaultValue: "2025-01-05",
+        defaultValue: "2025-05-05",
         isConstant: true,
         serializedName: "x-ms-version",
         type: {
@@ -52367,7 +52398,7 @@ var init_storageClient = __esm({
        * @param options The parameter options
        */
       constructor(url2, options) {
-        var _a4, _b2;
+        var _a3, _b2;
         if (url2 === void 0) {
           throw new Error("'url' cannot be null");
         }
@@ -52377,14 +52408,14 @@ var init_storageClient = __esm({
         const defaults2 = {
           requestContentType: "application/json; charset=utf-8"
         };
-        const packageDetails = `azsdk-js-azure-storage-blob/12.26.0`;
+        const packageDetails = `azsdk-js-azure-storage-blob/12.27.0`;
         const userAgentPrefix = options.userAgentOptions && options.userAgentOptions.userAgentPrefix ? `${options.userAgentOptions.userAgentPrefix} ${packageDetails}` : `${packageDetails}`;
         const optionsWithDefaults = Object.assign(Object.assign(Object.assign({}, defaults2), options), { userAgentOptions: {
           userAgentPrefix
-        }, endpoint: (_b2 = (_a4 = options.endpoint) !== null && _a4 !== void 0 ? _a4 : options.baseUri) !== null && _b2 !== void 0 ? _b2 : "{url}" });
+        }, endpoint: (_b2 = (_a3 = options.endpoint) !== null && _a3 !== void 0 ? _a3 : options.baseUri) !== null && _b2 !== void 0 ? _b2 : "{url}" });
         super(optionsWithDefaults);
         this.url = url2;
-        this.version = options.version || "2025-01-05";
+        this.version = options.version || "2025-05-05";
         this.service = new ServiceImpl(this);
         this.container = new ContainerImpl(this);
         this.blob = new BlobImpl(this);
@@ -52822,7 +52853,7 @@ var init_ContainerSASPermissions = __esm({
        * order accepted by the service.
        *
        * The order of the characters should be as specified here to ensure correctness.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/constructing-a-service-sas
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/constructing-a-service-sas
        *
        */
       toString() {
@@ -53606,25 +53637,25 @@ var init_BlobLeaseClient = __esm({
        * Establishes and manages a lock on a container for delete operations, or on a blob
        * for write and delete operations.
        * The lock duration can be 15 to 60 seconds, or can be infinite.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/lease-container
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/lease-container
        * and
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/lease-blob
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/lease-blob
        *
        * @param duration - Must be between 15 to 60 seconds, or infinite (-1)
        * @param options - option to configure lease management operations.
        * @returns Response data for acquire lease operation.
        */
       async acquireLease(duration2, options = {}) {
-        var _a4, _b2, _c2, _d2, _e2;
-        if (this._isContainer && (((_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.ifMatch) && ((_b2 = options.conditions) === null || _b2 === void 0 ? void 0 : _b2.ifMatch) !== ETagNone || ((_c2 = options.conditions) === null || _c2 === void 0 ? void 0 : _c2.ifNoneMatch) && ((_d2 = options.conditions) === null || _d2 === void 0 ? void 0 : _d2.ifNoneMatch) !== ETagNone || ((_e2 = options.conditions) === null || _e2 === void 0 ? void 0 : _e2.tagConditions))) {
+        var _a3, _b2, _c2, _d2, _e2;
+        if (this._isContainer && (((_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.ifMatch) && ((_b2 = options.conditions) === null || _b2 === void 0 ? void 0 : _b2.ifMatch) !== ETagNone || ((_c2 = options.conditions) === null || _c2 === void 0 ? void 0 : _c2.ifNoneMatch) && ((_d2 = options.conditions) === null || _d2 === void 0 ? void 0 : _d2.ifNoneMatch) !== ETagNone || ((_e2 = options.conditions) === null || _e2 === void 0 ? void 0 : _e2.tagConditions))) {
           throw new RangeError("The IfMatch, IfNoneMatch and tags access conditions are ignored by the service. Values other than undefined or their default values are not acceptable.");
         }
         return tracingClient.withSpan("BlobLeaseClient-acquireLease", options, async (updatedOptions) => {
-          var _a5;
+          var _a4;
           return assertResponse(await this._containerOrBlobOperation.acquireLease({
             abortSignal: options.abortSignal,
             duration: duration2,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a5 = options.conditions) === null || _a5 === void 0 ? void 0 : _a5.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
             proposedLeaseId: this._leaseId,
             tracingOptions: updatedOptions.tracingOptions
           }));
@@ -53632,24 +53663,24 @@ var init_BlobLeaseClient = __esm({
       }
       /**
        * To change the ID of the lease.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/lease-container
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/lease-container
        * and
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/lease-blob
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/lease-blob
        *
        * @param proposedLeaseId - the proposed new lease Id.
        * @param options - option to configure lease management operations.
        * @returns Response data for change lease operation.
        */
       async changeLease(proposedLeaseId2, options = {}) {
-        var _a4, _b2, _c2, _d2, _e2;
-        if (this._isContainer && (((_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.ifMatch) && ((_b2 = options.conditions) === null || _b2 === void 0 ? void 0 : _b2.ifMatch) !== ETagNone || ((_c2 = options.conditions) === null || _c2 === void 0 ? void 0 : _c2.ifNoneMatch) && ((_d2 = options.conditions) === null || _d2 === void 0 ? void 0 : _d2.ifNoneMatch) !== ETagNone || ((_e2 = options.conditions) === null || _e2 === void 0 ? void 0 : _e2.tagConditions))) {
+        var _a3, _b2, _c2, _d2, _e2;
+        if (this._isContainer && (((_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.ifMatch) && ((_b2 = options.conditions) === null || _b2 === void 0 ? void 0 : _b2.ifMatch) !== ETagNone || ((_c2 = options.conditions) === null || _c2 === void 0 ? void 0 : _c2.ifNoneMatch) && ((_d2 = options.conditions) === null || _d2 === void 0 ? void 0 : _d2.ifNoneMatch) !== ETagNone || ((_e2 = options.conditions) === null || _e2 === void 0 ? void 0 : _e2.tagConditions))) {
           throw new RangeError("The IfMatch, IfNoneMatch and tags access conditions are ignored by the service. Values other than undefined or their default values are not acceptable.");
         }
         return tracingClient.withSpan("BlobLeaseClient-changeLease", options, async (updatedOptions) => {
-          var _a5;
+          var _a4;
           const response = assertResponse(await this._containerOrBlobOperation.changeLease(this._leaseId, proposedLeaseId2, {
             abortSignal: options.abortSignal,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a5 = options.conditions) === null || _a5 === void 0 ? void 0 : _a5.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
             tracingOptions: updatedOptions.tracingOptions
           }));
           this._leaseId = proposedLeaseId2;
@@ -53659,46 +53690,46 @@ var init_BlobLeaseClient = __esm({
       /**
        * To free the lease if it is no longer needed so that another client may
        * immediately acquire a lease against the container or the blob.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/lease-container
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/lease-container
        * and
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/lease-blob
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/lease-blob
        *
        * @param options - option to configure lease management operations.
        * @returns Response data for release lease operation.
        */
       async releaseLease(options = {}) {
-        var _a4, _b2, _c2, _d2, _e2;
-        if (this._isContainer && (((_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.ifMatch) && ((_b2 = options.conditions) === null || _b2 === void 0 ? void 0 : _b2.ifMatch) !== ETagNone || ((_c2 = options.conditions) === null || _c2 === void 0 ? void 0 : _c2.ifNoneMatch) && ((_d2 = options.conditions) === null || _d2 === void 0 ? void 0 : _d2.ifNoneMatch) !== ETagNone || ((_e2 = options.conditions) === null || _e2 === void 0 ? void 0 : _e2.tagConditions))) {
+        var _a3, _b2, _c2, _d2, _e2;
+        if (this._isContainer && (((_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.ifMatch) && ((_b2 = options.conditions) === null || _b2 === void 0 ? void 0 : _b2.ifMatch) !== ETagNone || ((_c2 = options.conditions) === null || _c2 === void 0 ? void 0 : _c2.ifNoneMatch) && ((_d2 = options.conditions) === null || _d2 === void 0 ? void 0 : _d2.ifNoneMatch) !== ETagNone || ((_e2 = options.conditions) === null || _e2 === void 0 ? void 0 : _e2.tagConditions))) {
           throw new RangeError("The IfMatch, IfNoneMatch and tags access conditions are ignored by the service. Values other than undefined or their default values are not acceptable.");
         }
         return tracingClient.withSpan("BlobLeaseClient-releaseLease", options, async (updatedOptions) => {
-          var _a5;
+          var _a4;
           return assertResponse(await this._containerOrBlobOperation.releaseLease(this._leaseId, {
             abortSignal: options.abortSignal,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a5 = options.conditions) === null || _a5 === void 0 ? void 0 : _a5.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
             tracingOptions: updatedOptions.tracingOptions
           }));
         });
       }
       /**
        * To renew the lease.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/lease-container
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/lease-container
        * and
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/lease-blob
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/lease-blob
        *
        * @param options - Optional option to configure lease management operations.
        * @returns Response data for renew lease operation.
        */
       async renewLease(options = {}) {
-        var _a4, _b2, _c2, _d2, _e2;
-        if (this._isContainer && (((_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.ifMatch) && ((_b2 = options.conditions) === null || _b2 === void 0 ? void 0 : _b2.ifMatch) !== ETagNone || ((_c2 = options.conditions) === null || _c2 === void 0 ? void 0 : _c2.ifNoneMatch) && ((_d2 = options.conditions) === null || _d2 === void 0 ? void 0 : _d2.ifNoneMatch) !== ETagNone || ((_e2 = options.conditions) === null || _e2 === void 0 ? void 0 : _e2.tagConditions))) {
+        var _a3, _b2, _c2, _d2, _e2;
+        if (this._isContainer && (((_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.ifMatch) && ((_b2 = options.conditions) === null || _b2 === void 0 ? void 0 : _b2.ifMatch) !== ETagNone || ((_c2 = options.conditions) === null || _c2 === void 0 ? void 0 : _c2.ifNoneMatch) && ((_d2 = options.conditions) === null || _d2 === void 0 ? void 0 : _d2.ifNoneMatch) !== ETagNone || ((_e2 = options.conditions) === null || _e2 === void 0 ? void 0 : _e2.tagConditions))) {
           throw new RangeError("The IfMatch, IfNoneMatch and tags access conditions are ignored by the service. Values other than undefined or their default values are not acceptable.");
         }
         return tracingClient.withSpan("BlobLeaseClient-renewLease", options, async (updatedOptions) => {
-          var _a5;
+          var _a4;
           return this._containerOrBlobOperation.renewLease(this._leaseId, {
             abortSignal: options.abortSignal,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a5 = options.conditions) === null || _a5 === void 0 ? void 0 : _a5.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
             tracingOptions: updatedOptions.tracingOptions
           });
         });
@@ -53706,25 +53737,25 @@ var init_BlobLeaseClient = __esm({
       /**
        * To end the lease but ensure that another client cannot acquire a new lease
        * until the current lease period has expired.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/lease-container
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/lease-container
        * and
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/lease-blob
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/lease-blob
        *
        * @param breakPeriod - Break period
        * @param options - Optional options to configure lease management operations.
        * @returns Response data for break lease operation.
        */
       async breakLease(breakPeriod2, options = {}) {
-        var _a4, _b2, _c2, _d2, _e2;
-        if (this._isContainer && (((_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.ifMatch) && ((_b2 = options.conditions) === null || _b2 === void 0 ? void 0 : _b2.ifMatch) !== ETagNone || ((_c2 = options.conditions) === null || _c2 === void 0 ? void 0 : _c2.ifNoneMatch) && ((_d2 = options.conditions) === null || _d2 === void 0 ? void 0 : _d2.ifNoneMatch) !== ETagNone || ((_e2 = options.conditions) === null || _e2 === void 0 ? void 0 : _e2.tagConditions))) {
+        var _a3, _b2, _c2, _d2, _e2;
+        if (this._isContainer && (((_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.ifMatch) && ((_b2 = options.conditions) === null || _b2 === void 0 ? void 0 : _b2.ifMatch) !== ETagNone || ((_c2 = options.conditions) === null || _c2 === void 0 ? void 0 : _c2.ifNoneMatch) && ((_d2 = options.conditions) === null || _d2 === void 0 ? void 0 : _d2.ifNoneMatch) !== ETagNone || ((_e2 = options.conditions) === null || _e2 === void 0 ? void 0 : _e2.tagConditions))) {
           throw new RangeError("The IfMatch, IfNoneMatch and tags access conditions are ignored by the service. Values other than undefined or their default values are not acceptable.");
         }
         return tracingClient.withSpan("BlobLeaseClient-breakLease", options, async (updatedOptions) => {
-          var _a5;
+          var _a4;
           const operationOptions = {
             abortSignal: options.abortSignal,
             breakPeriod: breakPeriod2,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a5 = options.conditions) === null || _a5 === void 0 ? void 0 : _a5.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
             tracingOptions: updatedOptions.tracingOptions
           };
           return assertResponse(await this._containerOrBlobOperation.breakLease(operationOptions));
@@ -54501,7 +54532,7 @@ var init_AvroParser = __esm({
         const type2 = schema.type;
         try {
           return _AvroType.fromStringSchema(type2);
-        } catch (_a4) {
+        } catch (_a3) {
         }
         switch (type2) {
           case AvroComplex.RECORD:
@@ -54749,7 +54780,7 @@ var init_AvroReader = __esm({
                 this._itemsRemainingInBlock = yield __await(AvroParser.readLong(this._dataStream, {
                   abortSignal: options.abortSignal
                 }));
-              } catch (_a4) {
+              } catch (_a3) {
                 this._itemsRemainingInBlock = 0;
               }
               if (this._itemsRemainingInBlock > 0) {
@@ -54804,8 +54835,8 @@ var init_AvroReadableFromStream = __esm({
         return this._position;
       }
       async read(size, options = {}) {
-        var _a4;
-        if ((_a4 = options.abortSignal) === null || _a4 === void 0 ? void 0 : _a4.aborted) {
+        var _a3;
+        if ((_a3 = options.abortSignal) === null || _a3 === void 0 ? void 0 : _a3.aborted) {
           throw ABORT_ERROR;
         }
         if (size < 0) {
@@ -56443,7 +56474,7 @@ var init_src3 = __esm({
 });
 
 // node_modules/@azure/storage-blob/dist-esm/storage-blob/src/utils/utils.node.js
-import * as fs3 from "fs";
+import * as fs2 from "fs";
 import * as util2 from "util";
 async function streamToBuffer(stream, buffer2, offset, end, encoding) {
   let pos = 0;
@@ -56505,17 +56536,17 @@ async function streamToBuffer2(stream, buffer2, encoding) {
     stream.on("error", reject);
   });
 }
-async function readStreamToLocalFile(rs2, file) {
+async function readStreamToLocalFile(rs, file) {
   return new Promise((resolve2, reject) => {
-    const ws = fs3.createWriteStream(file);
-    rs2.on("error", (err) => {
+    const ws = fs2.createWriteStream(file);
+    rs.on("error", (err) => {
       reject(err);
     });
     ws.on("error", (err) => {
       reject(err);
     });
     ws.on("close", resolve2);
-    rs2.pipe(ws);
+    rs.pipe(ws);
   });
 }
 var fsStat, fsCreateReadStream;
@@ -56526,8 +56557,8 @@ var init_utils_node = __esm({
     __name(streamToBuffer, "streamToBuffer");
     __name(streamToBuffer2, "streamToBuffer2");
     __name(readStreamToLocalFile, "readStreamToLocalFile");
-    fsStat = util2.promisify(fs3.stat);
-    fsCreateReadStream = fs3.createReadStream;
+    fsStat = util2.promisify(fs2.stat);
+    fsCreateReadStream = fs2.createReadStream;
   }
 });
 
@@ -56670,7 +56701,7 @@ var init_Clients = __esm({
        * * In Node.js, data returns in a Readable stream readableStreamBody
        * * In browsers, data returns in a promise blobBody
        *
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/get-blob
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/get-blob
        *
        * @param offset - From which position of the blob to download, greater than or equal to 0
        * @param count - How much data to be downloaded, greater than 0. Will download to the end when undefined
@@ -56686,16 +56717,16 @@ var init_Clients = __esm({
        * console.log("Downloaded blob content:", downloaded.toString());
        *
        * async function streamToBuffer(readableStream) {
-       * return new Promise((resolve, reject) => {
-       * const chunks = [];
-       * readableStream.on("data", (data) => {
-       * chunks.push(data instanceof Buffer ? data : Buffer.from(data));
-       * });
-       * readableStream.on("end", () => {
-       * resolve(Buffer.concat(chunks));
-       * });
-       * readableStream.on("error", reject);
-       * });
+       *   return new Promise((resolve, reject) => {
+       *     const chunks = [];
+       *     readableStream.on("data", (data) => {
+       *       chunks.push(typeof data === "string" ? Buffer.from(data) : data);
+       *     });
+       *     readableStream.on("end", () => {
+       *       resolve(Buffer.concat(chunks));
+       *     });
+       *     readableStream.on("error", reject);
+       *   });
        * }
        * ```
        *
@@ -56727,11 +56758,11 @@ var init_Clients = __esm({
         options.conditions = options.conditions || {};
         ensureCpkIfSpecified(options.customerProvidedKey, this.isHttps);
         return tracingClient.withSpan("BlobClient-download", options, async (updatedOptions) => {
-          var _a4;
+          var _a3;
           const res = assertResponse(await this.blobContext.download({
             abortSignal: options.abortSignal,
             leaseAccessConditions: options.conditions,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             requestOptions: {
               onDownloadProgress: isNode ? void 0 : options.onProgress
               // for Node.js, progress is reported by RetriableReadableStream
@@ -56757,7 +56788,7 @@ var init_Clients = __esm({
             throw new RangeError(`File download response doesn't contain valid etag header`);
           }
           return new BlobDownloadResponse(wrappedRes, async (start) => {
-            var _a5;
+            var _a4;
             const updatedDownloadOptions = {
               leaseAccessConditions: options.conditions,
               modifiedAccessConditions: {
@@ -56765,7 +56796,7 @@ var init_Clients = __esm({
                 ifModifiedSince: options.conditions.ifModifiedSince,
                 ifNoneMatch: options.conditions.ifNoneMatch,
                 ifUnmodifiedSince: options.conditions.ifUnmodifiedSince,
-                ifTags: (_a5 = options.conditions) === null || _a5 === void 0 ? void 0 : _a5.tagConditions
+                ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions
               },
               range: rangeToString({
                 count: offset + res.contentLength - start,
@@ -56816,7 +56847,7 @@ var init_Clients = __esm({
       /**
        * Returns all user-defined metadata, standard HTTP properties, and system properties
        * for the blob. It does not return the content of the blob.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/get-blob-properties
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/get-blob-properties
        *
        * WARNING: The `metadata` object returned in the response will have its keys in lowercase, even if
        * they originally contained uppercase characters. This differs from the metadata keys returned by
@@ -56829,11 +56860,11 @@ var init_Clients = __esm({
         options.conditions = options.conditions || {};
         ensureCpkIfSpecified(options.customerProvidedKey, this.isHttps);
         return tracingClient.withSpan("BlobClient-getProperties", options, async (updatedOptions) => {
-          var _a4;
+          var _a3;
           const res = assertResponse(await this.blobContext.getProperties({
             abortSignal: options.abortSignal,
             leaseAccessConditions: options.conditions,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             cpkInfo: options.customerProvidedKey,
             tracingOptions: updatedOptions.tracingOptions
           }));
@@ -56845,19 +56876,19 @@ var init_Clients = __esm({
        * during garbage collection. Note that in order to delete a blob, you must delete
        * all of its snapshots. You can delete both at the same time with the Delete
        * Blob operation.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/delete-blob
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/delete-blob
        *
        * @param options - Optional options to Blob Delete operation.
        */
       async delete(options = {}) {
         options.conditions = options.conditions || {};
         return tracingClient.withSpan("BlobClient-delete", options, async (updatedOptions) => {
-          var _a4;
+          var _a3;
           return assertResponse(await this.blobContext.delete({
             abortSignal: options.abortSignal,
             deleteSnapshots: options.deleteSnapshots,
             leaseAccessConditions: options.conditions,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             tracingOptions: updatedOptions.tracingOptions
           }));
         });
@@ -56867,18 +56898,18 @@ var init_Clients = __esm({
        * during garbage collection. Note that in order to delete a blob, you must delete
        * all of its snapshots. You can delete both at the same time with the Delete
        * Blob operation.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/delete-blob
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/delete-blob
        *
        * @param options - Optional options to Blob Delete operation.
        */
       async deleteIfExists(options = {}) {
         return tracingClient.withSpan("BlobClient-deleteIfExists", options, async (updatedOptions) => {
-          var _a4, _b2;
+          var _a3, _b2;
           try {
             const res = assertResponse(await this.delete(updatedOptions));
             return Object.assign(Object.assign({ succeeded: true }, res), { _response: res._response });
           } catch (e3) {
-            if (((_a4 = e3.details) === null || _a4 === void 0 ? void 0 : _a4.errorCode) === "BlobNotFound") {
+            if (((_a3 = e3.details) === null || _a3 === void 0 ? void 0 : _a3.errorCode) === "BlobNotFound") {
               return Object.assign(Object.assign({ succeeded: false }, (_b2 = e3.response) === null || _b2 === void 0 ? void 0 : _b2.parsedHeaders), { _response: e3.response });
             }
             throw e3;
@@ -56889,7 +56920,7 @@ var init_Clients = __esm({
        * Restores the contents and metadata of soft deleted blob and any associated
        * soft deleted snapshots. Undelete Blob is supported only on version 2017-07-29
        * or later.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/undelete-blob
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/undelete-blob
        *
        * @param options - Optional options to Blob Undelete operation.
        */
@@ -56906,7 +56937,7 @@ var init_Clients = __esm({
        *
        * If no value provided, or no value provided for the specified blob HTTP headers,
        * these blob HTTP headers without a value will be cleared.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/set-blob-properties
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/set-blob-properties
        *
        * @param blobHTTPHeaders - If no value provided, or no value provided for
        *                                                   the specified blob HTTP headers, these blob HTTP
@@ -56920,12 +56951,12 @@ var init_Clients = __esm({
         options.conditions = options.conditions || {};
         ensureCpkIfSpecified(options.customerProvidedKey, this.isHttps);
         return tracingClient.withSpan("BlobClient-setHTTPHeaders", options, async (updatedOptions) => {
-          var _a4;
+          var _a3;
           return assertResponse(await this.blobContext.setHttpHeaders({
             abortSignal: options.abortSignal,
             blobHttpHeaders: blobHTTPHeaders,
             leaseAccessConditions: options.conditions,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             // cpkInfo: options.customerProvidedKey, // CPK is not included in Swagger, should change this back when this issue is fixed in Swagger.
             tracingOptions: updatedOptions.tracingOptions
           }));
@@ -56936,7 +56967,7 @@ var init_Clients = __esm({
        *
        * If no option provided, or no metadata defined in the parameter, the blob
        * metadata will be removed.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/set-blob-metadata
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/set-blob-metadata
        *
        * @param metadata - Replace existing metadata with this value.
        *                               If no value provided the existing metadata will be removed.
@@ -56946,12 +56977,12 @@ var init_Clients = __esm({
         options.conditions = options.conditions || {};
         ensureCpkIfSpecified(options.customerProvidedKey, this.isHttps);
         return tracingClient.withSpan("BlobClient-setMetadata", options, async (updatedOptions) => {
-          var _a4;
+          var _a3;
           return assertResponse(await this.blobContext.setMetadata({
             abortSignal: options.abortSignal,
             leaseAccessConditions: options.conditions,
             metadata: metadata3,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             cpkInfo: options.customerProvidedKey,
             encryptionScope: options.encryptionScope,
             tracingOptions: updatedOptions.tracingOptions
@@ -56969,11 +57000,11 @@ var init_Clients = __esm({
        */
       async setTags(tags2, options = {}) {
         return tracingClient.withSpan("BlobClient-setTags", options, async (updatedOptions) => {
-          var _a4;
+          var _a3;
           return assertResponse(await this.blobContext.setTags({
             abortSignal: options.abortSignal,
             leaseAccessConditions: options.conditions,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             tracingOptions: updatedOptions.tracingOptions,
             tags: toBlobTags(tags2)
           }));
@@ -56986,11 +57017,11 @@ var init_Clients = __esm({
        */
       async getTags(options = {}) {
         return tracingClient.withSpan("BlobClient-getTags", options, async (updatedOptions) => {
-          var _a4;
+          var _a3;
           const response = assertResponse(await this.blobContext.getTags({
             abortSignal: options.abortSignal,
             leaseAccessConditions: options.conditions,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             tracingOptions: updatedOptions.tracingOptions
           }));
           const wrappedResponse = Object.assign(Object.assign({}, response), { _response: response._response, tags: toTags({ blobTagSet: response.blobTagSet }) || {} });
@@ -57008,7 +57039,7 @@ var init_Clients = __esm({
       }
       /**
        * Creates a read-only snapshot of a blob.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/snapshot-blob
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/snapshot-blob
        *
        * @param options - Optional options to the Blob Create Snapshot operation.
        */
@@ -57016,12 +57047,12 @@ var init_Clients = __esm({
         options.conditions = options.conditions || {};
         ensureCpkIfSpecified(options.customerProvidedKey, this.isHttps);
         return tracingClient.withSpan("BlobClient-createSnapshot", options, async (updatedOptions) => {
-          var _a4;
+          var _a3;
           return assertResponse(await this.blobContext.createSnapshot({
             abortSignal: options.abortSignal,
             leaseAccessConditions: options.conditions,
             metadata: options.metadata,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             cpkInfo: options.customerProvidedKey,
             encryptionScope: options.encryptionScope,
             tracingOptions: updatedOptions.tracingOptions
@@ -57042,7 +57073,7 @@ var init_Clients = __esm({
        * an Azure file in any Azure storage account.
        * Only storage accounts created on or after June 7th, 2012 allow the Copy Blob
        * operation to copy from another storage account.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/copy-blob
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/copy-blob
        *
        * Example using automatic polling:
        *
@@ -57120,7 +57151,7 @@ var init_Clients = __esm({
       /**
        * Aborts a pending asynchronous Copy Blob operation, and leaves a destination blob with zero
        * length and full metadata. Version 2012-02-12 and newer.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/abort-copy-blob
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/abort-copy-blob
        *
        * @param copyId - Id of the Copy From URL operation.
        * @param options - Optional options to the Blob Abort Copy From URL operation.
@@ -57137,7 +57168,7 @@ var init_Clients = __esm({
       /**
        * The synchronous Copy From URL operation copies a blob or an internet resource to a new blob. It will not
        * return a response until the copy is complete.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/copy-blob-from-url
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/copy-blob-from-url
        *
        * @param copySource - The source URL to copy from, Shared Access Signature(SAS) maybe needed for authentication
        * @param options -
@@ -57146,12 +57177,12 @@ var init_Clients = __esm({
         options.conditions = options.conditions || {};
         options.sourceConditions = options.sourceConditions || {};
         return tracingClient.withSpan("BlobClient-syncCopyFromURL", options, async (updatedOptions) => {
-          var _a4, _b2, _c2, _d2, _e2, _f, _g;
+          var _a3, _b2, _c2, _d2, _e2, _f, _g;
           return assertResponse(await this.blobContext.copyFromURL(copySource2, {
             abortSignal: options.abortSignal,
             metadata: options.metadata,
             leaseAccessConditions: options.conditions,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             sourceModifiedAccessConditions: {
               sourceIfMatch: (_b2 = options.sourceConditions) === null || _b2 === void 0 ? void 0 : _b2.ifMatch,
               sourceIfModifiedSince: (_c2 = options.sourceConditions) === null || _c2 === void 0 ? void 0 : _c2.ifModifiedSince,
@@ -57177,25 +57208,25 @@ var init_Clients = __esm({
        * storage only). A premium page blob's tier determines the allowed size, IOPS,
        * and bandwidth of the blob. A block blob's tier determines Hot/Cool/Archive
        * storage type. This operation does not update the blob's ETag.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/set-blob-tier
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/set-blob-tier
        *
        * @param tier - The tier to be set on the blob. Valid values are Hot, Cool, or Archive.
        * @param options - Optional options to the Blob Set Tier operation.
        */
       async setAccessTier(tier2, options = {}) {
         return tracingClient.withSpan("BlobClient-setAccessTier", options, async (updatedOptions) => {
-          var _a4;
+          var _a3;
           return assertResponse(await this.blobContext.setTier(toAccessTier(tier2), {
             abortSignal: options.abortSignal,
             leaseAccessConditions: options.conditions,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             rehydratePriority: options.rehydratePriority,
             tracingOptions: updatedOptions.tracingOptions
           }));
         });
       }
       async downloadToBuffer(param1, param2, param3, param4 = {}) {
-        var _a4;
+        var _a3;
         let buffer2;
         let offset = 0;
         let count = 0;
@@ -57209,7 +57240,7 @@ var init_Clients = __esm({
           count = typeof param2 === "number" ? param2 : 0;
           options = param3 || {};
         }
-        let blockSize = (_a4 = options.blockSize) !== null && _a4 !== void 0 ? _a4 : 0;
+        let blockSize = (_a3 = options.blockSize) !== null && _a3 !== void 0 ? _a3 : 0;
         if (blockSize < 0) {
           throw new RangeError("blockSize option must be >= 0");
         }
@@ -57333,21 +57364,21 @@ var init_Clients = __esm({
        * an Azure file in any Azure storage account.
        * Only storage accounts created on or after June 7th, 2012 allow the Copy Blob
        * operation to copy from another storage account.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/copy-blob
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/copy-blob
        *
        * @param copySource - url to the source Azure Blob/File.
        * @param options - Optional options to the Blob Start Copy From URL operation.
        */
       async startCopyFromURL(copySource2, options = {}) {
         return tracingClient.withSpan("BlobClient-startCopyFromURL", options, async (updatedOptions) => {
-          var _a4, _b2, _c2;
+          var _a3, _b2, _c2;
           options.conditions = options.conditions || {};
           options.sourceConditions = options.sourceConditions || {};
           return assertResponse(await this.blobContext.startCopyFromURL(copySource2, {
             abortSignal: options.abortSignal,
             leaseAccessConditions: options.conditions,
             metadata: options.metadata,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             sourceModifiedAccessConditions: {
               sourceIfMatch: options.sourceConditions.ifMatch,
               sourceIfModifiedSince: options.sourceConditions.ifModifiedSince,
@@ -57372,7 +57403,7 @@ var init_Clients = __esm({
        * Generates a Blob Service Shared Access Signature (SAS) URI based on the client properties
        * and parameters passed in. The SAS is signed by the shared key credential of the client.
        *
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/constructing-a-service-sas
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/constructing-a-service-sas
        *
        * @param options - Optional parameters.
        * @returns The SAS URI consisting of the URI to the resource represented by this client, followed by the generated SAS token.
@@ -57392,7 +57423,7 @@ var init_Clients = __esm({
        * Generates string to sign for a Blob Service Shared Access Signature (SAS) URI based on
        * the client properties and parameters passed in. The SAS is signed by the shared key credential of the client.
        *
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/constructing-a-service-sas
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/constructing-a-service-sas
        *
        * @param options - Optional parameters.
        * @returns The SAS URI consisting of the URI to the resource represented by this client, followed by the generated SAS token.
@@ -57409,7 +57440,7 @@ var init_Clients = __esm({
        * Generates a Blob Service Shared Access Signature (SAS) URI based on
        * the client properties and parameters passed in. The SAS is signed by the input user delegation key.
        *
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/constructing-a-service-sas
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/constructing-a-service-sas
        *
        * @param options - Optional parameters.
        * @param userDelegationKey -  Return value of `blobServiceClient.getUserDelegationKey()`
@@ -57427,7 +57458,7 @@ var init_Clients = __esm({
        * Generates string to sign for a Blob Service Shared Access Signature (SAS) URI based on
        * the client properties and parameters passed in. The SAS is signed by the input user delegation key.
        *
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/constructing-a-service-sas
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/constructing-a-service-sas
        *
        * @param options - Optional parameters.
        * @param userDelegationKey -  Return value of `blobServiceClient.getUserDelegationKey()`
@@ -57479,7 +57510,7 @@ var init_Clients = __esm({
        * for the specified account.
        * The Get Account Information operation is available on service versions beginning
        * with version 2018-03-28.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/get-account-information
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/get-account-information
        *
        * @param options - Options to the Service Get Account Info operation.
        * @returns Response data for the Service Get Account Info operation.
@@ -57551,7 +57582,7 @@ var init_Clients = __esm({
       }
       /**
        * Creates a 0-length append blob. Call AppendBlock to append data to an append blob.
-       * @see https://docs.microsoft.com/rest/api/storageservices/put-blob
+       * @see https://learn.microsoft.com/rest/api/storageservices/put-blob
        *
        * @param options - Options to the Append Block Create operation.
        *
@@ -57567,13 +57598,13 @@ var init_Clients = __esm({
         options.conditions = options.conditions || {};
         ensureCpkIfSpecified(options.customerProvidedKey, this.isHttps);
         return tracingClient.withSpan("AppendBlobClient-create", options, async (updatedOptions) => {
-          var _a4, _b2, _c2;
+          var _a3, _b2, _c2;
           return assertResponse(await this.appendBlobContext.create(0, {
             abortSignal: options.abortSignal,
             blobHttpHeaders: options.blobHTTPHeaders,
             leaseAccessConditions: options.conditions,
             metadata: options.metadata,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             cpkInfo: options.customerProvidedKey,
             encryptionScope: options.encryptionScope,
             immutabilityPolicyExpiry: (_b2 = options.immutabilityPolicy) === null || _b2 === void 0 ? void 0 : _b2.expiriesOn,
@@ -57587,19 +57618,19 @@ var init_Clients = __esm({
       /**
        * Creates a 0-length append blob. Call AppendBlock to append data to an append blob.
        * If the blob with the same name already exists, the content of the existing blob will remain unchanged.
-       * @see https://docs.microsoft.com/rest/api/storageservices/put-blob
+       * @see https://learn.microsoft.com/rest/api/storageservices/put-blob
        *
        * @param options -
        */
       async createIfNotExists(options = {}) {
         const conditions = { ifNoneMatch: ETagAny };
         return tracingClient.withSpan("AppendBlobClient-createIfNotExists", options, async (updatedOptions) => {
-          var _a4, _b2;
+          var _a3, _b2;
           try {
             const res = assertResponse(await this.create(Object.assign(Object.assign({}, updatedOptions), { conditions })));
             return Object.assign(Object.assign({ succeeded: true }, res), { _response: res._response });
           } catch (e3) {
-            if (((_a4 = e3.details) === null || _a4 === void 0 ? void 0 : _a4.errorCode) === "BlobAlreadyExists") {
+            if (((_a3 = e3.details) === null || _a3 === void 0 ? void 0 : _a3.errorCode) === "BlobAlreadyExists") {
               return Object.assign(Object.assign({ succeeded: false }, (_b2 = e3.response) === null || _b2 === void 0 ? void 0 : _b2.parsedHeaders), { _response: e3.response });
             }
             throw e3;
@@ -57614,19 +57645,19 @@ var init_Clients = __esm({
       async seal(options = {}) {
         options.conditions = options.conditions || {};
         return tracingClient.withSpan("AppendBlobClient-seal", options, async (updatedOptions) => {
-          var _a4;
+          var _a3;
           return assertResponse(await this.appendBlobContext.seal({
             abortSignal: options.abortSignal,
             appendPositionAccessConditions: options.conditions,
             leaseAccessConditions: options.conditions,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             tracingOptions: updatedOptions.tracingOptions
           }));
         });
       }
       /**
        * Commits a new block of data to the end of the existing append blob.
-       * @see https://docs.microsoft.com/rest/api/storageservices/append-block
+       * @see https://learn.microsoft.com/rest/api/storageservices/append-block
        *
        * @param body - Data to be appended.
        * @param contentLength - Length of the body in bytes.
@@ -57652,12 +57683,12 @@ var init_Clients = __esm({
         options.conditions = options.conditions || {};
         ensureCpkIfSpecified(options.customerProvidedKey, this.isHttps);
         return tracingClient.withSpan("AppendBlobClient-appendBlock", options, async (updatedOptions) => {
-          var _a4;
+          var _a3;
           return assertResponse(await this.appendBlobContext.appendBlock(contentLength2, body2, {
             abortSignal: options.abortSignal,
             appendPositionAccessConditions: options.conditions,
             leaseAccessConditions: options.conditions,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             requestOptions: {
               onUploadProgress: options.onProgress
             },
@@ -57672,7 +57703,7 @@ var init_Clients = __esm({
       /**
        * The Append Block operation commits a new block of data to the end of an existing append blob
        * where the contents are read from a source url.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/append-block-from-url
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/append-block-from-url
        *
        * @param sourceURL -
        *                 The url to the blob that will be the source of the copy. A source blob in the same storage account can
@@ -57688,7 +57719,7 @@ var init_Clients = __esm({
         options.sourceConditions = options.sourceConditions || {};
         ensureCpkIfSpecified(options.customerProvidedKey, this.isHttps);
         return tracingClient.withSpan("AppendBlobClient-appendBlockFromURL", options, async (updatedOptions) => {
-          var _a4, _b2, _c2, _d2, _e2;
+          var _a3, _b2, _c2, _d2, _e2;
           return assertResponse(await this.appendBlobContext.appendBlockFromUrl(sourceURL, 0, {
             abortSignal: options.abortSignal,
             sourceRange: rangeToString({ offset: sourceOffset, count }),
@@ -57696,7 +57727,7 @@ var init_Clients = __esm({
             sourceContentCrc64: options.sourceContentCrc64,
             leaseAccessConditions: options.conditions,
             appendPositionAccessConditions: options.conditions,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             sourceModifiedAccessConditions: {
               sourceIfMatch: (_b2 = options.sourceConditions) === null || _b2 === void 0 ? void 0 : _b2.ifMatch,
               sourceIfModifiedSince: (_c2 = options.sourceConditions) === null || _c2 === void 0 ? void 0 : _c2.ifModifiedSince,
@@ -57788,7 +57819,7 @@ var init_Clients = __esm({
        *   return new Promise((resolve, reject) => {
        *     const chunks = [];
        *     readableStream.on("data", (data) => {
-       *       chunks.push(data instanceof Buffer ? data : Buffer.from(data));
+       *       chunks.push(typeof data === "string" ? Buffer.from(data) : data);
        *     });
        *     readableStream.on("end", () => {
        *       resolve(Buffer.concat(chunks));
@@ -57807,7 +57838,7 @@ var init_Clients = __esm({
           throw new Error("This operation currently is only supported in Node.js.");
         }
         return tracingClient.withSpan("BlockBlobClient-query", options, async (updatedOptions) => {
-          var _a4;
+          var _a3;
           const response = assertResponse(await this._blobContext.query({
             abortSignal: options.abortSignal,
             queryRequest: {
@@ -57817,7 +57848,7 @@ var init_Clients = __esm({
               outputSerialization: toQuerySerialization(options.outputTextConfiguration)
             },
             leaseAccessConditions: options.conditions,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             cpkInfo: options.customerProvidedKey,
             tracingOptions: updatedOptions.tracingOptions
           }));
@@ -57839,7 +57870,7 @@ var init_Clients = __esm({
        * {@link uploadStream} or {@link uploadBrowserData} for better performance
        * with concurrency uploading.
        *
-       * @see https://docs.microsoft.com/rest/api/storageservices/put-blob
+       * @see https://learn.microsoft.com/rest/api/storageservices/put-blob
        *
        * @param body - Blob, string, ArrayBuffer, ArrayBufferView or a function
        *                               which returns a new Readable stream whose offset is from data source beginning.
@@ -57859,13 +57890,13 @@ var init_Clients = __esm({
         options.conditions = options.conditions || {};
         ensureCpkIfSpecified(options.customerProvidedKey, this.isHttps);
         return tracingClient.withSpan("BlockBlobClient-upload", options, async (updatedOptions) => {
-          var _a4, _b2, _c2;
+          var _a3, _b2, _c2;
           return assertResponse(await this.blockBlobContext.upload(contentLength2, body2, {
             abortSignal: options.abortSignal,
             blobHttpHeaders: options.blobHTTPHeaders,
             leaseAccessConditions: options.conditions,
             metadata: options.metadata,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             requestOptions: {
               onUploadProgress: options.onProgress
             },
@@ -57902,8 +57933,8 @@ var init_Clients = __esm({
         options.conditions = options.conditions || {};
         ensureCpkIfSpecified(options.customerProvidedKey, this.isHttps);
         return tracingClient.withSpan("BlockBlobClient-syncUploadFromURL", options, async (updatedOptions) => {
-          var _a4, _b2, _c2, _d2, _e2, _f;
-          return assertResponse(await this.blockBlobContext.putBlobFromUrl(0, sourceURL, Object.assign(Object.assign({}, options), { blobHttpHeaders: options.blobHTTPHeaders, leaseAccessConditions: options.conditions, modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }), sourceModifiedAccessConditions: {
+          var _a3, _b2, _c2, _d2, _e2, _f;
+          return assertResponse(await this.blockBlobContext.putBlobFromUrl(0, sourceURL, Object.assign(Object.assign({}, options), { blobHttpHeaders: options.blobHTTPHeaders, leaseAccessConditions: options.conditions, modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }), sourceModifiedAccessConditions: {
             sourceIfMatch: (_b2 = options.sourceConditions) === null || _b2 === void 0 ? void 0 : _b2.ifMatch,
             sourceIfModifiedSince: (_c2 = options.sourceConditions) === null || _c2 === void 0 ? void 0 : _c2.ifModifiedSince,
             sourceIfNoneMatch: (_d2 = options.sourceConditions) === null || _d2 === void 0 ? void 0 : _d2.ifNoneMatch,
@@ -57915,7 +57946,7 @@ var init_Clients = __esm({
       /**
        * Uploads the specified block to the block blob's "staging area" to be later
        * committed by a call to commitBlockList.
-       * @see https://docs.microsoft.com/rest/api/storageservices/put-block
+       * @see https://learn.microsoft.com/rest/api/storageservices/put-block
        *
        * @param blockId - A 64-byte value that is base64-encoded
        * @param body - Data to upload to the staging area.
@@ -57944,7 +57975,7 @@ var init_Clients = __esm({
        * The Stage Block From URL operation creates a new block to be committed as part
        * of a blob where the contents are read from a URL.
        * This API is available starting in version 2018-03-28.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/put-block-from-url
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/put-block-from-url
        *
        * @param blockId - A 64-byte value that is base64-encoded
        * @param sourceURL - Specifies the URL of the blob. The value
@@ -57983,7 +58014,7 @@ var init_Clients = __esm({
        * to the server in a prior {@link stageBlock} operation. You can call {@link commitBlockList} to
        * update a blob by uploading only those blocks that have changed, then committing the new and existing
        * blocks together. Any blocks not specified in the block list and permanently deleted.
-       * @see https://docs.microsoft.com/rest/api/storageservices/put-block-list
+       * @see https://learn.microsoft.com/rest/api/storageservices/put-block-list
        *
        * @param blocks -  Array of 64-byte value that is base64-encoded
        * @param options - Options to the Block Blob Commit Block List operation.
@@ -57993,13 +58024,13 @@ var init_Clients = __esm({
         options.conditions = options.conditions || {};
         ensureCpkIfSpecified(options.customerProvidedKey, this.isHttps);
         return tracingClient.withSpan("BlockBlobClient-commitBlockList", options, async (updatedOptions) => {
-          var _a4, _b2, _c2;
+          var _a3, _b2, _c2;
           return assertResponse(await this.blockBlobContext.commitBlockList({ latest: blocks2 }, {
             abortSignal: options.abortSignal,
             blobHttpHeaders: options.blobHTTPHeaders,
             leaseAccessConditions: options.conditions,
             metadata: options.metadata,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             cpkInfo: options.customerProvidedKey,
             encryptionScope: options.encryptionScope,
             immutabilityPolicyExpiry: (_b2 = options.immutabilityPolicy) === null || _b2 === void 0 ? void 0 : _b2.expiriesOn,
@@ -58014,7 +58045,7 @@ var init_Clients = __esm({
       /**
        * Returns the list of blocks that have been uploaded as part of a block blob
        * using the specified block list filter.
-       * @see https://docs.microsoft.com/rest/api/storageservices/get-block-list
+       * @see https://learn.microsoft.com/rest/api/storageservices/get-block-list
        *
        * @param listType - Specifies whether to return the list of committed blocks,
        *                                        the list of uncommitted blocks, or both lists together.
@@ -58023,11 +58054,11 @@ var init_Clients = __esm({
        */
       async getBlockList(listType2, options = {}) {
         return tracingClient.withSpan("BlockBlobClient-getBlockList", options, async (updatedOptions) => {
-          var _a4;
+          var _a3;
           const res = assertResponse(await this.blockBlobContext.getBlockList(listType2, {
             abortSignal: options.abortSignal,
             leaseAccessConditions: options.conditions,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             tracingOptions: updatedOptions.tracingOptions
           }));
           if (!res.committedBlocks) {
@@ -58115,8 +58146,8 @@ var init_Clients = __esm({
        * @returns Response data for the Blob Upload operation.
        */
       async uploadSeekableInternal(bodyFactory, size, options = {}) {
-        var _a4, _b2;
-        let blockSize = (_a4 = options.blockSize) !== null && _a4 !== void 0 ? _a4 : 0;
+        var _a3, _b2;
+        let blockSize = (_a3 = options.blockSize) !== null && _a3 !== void 0 ? _a3 : 0;
         if (blockSize < 0 || blockSize > BLOCK_BLOB_MAX_STAGE_BLOCK_BYTES) {
           throw new RangeError(`blockSize option must be >= 0 and <= ${BLOCK_BLOB_MAX_STAGE_BLOCK_BYTES}`);
         }
@@ -58320,7 +58351,7 @@ var init_Clients = __esm({
       /**
        * Creates a page blob of the specified length. Call uploadPages to upload data
        * data to a page blob.
-       * @see https://docs.microsoft.com/rest/api/storageservices/put-blob
+       * @see https://learn.microsoft.com/rest/api/storageservices/put-blob
        *
        * @param size - size of the page blob.
        * @param options - Options to the Page Blob Create operation.
@@ -58330,14 +58361,14 @@ var init_Clients = __esm({
         options.conditions = options.conditions || {};
         ensureCpkIfSpecified(options.customerProvidedKey, this.isHttps);
         return tracingClient.withSpan("PageBlobClient-create", options, async (updatedOptions) => {
-          var _a4, _b2, _c2;
+          var _a3, _b2, _c2;
           return assertResponse(await this.pageBlobContext.create(0, size, {
             abortSignal: options.abortSignal,
             blobHttpHeaders: options.blobHTTPHeaders,
             blobSequenceNumber: options.blobSequenceNumber,
             leaseAccessConditions: options.conditions,
             metadata: options.metadata,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             cpkInfo: options.customerProvidedKey,
             encryptionScope: options.encryptionScope,
             immutabilityPolicyExpiry: (_b2 = options.immutabilityPolicy) === null || _b2 === void 0 ? void 0 : _b2.expiriesOn,
@@ -58353,20 +58384,20 @@ var init_Clients = __esm({
        * Creates a page blob of the specified length. Call uploadPages to upload data
        * data to a page blob. If the blob with the same name already exists, the content
        * of the existing blob will remain unchanged.
-       * @see https://docs.microsoft.com/rest/api/storageservices/put-blob
+       * @see https://learn.microsoft.com/rest/api/storageservices/put-blob
        *
        * @param size - size of the page blob.
        * @param options -
        */
       async createIfNotExists(size, options = {}) {
         return tracingClient.withSpan("PageBlobClient-createIfNotExists", options, async (updatedOptions) => {
-          var _a4, _b2;
+          var _a3, _b2;
           try {
             const conditions = { ifNoneMatch: ETagAny };
             const res = assertResponse(await this.create(size, Object.assign(Object.assign({}, options), { conditions, tracingOptions: updatedOptions.tracingOptions })));
             return Object.assign(Object.assign({ succeeded: true }, res), { _response: res._response });
           } catch (e3) {
-            if (((_a4 = e3.details) === null || _a4 === void 0 ? void 0 : _a4.errorCode) === "BlobAlreadyExists") {
+            if (((_a3 = e3.details) === null || _a3 === void 0 ? void 0 : _a3.errorCode) === "BlobAlreadyExists") {
               return Object.assign(Object.assign({ succeeded: false }, (_b2 = e3.response) === null || _b2 === void 0 ? void 0 : _b2.parsedHeaders), { _response: e3.response });
             }
             throw e3;
@@ -58375,7 +58406,7 @@ var init_Clients = __esm({
       }
       /**
        * Writes 1 or more pages to the page blob. The start and end offsets must be a multiple of 512.
-       * @see https://docs.microsoft.com/rest/api/storageservices/put-page
+       * @see https://learn.microsoft.com/rest/api/storageservices/put-page
        *
        * @param body - Data to upload
        * @param offset - Offset of destination page blob
@@ -58387,11 +58418,11 @@ var init_Clients = __esm({
         options.conditions = options.conditions || {};
         ensureCpkIfSpecified(options.customerProvidedKey, this.isHttps);
         return tracingClient.withSpan("PageBlobClient-uploadPages", options, async (updatedOptions) => {
-          var _a4;
+          var _a3;
           return assertResponse(await this.pageBlobContext.uploadPages(count, body2, {
             abortSignal: options.abortSignal,
             leaseAccessConditions: options.conditions,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             requestOptions: {
               onUploadProgress: options.onProgress
             },
@@ -58408,7 +58439,7 @@ var init_Clients = __esm({
       /**
        * The Upload Pages operation writes a range of pages to a page blob where the
        * contents are read from a URL.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/put-page-from-url
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/put-page-from-url
        *
        * @param sourceURL - Specify a URL to the copy source, Shared Access Signature(SAS) maybe needed for authentication
        * @param sourceOffset - The source offset to copy from. Pass 0 to copy from the beginning of source page blob
@@ -58421,14 +58452,14 @@ var init_Clients = __esm({
         options.sourceConditions = options.sourceConditions || {};
         ensureCpkIfSpecified(options.customerProvidedKey, this.isHttps);
         return tracingClient.withSpan("PageBlobClient-uploadPagesFromURL", options, async (updatedOptions) => {
-          var _a4, _b2, _c2, _d2, _e2;
+          var _a3, _b2, _c2, _d2, _e2;
           return assertResponse(await this.pageBlobContext.uploadPagesFromURL(sourceURL, rangeToString({ offset: sourceOffset, count }), 0, rangeToString({ offset: destOffset, count }), {
             abortSignal: options.abortSignal,
             sourceContentMD5: options.sourceContentMD5,
             sourceContentCrc64: options.sourceContentCrc64,
             leaseAccessConditions: options.conditions,
             sequenceNumberAccessConditions: options.conditions,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             sourceModifiedAccessConditions: {
               sourceIfMatch: (_b2 = options.sourceConditions) === null || _b2 === void 0 ? void 0 : _b2.ifMatch,
               sourceIfModifiedSince: (_c2 = options.sourceConditions) === null || _c2 === void 0 ? void 0 : _c2.ifModifiedSince,
@@ -58444,7 +58475,7 @@ var init_Clients = __esm({
       }
       /**
        * Frees the specified pages from the page blob.
-       * @see https://docs.microsoft.com/rest/api/storageservices/put-page
+       * @see https://learn.microsoft.com/rest/api/storageservices/put-page
        *
        * @param offset - Starting byte position of the pages to clear.
        * @param count - Number of bytes to clear.
@@ -58454,11 +58485,11 @@ var init_Clients = __esm({
       async clearPages(offset = 0, count, options = {}) {
         options.conditions = options.conditions || {};
         return tracingClient.withSpan("PageBlobClient-clearPages", options, async (updatedOptions) => {
-          var _a4;
+          var _a3;
           return assertResponse(await this.pageBlobContext.clearPages(0, {
             abortSignal: options.abortSignal,
             leaseAccessConditions: options.conditions,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             range: rangeToString({ offset, count }),
             sequenceNumberAccessConditions: options.conditions,
             cpkInfo: options.customerProvidedKey,
@@ -58469,7 +58500,7 @@ var init_Clients = __esm({
       }
       /**
        * Returns the list of valid page ranges for a page blob or snapshot of a page blob.
-       * @see https://docs.microsoft.com/rest/api/storageservices/get-page-ranges
+       * @see https://learn.microsoft.com/rest/api/storageservices/get-page-ranges
        *
        * @param offset - Starting byte position of the page ranges.
        * @param count - Number of bytes to get.
@@ -58479,11 +58510,11 @@ var init_Clients = __esm({
       async getPageRanges(offset = 0, count, options = {}) {
         options.conditions = options.conditions || {};
         return tracingClient.withSpan("PageBlobClient-getPageRanges", options, async (updatedOptions) => {
-          var _a4;
+          var _a3;
           const response = assertResponse(await this.pageBlobContext.getPageRanges({
             abortSignal: options.abortSignal,
             leaseAccessConditions: options.conditions,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             range: rangeToString({ offset, count }),
             tracingOptions: updatedOptions.tracingOptions
           }));
@@ -58495,7 +58526,7 @@ var init_Clients = __esm({
        * specified Marker. Use an empty Marker to start enumeration from the beginning.
        * After getting a segment, process it, and then call getPageRangesSegment again
        * (passing the the previously-returned Marker) to get the next segment.
-       * @see https://docs.microsoft.com/rest/api/storageservices/get-page-ranges
+       * @see https://learn.microsoft.com/rest/api/storageservices/get-page-ranges
        *
        * @param offset - Starting byte position of the page ranges.
        * @param count - Number of bytes to get.
@@ -58504,11 +58535,11 @@ var init_Clients = __esm({
        */
       async listPageRangesSegment(offset = 0, count, marker2, options = {}) {
         return tracingClient.withSpan("PageBlobClient-getPageRangesSegment", options, async (updatedOptions) => {
-          var _a4;
+          var _a3;
           return assertResponse(await this.pageBlobContext.getPageRanges({
             abortSignal: options.abortSignal,
             leaseAccessConditions: options.conditions,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             range: rangeToString({ offset, count }),
             marker: marker2,
             maxPageSize: options.maxPageSize,
@@ -58551,10 +58582,10 @@ var init_Clients = __esm({
        */
       listPageRangeItems() {
         return __asyncGenerator(this, arguments, /* @__PURE__ */ __name(function* listPageRangeItems_1(offset = 0, count, options = {}) {
-          var _a4, e_1, _b2, _c2;
+          var _a3, e_1, _b2, _c2;
           let marker2;
           try {
-            for (var _d2 = true, _e2 = __asyncValues(this.listPageRangeItemSegments(offset, count, marker2, options)), _f; _f = yield __await(_e2.next()), _a4 = _f.done, !_a4; _d2 = true) {
+            for (var _d2 = true, _e2 = __asyncValues(this.listPageRangeItemSegments(offset, count, marker2, options)), _f; _f = yield __await(_e2.next()), _a3 = _f.done, !_a3; _d2 = true) {
               _c2 = _f.value;
               _d2 = false;
               const getPageRangesSegment = _c2;
@@ -58564,7 +58595,7 @@ var init_Clients = __esm({
             e_1 = { error: e_1_1 };
           } finally {
             try {
-              if (!_d2 && !_a4 && (_b2 = _e2.return)) yield __await(_b2.call(_e2));
+              if (!_d2 && !_a3 && (_b2 = _e2.return)) yield __await(_b2.call(_e2));
             } finally {
               if (e_1) throw e_1.error;
             }
@@ -58573,7 +58604,7 @@ var init_Clients = __esm({
       }
       /**
        * Returns an async iterable iterator to list of page ranges for a page blob.
-       * @see https://docs.microsoft.com/rest/api/storageservices/get-page-ranges
+       * @see https://learn.microsoft.com/rest/api/storageservices/get-page-ranges
        *
        *  .byPage() returns an async iterable iterator to list of page ranges for a page blob.
        *
@@ -58668,7 +58699,7 @@ var init_Clients = __esm({
       }
       /**
        * Gets the collection of page ranges that differ between a specified snapshot and this page blob.
-       * @see https://docs.microsoft.com/rest/api/storageservices/get-page-ranges
+       * @see https://learn.microsoft.com/rest/api/storageservices/get-page-ranges
        *
        * @param offset - Starting byte position of the page blob
        * @param count - Number of bytes to get ranges diff.
@@ -58679,11 +58710,11 @@ var init_Clients = __esm({
       async getPageRangesDiff(offset, count, prevSnapshot, options = {}) {
         options.conditions = options.conditions || {};
         return tracingClient.withSpan("PageBlobClient-getPageRangesDiff", options, async (updatedOptions) => {
-          var _a4;
+          var _a3;
           const result = assertResponse(await this.pageBlobContext.getPageRangesDiff({
             abortSignal: options.abortSignal,
             leaseAccessConditions: options.conditions,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             prevsnapshot: prevSnapshot,
             range: rangeToString({ offset, count }),
             tracingOptions: updatedOptions.tracingOptions
@@ -58697,7 +58728,7 @@ var init_Clients = __esm({
        * Use an empty Marker to start enumeration from the beginning.
        * After getting a segment, process it, and then call getPageRangesDiffSegment again
        * (passing the the previously-returned Marker) to get the next segment.
-       * @see https://docs.microsoft.com/rest/api/storageservices/get-page-ranges
+       * @see https://learn.microsoft.com/rest/api/storageservices/get-page-ranges
        *
        * @param offset - Starting byte position of the page ranges.
        * @param count - Number of bytes to get.
@@ -58707,11 +58738,11 @@ var init_Clients = __esm({
        */
       async listPageRangesDiffSegment(offset, count, prevSnapshotOrUrl, marker2, options = {}) {
         return tracingClient.withSpan("PageBlobClient-getPageRangesDiffSegment", options, async (updatedOptions) => {
-          var _a4;
+          var _a3;
           return assertResponse(await this.pageBlobContext.getPageRangesDiff({
             abortSignal: options === null || options === void 0 ? void 0 : options.abortSignal,
             leaseAccessConditions: options === null || options === void 0 ? void 0 : options.conditions,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options === null || options === void 0 ? void 0 : options.conditions), { ifTags: (_a4 = options === null || options === void 0 ? void 0 : options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options === null || options === void 0 ? void 0 : options.conditions), { ifTags: (_a3 = options === null || options === void 0 ? void 0 : options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             prevsnapshot: prevSnapshotOrUrl,
             range: rangeToString({
               offset,
@@ -58761,10 +58792,10 @@ var init_Clients = __esm({
        */
       listPageRangeDiffItems(offset, count, prevSnapshotOrUrl, options) {
         return __asyncGenerator(this, arguments, /* @__PURE__ */ __name(function* listPageRangeDiffItems_1() {
-          var _a4, e_2, _b2, _c2;
+          var _a3, e_2, _b2, _c2;
           let marker2;
           try {
-            for (var _d2 = true, _e2 = __asyncValues(this.listPageRangeDiffItemSegments(offset, count, prevSnapshotOrUrl, marker2, options)), _f; _f = yield __await(_e2.next()), _a4 = _f.done, !_a4; _d2 = true) {
+            for (var _d2 = true, _e2 = __asyncValues(this.listPageRangeDiffItemSegments(offset, count, prevSnapshotOrUrl, marker2, options)), _f; _f = yield __await(_e2.next()), _a3 = _f.done, !_a3; _d2 = true) {
               _c2 = _f.value;
               _d2 = false;
               const getPageRangesSegment = _c2;
@@ -58774,7 +58805,7 @@ var init_Clients = __esm({
             e_2 = { error: e_2_1 };
           } finally {
             try {
-              if (!_d2 && !_a4 && (_b2 = _e2.return)) yield __await(_b2.call(_e2));
+              if (!_d2 && !_a3 && (_b2 = _e2.return)) yield __await(_b2.call(_e2));
             } finally {
               if (e_2) throw e_2.error;
             }
@@ -58783,7 +58814,7 @@ var init_Clients = __esm({
       }
       /**
        * Returns an async iterable iterator to list of page ranges that differ between a specified snapshot and this page blob.
-       * @see https://docs.microsoft.com/rest/api/storageservices/get-page-ranges
+       * @see https://learn.microsoft.com/rest/api/storageservices/get-page-ranges
        *
        *  .byPage() returns an async iterable iterator to list of page ranges that differ between a specified snapshot and this page blob.
        *
@@ -58879,7 +58910,7 @@ var init_Clients = __esm({
       }
       /**
        * Gets the collection of page ranges that differ between a specified snapshot and this page blob for managed disks.
-       * @see https://docs.microsoft.com/rest/api/storageservices/get-page-ranges
+       * @see https://learn.microsoft.com/rest/api/storageservices/get-page-ranges
        *
        * @param offset - Starting byte position of the page blob
        * @param count - Number of bytes to get ranges diff.
@@ -58890,11 +58921,11 @@ var init_Clients = __esm({
       async getPageRangesDiffForManagedDisks(offset, count, prevSnapshotUrl2, options = {}) {
         options.conditions = options.conditions || {};
         return tracingClient.withSpan("PageBlobClient-GetPageRangesDiffForManagedDisks", options, async (updatedOptions) => {
-          var _a4;
+          var _a3;
           const response = assertResponse(await this.pageBlobContext.getPageRangesDiff({
             abortSignal: options.abortSignal,
             leaseAccessConditions: options.conditions,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             prevSnapshotUrl: prevSnapshotUrl2,
             range: rangeToString({ offset, count }),
             tracingOptions: updatedOptions.tracingOptions
@@ -58904,7 +58935,7 @@ var init_Clients = __esm({
       }
       /**
        * Resizes the page blob to the specified size (which must be a multiple of 512).
-       * @see https://docs.microsoft.com/rest/api/storageservices/set-blob-properties
+       * @see https://learn.microsoft.com/rest/api/storageservices/set-blob-properties
        *
        * @param size - Target size
        * @param options - Options to the Page Blob Resize operation.
@@ -58913,11 +58944,11 @@ var init_Clients = __esm({
       async resize(size, options = {}) {
         options.conditions = options.conditions || {};
         return tracingClient.withSpan("PageBlobClient-resize", options, async (updatedOptions) => {
-          var _a4;
+          var _a3;
           return assertResponse(await this.pageBlobContext.resize(size, {
             abortSignal: options.abortSignal,
             leaseAccessConditions: options.conditions,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             encryptionScope: options.encryptionScope,
             tracingOptions: updatedOptions.tracingOptions
           }));
@@ -58925,7 +58956,7 @@ var init_Clients = __esm({
       }
       /**
        * Sets a page blob's sequence number.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/set-blob-properties
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/set-blob-properties
        *
        * @param sequenceNumberAction - Indicates how the service should modify the blob's sequence number.
        * @param sequenceNumber - Required if sequenceNumberAction is max or update
@@ -58935,12 +58966,12 @@ var init_Clients = __esm({
       async updateSequenceNumber(sequenceNumberAction2, sequenceNumber, options = {}) {
         options.conditions = options.conditions || {};
         return tracingClient.withSpan("PageBlobClient-updateSequenceNumber", options, async (updatedOptions) => {
-          var _a4;
+          var _a3;
           return assertResponse(await this.pageBlobContext.updateSequenceNumber(sequenceNumberAction2, {
             abortSignal: options.abortSignal,
             blobSequenceNumber: sequenceNumber,
             leaseAccessConditions: options.conditions,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             tracingOptions: updatedOptions.tracingOptions
           }));
         });
@@ -58950,8 +58981,8 @@ var init_Clients = __esm({
        * The snapshot is copied such that only the differential changes between the previously
        * copied snapshot are transferred to the destination.
        * The copied snapshots are complete copies of the original snapshot and can be read or copied from as usual.
-       * @see https://docs.microsoft.com/rest/api/storageservices/incremental-copy-blob
-       * @see https://docs.microsoft.com/en-us/azure/virtual-machines/windows/incremental-snapshots
+       * @see https://learn.microsoft.com/rest/api/storageservices/incremental-copy-blob
+       * @see https://learn.microsoft.com/en-us/azure/virtual-machines/windows/incremental-snapshots
        *
        * @param copySource - Specifies the name of the source page blob snapshot. For example,
        *                            https://myaccount.blob.core.windows.net/mycontainer/myblob?snapshot=<DateTime>
@@ -58960,10 +58991,10 @@ var init_Clients = __esm({
        */
       async startCopyIncremental(copySource2, options = {}) {
         return tracingClient.withSpan("PageBlobClient-startCopyIncremental", options, async (updatedOptions) => {
-          var _a4;
+          var _a3;
           return assertResponse(await this.pageBlobContext.copyIncremental(copySource2, {
             abortSignal: options.abortSignal,
-            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a4 = options.conditions) === null || _a4 === void 0 ? void 0 : _a4.tagConditions }),
+            modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a3 = options.conditions) === null || _a3 === void 0 ? void 0 : _a3.tagConditions }),
             tracingOptions: updatedOptions.tracingOptions
           }));
         });
@@ -59022,7 +59053,7 @@ var init_BatchResponseParser = __esm({
         this.perResponsePrefix = `--${this.responseBatchBoundary}${HTTP_LINE_ENDING}`;
         this.batchResponseEnding = `--${this.responseBatchBoundary}--`;
       }
-      // For example of response, please refer to https://docs.microsoft.com/en-us/rest/api/storageservices/blob-batch#response
+      // For example of response, please refer to https://learn.microsoft.com/en-us/rest/api/storageservices/blob-batch#response
       async parseBatchResponse() {
         if (this.batchResponse._response.status !== HTTPURLConnection.HTTP_ACCEPTED) {
           throw new Error(`Invalid state: batch request failed with status: '${this.batchResponse._response.status}'.`);
@@ -59187,7 +59218,7 @@ function batchRequestAssemblePolicy(batchRequest) {
 function batchHeaderFilterPolicy() {
   return {
     name: "batchHeaderFilterPolicy",
-    async sendRequest(request3, next2) {
+    async sendRequest(request3, next) {
       let xMsHeaderName = "";
       for (const [name2] of request3.headers) {
         if (iEqual(name2, HeaderConstants.X_MS_VERSION)) {
@@ -59197,7 +59228,7 @@ function batchHeaderFilterPolicy() {
       if (xMsHeaderName !== "") {
         request3.headers.delete(xMsHeaderName);
       }
-      return next2(request3);
+      return next(request3);
     }
   };
 }
@@ -59510,7 +59541,7 @@ var init_BlobBatchClient = __esm({
        * console.log(batchResp.subResponsesSucceededCount);
        * ```
        *
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/blob-batch
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/blob-batch
        *
        * @param batchRequest - A set of Delete or SetTier operations.
        * @param options -
@@ -59614,7 +59645,7 @@ var init_ContainerClient = __esm({
       /**
        * Creates a new container under the specified account. If the container with
        * the same name already exists, the operation fails.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/create-container
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/create-container
        * Naming rules: @see https://learn.microsoft.com/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata
        *
        * @param options - Options to Container Create operation.
@@ -59636,19 +59667,19 @@ var init_ContainerClient = __esm({
       /**
        * Creates a new container under the specified account. If the container with
        * the same name already exists, it is not changed.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/create-container
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/create-container
        * Naming rules: @see https://learn.microsoft.com/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata
        *
        * @param options -
        */
       async createIfNotExists(options = {}) {
         return tracingClient.withSpan("ContainerClient-createIfNotExists", options, async (updatedOptions) => {
-          var _a4, _b2;
+          var _a3, _b2;
           try {
             const res = await this.create(updatedOptions);
             return Object.assign(Object.assign({ succeeded: true }, res), { _response: res._response });
           } catch (e3) {
-            if (((_a4 = e3.details) === null || _a4 === void 0 ? void 0 : _a4.errorCode) === "ContainerAlreadyExists") {
+            if (((_a3 = e3.details) === null || _a3 === void 0 ? void 0 : _a3.errorCode) === "ContainerAlreadyExists") {
               return Object.assign(Object.assign({ succeeded: false }, (_b2 = e3.response) === null || _b2 === void 0 ? void 0 : _b2.parsedHeaders), { _response: e3.response });
             } else {
               throw e3;
@@ -59727,7 +59758,7 @@ var init_ContainerClient = __esm({
       /**
        * Returns all user-defined metadata and system properties for the specified
        * container. The data returned does not include the container's list of blobs.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/get-container-properties
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/get-container-properties
        *
        * WARNING: The `metadata` object returned in the response will have its keys in lowercase, even if
        * they originally contained uppercase characters. This differs from the metadata keys returned by
@@ -59747,7 +59778,7 @@ var init_ContainerClient = __esm({
       /**
        * Marks the specified container for deletion. The container and any blobs
        * contained within it are later deleted during garbage collection.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/delete-container
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/delete-container
        *
        * @param options - Options to Container Delete operation.
        */
@@ -59767,18 +59798,18 @@ var init_ContainerClient = __esm({
       /**
        * Marks the specified container for deletion if it exists. The container and any blobs
        * contained within it are later deleted during garbage collection.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/delete-container
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/delete-container
        *
        * @param options - Options to Container Delete operation.
        */
       async deleteIfExists(options = {}) {
         return tracingClient.withSpan("ContainerClient-deleteIfExists", options, async (updatedOptions) => {
-          var _a4, _b2;
+          var _a3, _b2;
           try {
             const res = await this.delete(updatedOptions);
             return Object.assign(Object.assign({ succeeded: true }, res), { _response: res._response });
           } catch (e3) {
-            if (((_a4 = e3.details) === null || _a4 === void 0 ? void 0 : _a4.errorCode) === "ContainerNotFound") {
+            if (((_a3 = e3.details) === null || _a3 === void 0 ? void 0 : _a3.errorCode) === "ContainerNotFound") {
               return Object.assign(Object.assign({ succeeded: false }, (_b2 = e3.response) === null || _b2 === void 0 ? void 0 : _b2.parsedHeaders), { _response: e3.response });
             }
             throw e3;
@@ -59791,7 +59822,7 @@ var init_ContainerClient = __esm({
        * If no option provided, or no metadata defined in the parameter, the container
        * metadata will be removed.
        *
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/set-container-metadata
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/set-container-metadata
        *
        * @param metadata - Replace existing metadata with this value.
        *                            If no value provided the existing metadata will be removed.
@@ -59821,7 +59852,7 @@ var init_ContainerClient = __esm({
        * WARNING: JavaScript Date will potentially lose precision when parsing startsOn and expiresOn strings.
        * For example, new Date("2018-12-31T03:44:23.8827891Z").toISOString() will get "2018-12-31T03:44:23.882Z".
        *
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/get-container-acl
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/get-container-acl
        *
        * @param options - Options to Container Get Access Policy operation.
        */
@@ -59879,7 +59910,7 @@ var init_ContainerClient = __esm({
        * When you establish a stored access policy on a container, it may take up to 30 seconds to take effect.
        * During this interval, a shared access signature that is associated with the stored access policy will
        * fail with status code 403 (Forbidden), until the access policy becomes active.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/set-container-acl
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/set-container-acl
        *
        * @param access - The level of public access to data in the container.
        * @param containerAcl - Array of elements each having a unique Id and details of the access policy.
@@ -59930,7 +59961,7 @@ var init_ContainerClient = __esm({
        * {@link BlockBlobClient.uploadStream} or {@link BlockBlobClient.uploadBrowserData} for better
        * performance with concurrency uploading.
        *
-       * @see https://docs.microsoft.com/rest/api/storageservices/put-blob
+       * @see https://learn.microsoft.com/rest/api/storageservices/put-blob
        *
        * @param blobName - Name of the block blob to create or update.
        * @param body - Blob, string, ArrayBuffer, ArrayBufferView or a function
@@ -59955,7 +59986,7 @@ var init_ContainerClient = __esm({
        * during garbage collection. Note that in order to delete a blob, you must delete
        * all of its snapshots. You can delete both at the same time with the Delete
        * Blob operation.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/delete-blob
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/delete-blob
        *
        * @param blobName -
        * @param options - Options to Blob Delete operation.
@@ -59975,7 +60006,7 @@ var init_ContainerClient = __esm({
        * specified Marker. Use an empty Marker to start enumeration from the beginning.
        * After getting a segment, process it, and then call listBlobsFlatSegment again
        * (passing the the previously-returned Marker) to get the next segment.
-       * @see https://docs.microsoft.com/rest/api/storageservices/list-blobs
+       * @see https://learn.microsoft.com/rest/api/storageservices/list-blobs
        *
        * @param marker - A string value that identifies the portion of the list to be returned with the next list operation.
        * @param options - Options to Container List Blob Flat Segment operation.
@@ -59995,7 +60026,7 @@ var init_ContainerClient = __esm({
        * the specified Marker. Use an empty Marker to start enumeration from the
        * beginning. After getting a segment, process it, and then call listBlobsHierarchicalSegment
        * again (passing the the previously-returned Marker) to get the next segment.
-       * @see https://docs.microsoft.com/rest/api/storageservices/list-blobs
+       * @see https://learn.microsoft.com/rest/api/storageservices/list-blobs
        *
        * @param delimiter - The character or string used to define the virtual hierarchy
        * @param marker - A string value that identifies the portion of the list to be returned with the next list operation.
@@ -60003,12 +60034,12 @@ var init_ContainerClient = __esm({
        */
       async listBlobHierarchySegment(delimiter2, marker2, options = {}) {
         return tracingClient.withSpan("ContainerClient-listBlobHierarchySegment", options, async (updatedOptions) => {
-          var _a4;
+          var _a3;
           const response = assertResponse(await this.containerContext.listBlobHierarchySegment(delimiter2, Object.assign(Object.assign({ marker: marker2 }, options), { tracingOptions: updatedOptions.tracingOptions })));
           const wrappedResponse = Object.assign(Object.assign({}, response), { _response: Object.assign(Object.assign({}, response._response), { parsedBody: ConvertInternalResponseOfListBlobHierarchy(response._response.parsedBody) }), segment: Object.assign(Object.assign({}, response.segment), { blobItems: response.segment.blobItems.map((blobItemInternal) => {
             const blobItem = Object.assign(Object.assign({}, blobItemInternal), { name: BlobNameToString(blobItemInternal.name), tags: toTags(blobItemInternal.blobTags), objectReplicationSourceProperties: parseObjectReplicationRecord(blobItemInternal.objectReplicationMetadata) });
             return blobItem;
-          }), blobPrefixes: (_a4 = response.segment.blobPrefixes) === null || _a4 === void 0 ? void 0 : _a4.map((blobPrefixInternal) => {
+          }), blobPrefixes: (_a3 = response.segment.blobPrefixes) === null || _a3 === void 0 ? void 0 : _a3.map((blobPrefixInternal) => {
             const blobPrefix = Object.assign(Object.assign({}, blobPrefixInternal), { name: BlobNameToString(blobPrefixInternal.name) });
             return blobPrefix;
           }) }) });
@@ -60046,10 +60077,10 @@ var init_ContainerClient = __esm({
        */
       listItems() {
         return __asyncGenerator(this, arguments, /* @__PURE__ */ __name(function* listItems_1(options = {}) {
-          var _a4, e_1, _b2, _c2;
+          var _a3, e_1, _b2, _c2;
           let marker2;
           try {
-            for (var _d2 = true, _e2 = __asyncValues(this.listSegments(marker2, options)), _f; _f = yield __await(_e2.next()), _a4 = _f.done, !_a4; _d2 = true) {
+            for (var _d2 = true, _e2 = __asyncValues(this.listSegments(marker2, options)), _f; _f = yield __await(_e2.next()), _a3 = _f.done, !_a3; _d2 = true) {
               _c2 = _f.value;
               _d2 = false;
               const listBlobsFlatSegmentResponse = _c2;
@@ -60059,7 +60090,7 @@ var init_ContainerClient = __esm({
             e_1 = { error: e_1_1 };
           } finally {
             try {
-              if (!_d2 && !_a4 && (_b2 = _e2.return)) yield __await(_b2.call(_e2));
+              if (!_d2 && !_a3 && (_b2 = _e2.return)) yield __await(_b2.call(_e2));
             } finally {
               if (e_1) throw e_1.error;
             }
@@ -60227,10 +60258,10 @@ var init_ContainerClient = __esm({
        */
       listItemsByHierarchy(delimiter_1) {
         return __asyncGenerator(this, arguments, /* @__PURE__ */ __name(function* listItemsByHierarchy_1(delimiter2, options = {}) {
-          var _a4, e_2, _b2, _c2;
+          var _a3, e_2, _b2, _c2;
           let marker2;
           try {
-            for (var _d2 = true, _e2 = __asyncValues(this.listHierarchySegments(delimiter2, marker2, options)), _f; _f = yield __await(_e2.next()), _a4 = _f.done, !_a4; _d2 = true) {
+            for (var _d2 = true, _e2 = __asyncValues(this.listHierarchySegments(delimiter2, marker2, options)), _f; _f = yield __await(_e2.next()), _a3 = _f.done, !_a3; _d2 = true) {
               _c2 = _f.value;
               _d2 = false;
               const listBlobsHierarchySegmentResponse = _c2;
@@ -60248,7 +60279,7 @@ var init_ContainerClient = __esm({
             e_2 = { error: e_2_1 };
           } finally {
             try {
-              if (!_d2 && !_a4 && (_b2 = _e2.return)) yield __await(_b2.call(_e2));
+              if (!_d2 && !_a3 && (_b2 = _e2.return)) yield __await(_b2.call(_e2));
             } finally {
               if (e_2) throw e_2.error;
             }
@@ -60421,9 +60452,9 @@ var init_ContainerClient = __esm({
             tracingOptions: updatedOptions.tracingOptions
           }));
           const wrappedResponse = Object.assign(Object.assign({}, response), { _response: response._response, blobs: response.blobs.map((blob) => {
-            var _a4;
+            var _a3;
             let tagValue = "";
-            if (((_a4 = blob.tags) === null || _a4 === void 0 ? void 0 : _a4.blobTagSet.length) === 1) {
+            if (((_a3 = blob.tags) === null || _a3 === void 0 ? void 0 : _a3.blobTagSet.length) === 1) {
               tagValue = blob.tags.blobTagSet[0].value;
             }
             return Object.assign(Object.assign({}, blob), { tags: toTags(blob.tags), tagValue });
@@ -60471,10 +60502,10 @@ var init_ContainerClient = __esm({
        */
       findBlobsByTagsItems(tagFilterSqlExpression_1) {
         return __asyncGenerator(this, arguments, /* @__PURE__ */ __name(function* findBlobsByTagsItems_1(tagFilterSqlExpression, options = {}) {
-          var _a4, e_3, _b2, _c2;
+          var _a3, e_3, _b2, _c2;
           let marker2;
           try {
-            for (var _d2 = true, _e2 = __asyncValues(this.findBlobsByTagsSegments(tagFilterSqlExpression, marker2, options)), _f; _f = yield __await(_e2.next()), _a4 = _f.done, !_a4; _d2 = true) {
+            for (var _d2 = true, _e2 = __asyncValues(this.findBlobsByTagsSegments(tagFilterSqlExpression, marker2, options)), _f; _f = yield __await(_e2.next()), _a3 = _f.done, !_a3; _d2 = true) {
               _c2 = _f.value;
               _d2 = false;
               const segment = _c2;
@@ -60484,7 +60515,7 @@ var init_ContainerClient = __esm({
             e_3 = { error: e_3_1 };
           } finally {
             try {
-              if (!_d2 && !_a4 && (_b2 = _e2.return)) yield __await(_b2.call(_e2));
+              if (!_d2 && !_a3 && (_b2 = _e2.return)) yield __await(_b2.call(_e2));
             } finally {
               if (e_3) throw e_3.error;
             }
@@ -60597,7 +60628,7 @@ var init_ContainerClient = __esm({
        * for the specified account.
        * The Get Account Information operation is available on service versions beginning
        * with version 2018-03-28.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/get-account-information
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/get-account-information
        *
        * @param options - Options to the Service Get Account Info operation.
        * @returns Response data for the Service Get Account Info operation.
@@ -60636,7 +60667,7 @@ var init_ContainerClient = __esm({
        * Generates a Blob Container Service Shared Access Signature (SAS) URI based on the client properties
        * and parameters passed in. The SAS is signed by the shared key credential of the client.
        *
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/constructing-a-service-sas
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/constructing-a-service-sas
        *
        * @param options - Optional parameters.
        * @returns The SAS URI consisting of the URI to the resource represented by this client, followed by the generated SAS token.
@@ -60656,7 +60687,7 @@ var init_ContainerClient = __esm({
        * Generates string to sign for a Blob Container Service Shared Access Signature (SAS) URI
        * based on the client properties and parameters passed in. The SAS is signed by the shared key credential of the client.
        *
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/constructing-a-service-sas
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/constructing-a-service-sas
        *
        * @param options - Optional parameters.
        * @returns The SAS URI consisting of the URI to the resource represented by this client, followed by the generated SAS token.
@@ -60672,7 +60703,7 @@ var init_ContainerClient = __esm({
        * Generates a Blob Container Service Shared Access Signature (SAS) URI based on the client properties
        * and parameters passed in. The SAS is signed by the input user delegation key.
        *
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/constructing-a-service-sas
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/constructing-a-service-sas
        *
        * @param options - Optional parameters.
        * @param userDelegationKey -  Return value of `blobServiceClient.getUserDelegationKey()`
@@ -60688,7 +60719,7 @@ var init_ContainerClient = __esm({
        * Generates string to sign for a Blob Container Service Shared Access Signature (SAS) URI
        * based on the client properties and parameters passed in. The SAS is signed by the input user delegation key.
        *
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/constructing-a-service-sas
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/constructing-a-service-sas
        *
        * @param options - Optional parameters.
        * @param userDelegationKey -  Return value of `blobServiceClient.getUserDelegationKey()`
@@ -60700,7 +60731,7 @@ var init_ContainerClient = __esm({
       /**
        * Creates a BlobBatchClient object to conduct batch operations.
        *
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/blob-batch
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/blob-batch
        *
        * @returns A new BlobBatchClient object for this container.
        */
@@ -60845,7 +60876,7 @@ var init_AccountSASPermissions = __esm({
        * Using this method will guarantee the resource types are in
        * an order accepted by the service.
        *
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/constructing-an-account-sas
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/constructing-an-account-sas
        *
        */
       toString() {
@@ -60937,7 +60968,7 @@ var init_AccountSASResourceTypes = __esm({
       /**
        * Converts the given resource types to a string.
        *
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/constructing-an-account-sas
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/constructing-an-account-sas
        *
        */
       toString() {
@@ -61189,7 +61220,7 @@ var init_BlobServiceClient = __esm({
         return new ContainerClient(appendToURLPath(this.url, encodeURIComponent(containerName)), this.pipeline);
       }
       /**
-       * Create a Blob container. @see https://docs.microsoft.com/en-us/rest/api/storageservices/create-container
+       * Create a Blob container. @see https://learn.microsoft.com/en-us/rest/api/storageservices/create-container
        *
        * @param containerName - Name of the container to create.
        * @param options - Options to configure Container Create operation.
@@ -61250,17 +61281,17 @@ var init_BlobServiceClient = __esm({
       // @ts-ignore Need to hide this interface for now. Make it public and turn on the live tests for it when the service is ready.
       async renameContainer(sourceContainerName2, destinationContainerName, options = {}) {
         return tracingClient.withSpan("BlobServiceClient-renameContainer", options, async (updatedOptions) => {
-          var _a4;
+          var _a3;
           const containerClient = this.getContainerClient(destinationContainerName);
           const containerContext = containerClient["storageClientContext"].container;
-          const containerRenameResponse = assertResponse(await containerContext.rename(sourceContainerName2, Object.assign(Object.assign({}, updatedOptions), { sourceLeaseId: (_a4 = options.sourceCondition) === null || _a4 === void 0 ? void 0 : _a4.leaseId })));
+          const containerRenameResponse = assertResponse(await containerContext.rename(sourceContainerName2, Object.assign(Object.assign({}, updatedOptions), { sourceLeaseId: (_a3 = options.sourceCondition) === null || _a3 === void 0 ? void 0 : _a3.leaseId })));
           return { containerClient, containerRenameResponse };
         });
       }
       /**
        * Gets the properties of a storage account’s Blob service, including properties
        * for Storage Analytics and CORS (Cross-Origin Resource Sharing) rules.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/get-blob-service-properties
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/get-blob-service-properties
        *
        * @param options - Options to the Service Get Properties operation.
        * @returns Response data for the Service Get Properties operation.
@@ -61276,7 +61307,7 @@ var init_BlobServiceClient = __esm({
       /**
        * Sets properties for a storage account’s Blob service endpoint, including properties
        * for Storage Analytics, CORS (Cross-Origin Resource Sharing) rules and soft delete settings.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/set-blob-service-properties
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/set-blob-service-properties
        *
        * @param properties -
        * @param options - Options to the Service Set Properties operation.
@@ -61294,7 +61325,7 @@ var init_BlobServiceClient = __esm({
        * Retrieves statistics related to replication for the Blob service. It is only
        * available on the secondary location endpoint when read-access geo-redundant
        * replication is enabled for the storage account.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/get-blob-service-stats
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/get-blob-service-stats
        *
        * @param options - Options to the Service Get Statistics operation.
        * @returns Response data for the Service Get Statistics operation.
@@ -61312,7 +61343,7 @@ var init_BlobServiceClient = __esm({
        * for the specified account.
        * The Get Account Information operation is available on service versions beginning
        * with version 2018-03-28.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/get-account-information
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/get-account-information
        *
        * @param options - Options to the Service Get Account Info operation.
        * @returns Response data for the Service Get Account Info operation.
@@ -61327,7 +61358,7 @@ var init_BlobServiceClient = __esm({
       }
       /**
        * Returns a list of the containers under the specified account.
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/list-containers2
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/list-containers2
        *
        * @param marker - A string value that identifies the portion of
        *                        the list of containers to be returned with the next listing operation. The
@@ -61372,9 +61403,9 @@ var init_BlobServiceClient = __esm({
             tracingOptions: updatedOptions.tracingOptions
           }));
           const wrappedResponse = Object.assign(Object.assign({}, response), { _response: response._response, blobs: response.blobs.map((blob) => {
-            var _a4;
+            var _a3;
             let tagValue = "";
-            if (((_a4 = blob.tags) === null || _a4 === void 0 ? void 0 : _a4.blobTagSet.length) === 1) {
+            if (((_a3 = blob.tags) === null || _a3 === void 0 ? void 0 : _a3.blobTagSet.length) === 1) {
               tagValue = blob.tags.blobTagSet[0].value;
             }
             return Object.assign(Object.assign({}, blob), { tags: toTags(blob.tags), tagValue });
@@ -61422,10 +61453,10 @@ var init_BlobServiceClient = __esm({
        */
       findBlobsByTagsItems(tagFilterSqlExpression_1) {
         return __asyncGenerator(this, arguments, /* @__PURE__ */ __name(function* findBlobsByTagsItems_1(tagFilterSqlExpression, options = {}) {
-          var _a4, e_1, _b2, _c2;
+          var _a3, e_1, _b2, _c2;
           let marker2;
           try {
-            for (var _d2 = true, _e2 = __asyncValues(this.findBlobsByTagsSegments(tagFilterSqlExpression, marker2, options)), _f; _f = yield __await(_e2.next()), _a4 = _f.done, !_a4; _d2 = true) {
+            for (var _d2 = true, _e2 = __asyncValues(this.findBlobsByTagsSegments(tagFilterSqlExpression, marker2, options)), _f; _f = yield __await(_e2.next()), _a3 = _f.done, !_a3; _d2 = true) {
               _c2 = _f.value;
               _d2 = false;
               const segment = _c2;
@@ -61435,7 +61466,7 @@ var init_BlobServiceClient = __esm({
             e_1 = { error: e_1_1 };
           } finally {
             try {
-              if (!_d2 && !_a4 && (_b2 = _e2.return)) yield __await(_b2.call(_e2));
+              if (!_d2 && !_a3 && (_b2 = _e2.return)) yield __await(_b2.call(_e2));
             } finally {
               if (e_1) throw e_1.error;
             }
@@ -61448,7 +61479,7 @@ var init_BlobServiceClient = __esm({
        *
        * .byPage() returns an async iterable iterator to list the blobs in pages.
        *
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/get-blob-service-properties
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/get-blob-service-properties
        *
        * Example using `for await` syntax:
        *
@@ -61577,10 +61608,10 @@ var init_BlobServiceClient = __esm({
        */
       listItems() {
         return __asyncGenerator(this, arguments, /* @__PURE__ */ __name(function* listItems_1(options = {}) {
-          var _a4, e_2, _b2, _c2;
+          var _a3, e_2, _b2, _c2;
           let marker2;
           try {
-            for (var _d2 = true, _e2 = __asyncValues(this.listSegments(marker2, options)), _f; _f = yield __await(_e2.next()), _a4 = _f.done, !_a4; _d2 = true) {
+            for (var _d2 = true, _e2 = __asyncValues(this.listSegments(marker2, options)), _f; _f = yield __await(_e2.next()), _a3 = _f.done, !_a3; _d2 = true) {
               _c2 = _f.value;
               _d2 = false;
               const segment = _c2;
@@ -61590,7 +61621,7 @@ var init_BlobServiceClient = __esm({
             e_2 = { error: e_2_1 };
           } finally {
             try {
-              if (!_d2 && !_a4 && (_b2 = _e2.return)) yield __await(_b2.call(_e2));
+              if (!_d2 && !_a3 && (_b2 = _e2.return)) yield __await(_b2.call(_e2));
             } finally {
               if (e_2) throw e_2.error;
             }
@@ -61714,7 +61745,7 @@ var init_BlobServiceClient = __esm({
        * Retrieves a user delegation key for the Blob service. This is only a valid operation when using
        * bearer token authentication.
        *
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/get-user-delegation-key
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/get-user-delegation-key
        *
        * @param startsOn -      The start time for the user delegation SAS. Must be within 7 days of the current time
        * @param expiresOn -     The end time for the user delegation SAS. Must be within 7 days of the current time
@@ -61744,7 +61775,7 @@ var init_BlobServiceClient = __esm({
       /**
        * Creates a BlobBatchClient object to conduct batch operations.
        *
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/blob-batch
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/blob-batch
        *
        * @returns A new BlobBatchClient object for this service.
        */
@@ -61757,7 +61788,7 @@ var init_BlobServiceClient = __esm({
        * Generates a Blob account Shared Access Signature (SAS) URI based on the client properties
        * and parameters passed in. The SAS is signed by the shared key credential of the client.
        *
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/create-account-sas
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/create-account-sas
        *
        * @param expiresOn - Optional. The time at which the shared access signature becomes invalid. Default to an hour later if not provided.
        * @param permissions - Specifies the list of permissions to be associated with the SAS.
@@ -61787,7 +61818,7 @@ var init_BlobServiceClient = __esm({
        * Generates string to sign for a Blob account Shared Access Signature (SAS) URI based on
        * the client properties and parameters passed in. The SAS is signed by the shared key credential of the client.
        *
-       * @see https://docs.microsoft.com/en-us/rest/api/storageservices/create-account-sas
+       * @see https://learn.microsoft.com/en-us/rest/api/storageservices/create-account-sas
        *
        * @param expiresOn - Optional. The time at which the shared access signature becomes invalid. Default to an hour later if not provided.
        * @param permissions - Specifies the list of permissions to be associated with the SAS.
@@ -62158,11 +62189,11 @@ var require_uploadUtils = __commonJS({
     };
     exports2.UploadProgress = UploadProgress;
     function uploadCacheArchiveSDK(signedUploadURL, archivePath, options) {
-      var _a4;
+      var _a3;
       return __awaiter6(this, void 0, void 0, function* () {
         const blobClient = new storage_blob_1.BlobClient(signedUploadURL);
         const blockBlobClient = blobClient.getBlockBlobClient();
-        const uploadProgress = new UploadProgress((_a4 = options === null || options === void 0 ? void 0 : options.archiveSizeBytes) !== null && _a4 !== void 0 ? _a4 : 0);
+        const uploadProgress = new UploadProgress((_a3 = options === null || options === void 0 ? void 0 : options.archiveSizeBytes) !== null && _a3 !== void 0 ? _a3 : 0);
         const uploadOptions = {
           blockSize: options === null || options === void 0 ? void 0 : options.uploadChunkSize,
           concurrency: options === null || options === void 0 ? void 0 : options.uploadConcurrency,
@@ -62517,9 +62548,9 @@ var init_AbortController = __esm({
        * Creates a new AbortSignal instance that will abort after the provided ms.
        * @param ms - Elapsed time in milliseconds to trigger an abort.
        */
-      static timeout(ms2) {
+      static timeout(ms) {
         const signal = new AbortSignal2();
-        const timer = setTimeout(abortSignal, ms2, signal);
+        const timer = setTimeout(abortSignal, ms, signal);
         if (typeof timer.unref === "function") {
           timer.unref();
         }
@@ -62612,7 +62643,7 @@ var require_downloadUtils = __commonJS({
     var http_client_1 = require_lib();
     var storage_blob_1 = (init_src4(), __toCommonJS(src_exports2));
     var buffer2 = __importStar(__require("buffer"));
-    var fs4 = __importStar(__require("fs"));
+    var fs3 = __importStar(__require("fs"));
     var stream = __importStar(__require("stream"));
     var util3 = __importStar(__require("util"));
     var utils = __importStar(require_cacheUtils());
@@ -62727,7 +62758,7 @@ var require_downloadUtils = __commonJS({
     exports2.DownloadProgress = DownloadProgress;
     function downloadCacheHttpClient(archiveLocation, archivePath) {
       return __awaiter6(this, void 0, void 0, function* () {
-        const writeStream = fs4.createWriteStream(archivePath);
+        const writeStream = fs3.createWriteStream(archivePath);
         const httpClient = new http_client_1.HttpClient("actions/cache");
         const downloadResponse = yield (0, requestUtils_1.retryHttpClientResponse)("downloadCache", () => __awaiter6(this, void 0, void 0, function* () {
           return httpClient.get(archiveLocation);
@@ -62752,9 +62783,9 @@ var require_downloadUtils = __commonJS({
     __name(downloadCacheHttpClient, "downloadCacheHttpClient");
     exports2.downloadCacheHttpClient = downloadCacheHttpClient;
     function downloadCacheHttpClientConcurrent(archiveLocation, archivePath, options) {
-      var _a4;
+      var _a3;
       return __awaiter6(this, void 0, void 0, function* () {
-        const archiveDescriptor = yield fs4.promises.open(archivePath, "w");
+        const archiveDescriptor = yield fs3.promises.open(archivePath, "w");
         const httpClient = new http_client_1.HttpClient("actions/cache", void 0, {
           socketTimeout: options.timeoutInMs,
           keepAlive: true
@@ -62801,7 +62832,7 @@ var require_downloadUtils = __commonJS({
           while (nextDownload = downloads.pop()) {
             activeDownloads[nextDownload.offset] = nextDownload.promiseGetter();
             actives++;
-            if (actives >= ((_a4 = options.downloadConcurrency) !== null && _a4 !== void 0 ? _a4 : 10)) {
+            if (actives >= ((_a3 = options.downloadConcurrency) !== null && _a3 !== void 0 ? _a3 : 10)) {
               yield waitAndWrite();
             }
           }
@@ -62857,7 +62888,7 @@ var require_downloadUtils = __commonJS({
     }
     __name(downloadSegment, "downloadSegment");
     function downloadCacheStorageSDK(archiveLocation, archivePath, options) {
-      var _a4;
+      var _a3;
       return __awaiter6(this, void 0, void 0, function* () {
         const client = new storage_blob_1.BlockBlobClient(archiveLocation, void 0, {
           retryOptions: {
@@ -62867,14 +62898,14 @@ var require_downloadUtils = __commonJS({
           }
         });
         const properties = yield client.getProperties();
-        const contentLength2 = (_a4 = properties.contentLength) !== null && _a4 !== void 0 ? _a4 : -1;
+        const contentLength2 = (_a3 = properties.contentLength) !== null && _a3 !== void 0 ? _a3 : -1;
         if (contentLength2 < 0) {
           core2.debug("Unable to determine content length, downloading file with http-client...");
           yield downloadCacheHttpClient(archiveLocation, archivePath);
         } else {
           const maxSegmentSize = Math.min(134217728, buffer2.constants.MAX_LENGTH);
           const downloadProgress = new DownloadProgress(contentLength2);
-          const fd = fs4.openSync(archivePath, "w");
+          const fd = fs3.openSync(archivePath, "w");
           try {
             downloadProgress.startDisplayTimer();
             const controller = new abort_controller_1.AbortController();
@@ -62892,12 +62923,12 @@ var require_downloadUtils = __commonJS({
                 controller.abort();
                 throw new Error("Aborting cache download as the download time exceeded the timeout.");
               } else if (Buffer.isBuffer(result)) {
-                fs4.writeFileSync(fd, result);
+                fs3.writeFileSync(fd, result);
               }
             }
           } finally {
             downloadProgress.stopDisplayTimer();
-            fs4.closeSync(fd);
+            fs3.closeSync(fd);
           }
         }
       });
@@ -63067,7 +63098,7 @@ var require_package = __commonJS({
   "node_modules/@actions/cache/package.json"(exports2, module) {
     module.exports = {
       name: "@actions/cache",
-      version: "4.0.2",
+      version: "4.0.3",
       preview: true,
       description: "Actions cache lib",
       keywords: [
@@ -63116,6 +63147,7 @@ var require_package = __commonJS({
         semver: "^6.3.1"
       },
       devDependencies: {
+        "@types/node": "^22.13.9",
         "@types/semver": "^6.0.0",
         typescript: "^5.2.2"
       }
@@ -63205,7 +63237,7 @@ var require_cacheHttpClient = __commonJS({
     var core2 = __importStar(require_core());
     var http_client_1 = require_lib();
     var auth_1 = require_auth();
-    var fs4 = __importStar(__require("fs"));
+    var fs3 = __importStar(__require("fs"));
     var url_1 = __require("url");
     var utils = __importStar(require_cacheUtils());
     var uploadUtils_1 = require_uploadUtils();
@@ -63353,7 +63385,7 @@ Other caches with similar key:`);
       return __awaiter6(this, void 0, void 0, function* () {
         const fileSize = utils.getArchiveFileSizeInBytes(archivePath);
         const resourceUrl = getCacheApiUrl(`caches/${cacheId.toString()}`);
-        const fd = fs4.openSync(archivePath, "r");
+        const fd = fs3.openSync(archivePath, "r");
         const uploadOptions = (0, options_1.getUploadOptions)(options);
         const concurrency = utils.assertDefined("uploadConcurrency", uploadOptions.uploadConcurrency);
         const maxChunkSize = utils.assertDefined("uploadChunkSize", uploadOptions.uploadChunkSize);
@@ -63367,7 +63399,7 @@ Other caches with similar key:`);
               const start = offset;
               const end = offset + chunkSize - 1;
               offset += maxChunkSize;
-              yield uploadChunk(httpClient, resourceUrl, () => fs4.createReadStream(archivePath, {
+              yield uploadChunk(httpClient, resourceUrl, () => fs3.createReadStream(archivePath, {
                 fd,
                 start,
                 end,
@@ -63378,7 +63410,7 @@ Other caches with similar key:`);
             }
           })));
         } finally {
-          fs4.closeSync(fd);
+          fs3.closeSync(fd);
         }
         return;
       });
@@ -63445,12 +63477,12 @@ var init_json_typings = __esm({
 
 // node_modules/@protobuf-ts/runtime/build/es2015/base64.js
 function base64decode(base64Str) {
-  let es2 = base64Str.length * 3 / 4;
+  let es = base64Str.length * 3 / 4;
   if (base64Str[base64Str.length - 2] == "=")
-    es2 -= 2;
+    es -= 2;
   else if (base64Str[base64Str.length - 1] == "=")
-    es2 -= 1;
-  let bytes = new Uint8Array(es2), bytePos = 0, groupPos = 0, b3, p3 = 0;
+    es -= 1;
+  let bytes = new Uint8Array(es), bytePos = 0, groupPos = 0, b3, p3 = 0;
   for (let i3 = 0; i3 < base64Str.length; i3++) {
     b3 = decTable[base64Str.charCodeAt(i3)];
     if (b3 === void 0) {
@@ -63588,7 +63620,7 @@ var init_binary_format_contract = __esm({
     (function(UnknownFieldHandler2) {
       UnknownFieldHandler2.symbol = Symbol.for("protobuf-ts/unknown");
       UnknownFieldHandler2.onRead = (typeName, message, fieldNo, wireType, data) => {
-        let container = is2(message) ? message[UnknownFieldHandler2.symbol] : message[UnknownFieldHandler2.symbol] = [];
+        let container = is(message) ? message[UnknownFieldHandler2.symbol] : message[UnknownFieldHandler2.symbol] = [];
         container.push({ no: fieldNo, wireType, data });
       };
       UnknownFieldHandler2.onWrite = (typeName, message, writer) => {
@@ -63596,14 +63628,14 @@ var init_binary_format_contract = __esm({
           writer.tag(no2, wireType).raw(data);
       };
       UnknownFieldHandler2.list = (message, fieldNo) => {
-        if (is2(message)) {
+        if (is(message)) {
           let all = message[UnknownFieldHandler2.symbol];
           return fieldNo ? all.filter((uf) => uf.no == fieldNo) : all;
         }
         return [];
       };
       UnknownFieldHandler2.last = (message, fieldNo) => UnknownFieldHandler2.list(message, fieldNo).slice(-1)[0];
-      const is2 = /* @__PURE__ */ __name((message) => message && Array.isArray(message[UnknownFieldHandler2.symbol]), "is");
+      const is = /* @__PURE__ */ __name((message) => message && Array.isArray(message[UnknownFieldHandler2.symbol]), "is");
     })(UnknownFieldHandler || (UnknownFieldHandler = {}));
     __name(mergeBinaryOptions, "mergeBinaryOptions");
     (function(WireType2) {
@@ -64484,9 +64516,9 @@ function jsonWriteOptions(options) {
   return options ? Object.assign(Object.assign({}, defaultsWrite2), options) : defaultsWrite2;
 }
 function mergeJsonOptions(a3, b3) {
-  var _a4, _b2;
+  var _a3, _b2;
   let c3 = Object.assign(Object.assign({}, a3), b3);
-  c3.typeRegistry = [...(_a4 = a3 === null || a3 === void 0 ? void 0 : a3.typeRegistry) !== null && _a4 !== void 0 ? _a4 : [], ...(_b2 = b3 === null || b3 === void 0 ? void 0 : b3.typeRegistry) !== null && _b2 !== void 0 ? _b2 : []];
+  c3.typeRegistry = [...(_a3 = a3 === null || a3 === void 0 ? void 0 : a3.typeRegistry) !== null && _a3 !== void 0 ? _a3 : [], ...(_b2 = b3 === null || b3 === void 0 ? void 0 : b3.typeRegistry) !== null && _b2 !== void 0 ? _b2 : []];
   return c3;
 }
 var defaultsWrite2, defaultsRead2;
@@ -64522,19 +64554,19 @@ function lowerCamelCase(snakeCase2) {
   let capNext = false;
   const sb = [];
   for (let i3 = 0; i3 < snakeCase2.length; i3++) {
-    let next2 = snakeCase2.charAt(i3);
-    if (next2 == "_") {
+    let next = snakeCase2.charAt(i3);
+    if (next == "_") {
       capNext = true;
-    } else if (/\d/.test(next2)) {
-      sb.push(next2);
+    } else if (/\d/.test(next)) {
+      sb.push(next);
       capNext = true;
     } else if (capNext) {
-      sb.push(next2.toUpperCase());
+      sb.push(next.toUpperCase());
       capNext = false;
     } else if (i3 == 0) {
-      sb.push(next2.toLowerCase());
+      sb.push(next.toLowerCase());
     } else {
-      sb.push(next2);
+      sb.push(next);
     }
   }
   return sb.join("");
@@ -64548,21 +64580,21 @@ var init_lower_camel_case = __esm({
 
 // node_modules/@protobuf-ts/runtime/build/es2015/reflection-info.js
 function normalizeFieldInfo(field) {
-  var _a4, _b2, _c2, _d2;
-  field.localName = (_a4 = field.localName) !== null && _a4 !== void 0 ? _a4 : lowerCamelCase(field.name);
+  var _a3, _b2, _c2, _d2;
+  field.localName = (_a3 = field.localName) !== null && _a3 !== void 0 ? _a3 : lowerCamelCase(field.name);
   field.jsonName = (_b2 = field.jsonName) !== null && _b2 !== void 0 ? _b2 : lowerCamelCase(field.name);
   field.repeat = (_c2 = field.repeat) !== null && _c2 !== void 0 ? _c2 : RepeatType.NO;
   field.opt = (_d2 = field.opt) !== null && _d2 !== void 0 ? _d2 : field.repeat ? false : field.oneof ? false : field.kind == "message";
   return field;
 }
 function readFieldOptions(messageType, fieldName, extensionName, extensionType) {
-  var _a4;
-  const options = (_a4 = messageType.fields.find((m3, i3) => m3.localName == fieldName || i3 == fieldName)) === null || _a4 === void 0 ? void 0 : _a4.options;
+  var _a3;
+  const options = (_a3 = messageType.fields.find((m3, i3) => m3.localName == fieldName || i3 == fieldName)) === null || _a3 === void 0 ? void 0 : _a3.options;
   return options && options[extensionName] ? extensionType.fromJson(options[extensionName]) : void 0;
 }
 function readFieldOption(messageType, fieldName, extensionName, extensionType) {
-  var _a4;
-  const options = (_a4 = messageType.fields.find((m3, i3) => m3.localName == fieldName || i3 == fieldName)) === null || _a4 === void 0 ? void 0 : _a4.options;
+  var _a3;
+  const options = (_a3 = messageType.fields.find((m3, i3) => m3.localName == fieldName || i3 == fieldName)) === null || _a3 === void 0 ? void 0 : _a3.options;
   if (!options) {
     return void 0;
   }
@@ -64682,8 +64714,8 @@ var init_reflection_type_check = __esm({
         __name(this, "ReflectionTypeCheck");
       }
       constructor(info3) {
-        var _a4;
-        this.fields = (_a4 = info3.fields) !== null && _a4 !== void 0 ? _a4 : [];
+        var _a3;
+        this.fields = (_a3 = info3.fields) !== null && _a3 !== void 0 ? _a3 : [];
       }
       prepare() {
         if (this.data)
@@ -64932,10 +64964,10 @@ var init_reflection_json_reader = __esm({
         this.info = info3;
       }
       prepare() {
-        var _a4;
+        var _a3;
         if (this.fMap === void 0) {
           this.fMap = {};
-          const fieldsInput = (_a4 = this.info.fields) !== null && _a4 !== void 0 ? _a4 : [];
+          const fieldsInput = (_a3 = this.info.fields) !== null && _a3 !== void 0 ? _a3 : [];
           for (const field of fieldsInput) {
             this.fMap[field.name] = field;
             this.fMap[field.jsonName] = field;
@@ -65227,8 +65259,8 @@ var init_reflection_json_writer = __esm({
         __name(this, "ReflectionJsonWriter");
       }
       constructor(info3) {
-        var _a4;
-        this.fields = (_a4 = info3.fields) !== null && _a4 !== void 0 ? _a4 : [];
+        var _a3;
+        this.fields = (_a3 = info3.fields) !== null && _a3 !== void 0 ? _a3 : [];
       }
       /**
        * Converts the message to a JSON object, based on the field descriptors.
@@ -65484,9 +65516,9 @@ var init_reflection_binary_reader = __esm({
         this.info = info3;
       }
       prepare() {
-        var _a4;
+        var _a3;
         if (!this.fieldNoToField) {
-          const fieldsInput = (_a4 = this.info.fields) !== null && _a4 !== void 0 ? _a4 : [];
+          const fieldsInput = (_a3 = this.info.fields) !== null && _a3 !== void 0 ? _a3 : [];
           this.fieldNoToField = new Map(fieldsInput.map((field) => [field.no, field]));
         }
       }
@@ -65525,17 +65557,17 @@ var init_reflection_binary_reader = __esm({
             case "scalar":
             case "enum":
               let T3 = field.kind == "enum" ? ScalarType.INT32 : field.T;
-              let L2 = field.kind == "scalar" ? field.L : void 0;
+              let L3 = field.kind == "scalar" ? field.L : void 0;
               if (repeated) {
                 let arr = target[localName];
                 if (wireType == WireType.LengthDelimited && T3 != ScalarType.STRING && T3 != ScalarType.BYTES) {
                   let e3 = reader.uint32() + reader.pos;
                   while (reader.pos < e3)
-                    arr.push(this.scalar(reader, T3, L2));
+                    arr.push(this.scalar(reader, T3, L3));
                 } else
-                  arr.push(this.scalar(reader, T3, L2));
+                  arr.push(this.scalar(reader, T3, L3));
               } else
-                target[localName] = this.scalar(reader, T3, L2);
+                target[localName] = this.scalar(reader, T3, L3);
               break;
             case "message":
               if (repeated) {
@@ -66000,12 +66032,12 @@ function primitiveEq(type2, a3, b3) {
     return true;
   if (type2 !== ScalarType.BYTES)
     return false;
-  let ba2 = a3;
+  let ba = a3;
   let bb = b3;
-  if (ba2.length !== bb.length)
+  if (ba.length !== bb.length)
     return false;
-  for (let i3 = 0; i3 < ba2.length; i3++)
-    if (ba2[i3] != bb[i3])
+  for (let i3 = 0; i3 < ba.length; i3++)
+    if (ba[i3] != bb[i3])
       return false;
   return true;
 }
@@ -66152,9 +66184,9 @@ var init_message_type = __esm({
        * This is equivalent to `JSON.stringify(T.toJson(t))`
        */
       toJsonString(message, options) {
-        var _a4;
+        var _a3;
         let value = this.toJson(message, options);
-        return JSON.stringify(value, null, (_a4 = options === null || options === void 0 ? void 0 : options.prettySpaces) !== null && _a4 !== void 0 ? _a4 : 0);
+        return JSON.stringify(value, null, (_a3 = options === null || options === void 0 ? void 0 : options.prettySpaces) !== null && _a3 !== void 0 ? _a3 : 0);
       }
       /**
        * Write the message to binary format.
@@ -66369,10 +66401,10 @@ var init_es2015 = __esm({
 
 // node_modules/@protobuf-ts/runtime-rpc/build/es2015/reflection-info.js
 function normalizeMethodInfo(method, service) {
-  var _a4, _b2, _c2;
+  var _a3, _b2, _c2;
   let m3 = method;
   m3.service = service;
-  m3.localName = (_a4 = m3.localName) !== null && _a4 !== void 0 ? _a4 : lowerCamelCase(m3.name);
+  m3.localName = (_a3 = m3.localName) !== null && _a3 !== void 0 ? _a3 : lowerCamelCase(m3.name);
   m3.serverStreaming = !!m3.serverStreaming;
   m3.clientStreaming = !!m3.clientStreaming;
   m3.options = (_b2 = m3.options) !== null && _b2 !== void 0 ? _b2 : {};
@@ -66380,13 +66412,13 @@ function normalizeMethodInfo(method, service) {
   return m3;
 }
 function readMethodOptions(service, methodName, extensionName, extensionType) {
-  var _a4;
-  const options = (_a4 = service.methods.find((m3, i3) => m3.localName === methodName || i3 === methodName)) === null || _a4 === void 0 ? void 0 : _a4.options;
+  var _a3;
+  const options = (_a3 = service.methods.find((m3, i3) => m3.localName === methodName || i3 === methodName)) === null || _a3 === void 0 ? void 0 : _a3.options;
   return options && options[extensionName] ? extensionType.fromJson(options[extensionName]) : void 0;
 }
 function readMethodOption(service, methodName, extensionName, extensionType) {
-  var _a4;
-  const options = (_a4 = service.methods.find((m3, i3) => m3.localName === methodName || i3 === methodName)) === null || _a4 === void 0 ? void 0 : _a4.options;
+  var _a3;
+  const options = (_a3 = service.methods.find((m3, i3) => m3.localName === methodName || i3 === methodName)) === null || _a3 === void 0 ? void 0 : _a3.options;
   if (!options) {
     return void 0;
   }
@@ -67065,12 +67097,12 @@ var init_duplex_streaming_call = __esm({
 });
 
 // node_modules/@protobuf-ts/runtime-rpc/build/es2015/test-transport.js
-function delay4(ms2, abort) {
+function delay4(ms, abort) {
   return (v3) => new Promise((resolve2, reject) => {
     if (abort === null || abort === void 0 ? void 0 : abort.aborted) {
       reject(new RpcError("user cancel", "CANCELLED"));
     } else {
-      const id = setTimeout(() => resolve2(v3), ms2);
+      const id = setTimeout(() => resolve2(v3), ms);
       if (abort) {
         abort.addEventListener("abort", (ev) => {
           clearTimeout(id);
@@ -67162,8 +67194,8 @@ var init_test_transport = __esm({
       }
       // Creates a promise for response headers from the mock data.
       promiseHeaders() {
-        var _a4;
-        const headers = (_a4 = this.data.headers) !== null && _a4 !== void 0 ? _a4 : _TestTransport.defaultHeaders;
+        var _a3;
+        const headers = (_a3 = this.data.headers) !== null && _a3 !== void 0 ? _a3 : _TestTransport.defaultHeaders;
         return headers instanceof RpcError ? Promise.reject(headers) : Promise.resolve(headers);
       }
       // Creates a promise for a single, valid, message from the mock data.
@@ -67238,14 +67270,14 @@ var init_test_transport = __esm({
       }
       // Creates a promise for response status from the mock data.
       promiseStatus() {
-        var _a4;
-        const status = (_a4 = this.data.status) !== null && _a4 !== void 0 ? _a4 : _TestTransport.defaultStatus;
+        var _a3;
+        const status = (_a3 = this.data.status) !== null && _a3 !== void 0 ? _a3 : _TestTransport.defaultStatus;
         return status instanceof RpcError ? Promise.reject(status) : Promise.resolve(status);
       }
       // Creates a promise for response trailers from the mock data.
       promiseTrailers() {
-        var _a4;
-        const trailers = (_a4 = this.data.trailers) !== null && _a4 !== void 0 ? _a4 : _TestTransport.defaultTrailers;
+        var _a3;
+        const trailers = (_a3 = this.data.trailers) !== null && _a3 !== void 0 ? _a3 : _TestTransport.defaultTrailers;
         return trailers instanceof RpcError ? Promise.reject(trailers) : Promise.resolve(trailers);
       }
       maybeSuppressUncaught(...promise) {
@@ -67260,8 +67292,8 @@ var init_test_transport = __esm({
         return mergeRpcOptions({}, options);
       }
       unary(method, input, options) {
-        var _a4;
-        const requestHeaders = (_a4 = options.meta) !== null && _a4 !== void 0 ? _a4 : {}, headersPromise = this.promiseHeaders().then(delay4(this.headerDelay, options.abort)), responsePromise = headersPromise.catch((_3) => {
+        var _a3;
+        const requestHeaders = (_a3 = options.meta) !== null && _a3 !== void 0 ? _a3 : {}, headersPromise = this.promiseHeaders().then(delay4(this.headerDelay, options.abort)), responsePromise = headersPromise.catch((_3) => {
         }).then(delay4(this.responseDelay, options.abort)).then((_3) => this.promiseSingleResponse(method)), statusPromise = responsePromise.catch((_3) => {
         }).then(delay4(this.afterResponseDelay, options.abort)).then((_3) => this.promiseStatus()), trailersPromise = responsePromise.catch((_3) => {
         }).then(delay4(this.afterResponseDelay, options.abort)).then((_3) => this.promiseTrailers());
@@ -67270,16 +67302,16 @@ var init_test_transport = __esm({
         return new UnaryCall(method, requestHeaders, input, headersPromise, responsePromise, statusPromise, trailersPromise);
       }
       serverStreaming(method, input, options) {
-        var _a4;
-        const requestHeaders = (_a4 = options.meta) !== null && _a4 !== void 0 ? _a4 : {}, headersPromise = this.promiseHeaders().then(delay4(this.headerDelay, options.abort)), outputStream = new RpcOutputStreamController(), responseStreamClosedPromise = headersPromise.then(delay4(this.responseDelay, options.abort)).catch(() => {
+        var _a3;
+        const requestHeaders = (_a3 = options.meta) !== null && _a3 !== void 0 ? _a3 : {}, headersPromise = this.promiseHeaders().then(delay4(this.headerDelay, options.abort)), outputStream = new RpcOutputStreamController(), responseStreamClosedPromise = headersPromise.then(delay4(this.responseDelay, options.abort)).catch(() => {
         }).then(() => this.streamResponses(method, outputStream, options.abort)).then(delay4(this.afterResponseDelay, options.abort)), statusPromise = responseStreamClosedPromise.then(() => this.promiseStatus()), trailersPromise = responseStreamClosedPromise.then(() => this.promiseTrailers());
         this.maybeSuppressUncaught(statusPromise, trailersPromise);
         this.lastInput = { single: input };
         return new ServerStreamingCall(method, requestHeaders, input, headersPromise, outputStream, statusPromise, trailersPromise);
       }
       clientStreaming(method, options) {
-        var _a4;
-        const requestHeaders = (_a4 = options.meta) !== null && _a4 !== void 0 ? _a4 : {}, headersPromise = this.promiseHeaders().then(delay4(this.headerDelay, options.abort)), responsePromise = headersPromise.catch((_3) => {
+        var _a3;
+        const requestHeaders = (_a3 = options.meta) !== null && _a3 !== void 0 ? _a3 : {}, headersPromise = this.promiseHeaders().then(delay4(this.headerDelay, options.abort)), responsePromise = headersPromise.catch((_3) => {
         }).then(delay4(this.responseDelay, options.abort)).then((_3) => this.promiseSingleResponse(method)), statusPromise = responsePromise.catch((_3) => {
         }).then(delay4(this.afterResponseDelay, options.abort)).then((_3) => this.promiseStatus()), trailersPromise = responsePromise.catch((_3) => {
         }).then(delay4(this.afterResponseDelay, options.abort)).then((_3) => this.promiseTrailers());
@@ -67288,8 +67320,8 @@ var init_test_transport = __esm({
         return new ClientStreamingCall(method, requestHeaders, this.lastInput, headersPromise, responsePromise, statusPromise, trailersPromise);
       }
       duplex(method, options) {
-        var _a4;
-        const requestHeaders = (_a4 = options.meta) !== null && _a4 !== void 0 ? _a4 : {}, headersPromise = this.promiseHeaders().then(delay4(this.headerDelay, options.abort)), outputStream = new RpcOutputStreamController(), responseStreamClosedPromise = headersPromise.then(delay4(this.responseDelay, options.abort)).catch(() => {
+        var _a3;
+        const requestHeaders = (_a3 = options.meta) !== null && _a3 !== void 0 ? _a3 : {}, headersPromise = this.promiseHeaders().then(delay4(this.headerDelay, options.abort)), outputStream = new RpcOutputStreamController(), responseStreamClosedPromise = headersPromise.then(delay4(this.responseDelay, options.abort)).catch(() => {
         }).then(() => this.streamResponses(method, outputStream, options.abort)).then(delay4(this.afterResponseDelay, options.abort)), statusPromise = responseStreamClosedPromise.then(() => this.promiseStatus()), trailersPromise = responseStreamClosedPromise.then(() => this.promiseTrailers());
         this.maybeSuppressUncaught(statusPromise, trailersPromise);
         this.lastInput = new TestInputStream(this.data, options.abort);
@@ -67347,36 +67379,36 @@ var init_test_transport = __esm({
 
 // node_modules/@protobuf-ts/runtime-rpc/build/es2015/rpc-interceptor.js
 function stackIntercept(kind, transport, method, options, input) {
-  var _a4, _b2, _c2, _d2;
+  var _a3, _b2, _c2, _d2;
   if (kind == "unary") {
     let tail = /* @__PURE__ */ __name((mtd, inp, opt) => transport.unary(mtd, inp, opt), "tail");
-    for (const curr of ((_a4 = options.interceptors) !== null && _a4 !== void 0 ? _a4 : []).filter((i3) => i3.interceptUnary).reverse()) {
-      const next2 = tail;
-      tail = /* @__PURE__ */ __name((mtd, inp, opt) => curr.interceptUnary(next2, mtd, inp, opt), "tail");
+    for (const curr of ((_a3 = options.interceptors) !== null && _a3 !== void 0 ? _a3 : []).filter((i3) => i3.interceptUnary).reverse()) {
+      const next = tail;
+      tail = /* @__PURE__ */ __name((mtd, inp, opt) => curr.interceptUnary(next, mtd, inp, opt), "tail");
     }
     return tail(method, input, options);
   }
   if (kind == "serverStreaming") {
     let tail = /* @__PURE__ */ __name((mtd, inp, opt) => transport.serverStreaming(mtd, inp, opt), "tail");
     for (const curr of ((_b2 = options.interceptors) !== null && _b2 !== void 0 ? _b2 : []).filter((i3) => i3.interceptServerStreaming).reverse()) {
-      const next2 = tail;
-      tail = /* @__PURE__ */ __name((mtd, inp, opt) => curr.interceptServerStreaming(next2, mtd, inp, opt), "tail");
+      const next = tail;
+      tail = /* @__PURE__ */ __name((mtd, inp, opt) => curr.interceptServerStreaming(next, mtd, inp, opt), "tail");
     }
     return tail(method, input, options);
   }
   if (kind == "clientStreaming") {
     let tail = /* @__PURE__ */ __name((mtd, opt) => transport.clientStreaming(mtd, opt), "tail");
     for (const curr of ((_c2 = options.interceptors) !== null && _c2 !== void 0 ? _c2 : []).filter((i3) => i3.interceptClientStreaming).reverse()) {
-      const next2 = tail;
-      tail = /* @__PURE__ */ __name((mtd, opt) => curr.interceptClientStreaming(next2, mtd, opt), "tail");
+      const next = tail;
+      tail = /* @__PURE__ */ __name((mtd, opt) => curr.interceptClientStreaming(next, mtd, opt), "tail");
     }
     return tail(method, options);
   }
   if (kind == "duplex") {
     let tail = /* @__PURE__ */ __name((mtd, opt) => transport.duplex(mtd, opt), "tail");
     for (const curr of ((_d2 = options.interceptors) !== null && _d2 !== void 0 ? _d2 : []).filter((i3) => i3.interceptDuplex).reverse()) {
-      const next2 = tail;
-      tail = /* @__PURE__ */ __name((mtd, opt) => curr.interceptDuplex(next2, mtd, opt), "tail");
+      const next = tail;
+      tail = /* @__PURE__ */ __name((mtd, opt) => curr.interceptDuplex(next, mtd, opt), "tail");
     }
     return tail(method, options);
   }
@@ -68220,6 +68252,46 @@ var require_cache_twirp_client = __commonJS({
   }
 });
 
+// node_modules/@actions/cache/lib/internal/shared/util.js
+var require_util9 = __commonJS({
+  "node_modules/@actions/cache/lib/internal/shared/util.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.maskSecretUrls = exports2.maskSigUrl = void 0;
+    var core_1 = require_core();
+    function maskSigUrl(url2) {
+      if (!url2)
+        return;
+      try {
+        const parsedUrl = new URL(url2);
+        const signature = parsedUrl.searchParams.get("sig");
+        if (signature) {
+          (0, core_1.setSecret)(signature);
+          (0, core_1.setSecret)(encodeURIComponent(signature));
+        }
+      } catch (error) {
+        (0, core_1.debug)(`Failed to parse URL: ${url2} ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+    __name(maskSigUrl, "maskSigUrl");
+    exports2.maskSigUrl = maskSigUrl;
+    function maskSecretUrls(body2) {
+      if (typeof body2 !== "object" || body2 === null) {
+        (0, core_1.debug)("body is not an object or is null");
+        return;
+      }
+      if ("signed_upload_url" in body2 && typeof body2.signed_upload_url === "string") {
+        maskSigUrl(body2.signed_upload_url);
+      }
+      if ("signed_download_url" in body2 && typeof body2.signed_download_url === "string") {
+        maskSigUrl(body2.signed_download_url);
+      }
+    }
+    __name(maskSecretUrls, "maskSecretUrls");
+    exports2.maskSecretUrls = maskSecretUrls;
+  }
+});
+
 // node_modules/@actions/cache/lib/internal/shared/cacheTwirpClient.js
 var require_cacheTwirpClient = __commonJS({
   "node_modules/@actions/cache/lib/internal/shared/cacheTwirpClient.js"(exports2) {
@@ -68265,6 +68337,7 @@ var require_cacheTwirpClient = __commonJS({
     var auth_1 = require_auth();
     var http_client_1 = require_lib();
     var cache_twirp_client_1 = require_cache_twirp_client();
+    var util_1 = require_util9();
     var CacheServiceClient = class {
       static {
         __name(this, "CacheServiceClient");
@@ -68321,6 +68394,7 @@ var require_cacheTwirpClient = __commonJS({
               (0, core_1.debug)(`[Response] - ${response.message.statusCode}`);
               (0, core_1.debug)(`Headers: ${JSON.stringify(response.message.headers, null, 2)}`);
               const body2 = JSON.parse(rawBody);
+              (0, util_1.maskSecretUrls)(body2);
               (0, core_1.debug)(`Body: ${JSON.stringify(body2, null, 2)}`);
               if (this.isSuccessStatusCode(statusCode)) {
                 return { response, body: body2 };
@@ -68560,8 +68634,8 @@ var require_tar = __commonJS({
     }
     __name(getCommands, "getCommands");
     function getWorkingDirectory() {
-      var _a4;
-      return (_a4 = process.env["GITHUB_WORKSPACE"]) !== null && _a4 !== void 0 ? _a4 : process.cwd();
+      var _a3;
+      return (_a3 = process.env["GITHUB_WORKSPACE"]) !== null && _a3 !== void 0 ? _a3 : process.cwd();
     }
     __name(getWorkingDirectory, "getWorkingDirectory");
     function getDecompressionProgram(tarPath, compressionMethod, archivePath) {
@@ -68870,7 +68944,7 @@ var require_cache3 = __commonJS({
           };
           const response = yield twirpClient.GetCacheEntryDownloadURL(request3);
           if (!response.ok) {
-            core2.debug(`Cache not found for keys: ${keys.join(", ")}`);
+            core2.debug(`Cache not found for version ${request3.version} of keys: ${keys.join(", ")}`);
             return void 0;
           }
           core2.info(`Cache hit for: ${request3.key}`);
@@ -68928,7 +69002,7 @@ var require_cache3 = __commonJS({
     __name(saveCache3, "saveCache");
     exports2.saveCache = saveCache3;
     function saveCacheV1(paths, key, options, enableCrossOsArchive = false) {
-      var _a4, _b2, _c2, _d2, _e2;
+      var _a3, _b2, _c2, _d2, _e2;
       return __awaiter6(this, void 0, void 0, function* () {
         const compressionMethod = yield utils.getCompressionMethod();
         let cacheId = -1;
@@ -68958,7 +69032,7 @@ var require_cache3 = __commonJS({
             enableCrossOsArchive,
             cacheSize: archiveFileSize
           });
-          if ((_a4 = reserveCacheResponse === null || reserveCacheResponse === void 0 ? void 0 : reserveCacheResponse.result) === null || _a4 === void 0 ? void 0 : _a4.cacheId) {
+          if ((_a3 = reserveCacheResponse === null || reserveCacheResponse === void 0 ? void 0 : reserveCacheResponse.result) === null || _a3 === void 0 ? void 0 : _a3.cacheId) {
             cacheId = (_b2 = reserveCacheResponse === null || reserveCacheResponse === void 0 ? void 0 : reserveCacheResponse.result) === null || _b2 === void 0 ? void 0 : _b2.cacheId;
           } else if ((reserveCacheResponse === null || reserveCacheResponse === void 0 ? void 0 : reserveCacheResponse.statusCode) === 400) {
             throw new Error((_d2 = (_c2 = reserveCacheResponse === null || reserveCacheResponse === void 0 ? void 0 : reserveCacheResponse.error) === null || _c2 === void 0 ? void 0 : _c2.message) !== null && _d2 !== void 0 ? _d2 : `Cache size of ~${Math.round(archiveFileSize / (1024 * 1024))} MB (${archiveFileSize} B) is over the data cap limit, not saving cache.`);
@@ -69384,6 +69458,593 @@ var require_internal_pattern_helper2 = __commonJS({
   }
 });
 
+// node_modules/@actions/glob/node_modules/minimatch/minimatch.js
+var require_minimatch2 = __commonJS({
+  "node_modules/@actions/glob/node_modules/minimatch/minimatch.js"(exports2, module) {
+    "use strict";
+    module.exports = minimatch2;
+    minimatch2.Minimatch = Minimatch2;
+    var path14 = function() {
+      try {
+        return __require("path");
+      } catch (e3) {
+      }
+    }() || {
+      sep: "/"
+    };
+    minimatch2.sep = path14.sep;
+    var GLOBSTAR2 = minimatch2.GLOBSTAR = Minimatch2.GLOBSTAR = {};
+    var expand2 = require_brace_expansion2();
+    var plTypes = {
+      "!": { open: "(?:(?!(?:", close: "))[^/]*?)" },
+      "?": { open: "(?:", close: ")?" },
+      "+": { open: "(?:", close: ")+" },
+      "*": { open: "(?:", close: ")*" },
+      "@": { open: "(?:", close: ")" }
+    };
+    var qmark3 = "[^/]";
+    var star3 = qmark3 + "*?";
+    var twoStarDot2 = "(?:(?!(?:\\/|^)(?:\\.{1,2})($|\\/)).)*?";
+    var twoStarNoDot2 = "(?:(?!(?:\\/|^)\\.).)*?";
+    var reSpecials2 = charSet("().*{}+?[]^$\\!");
+    function charSet(s3) {
+      return s3.split("").reduce(function(set2, c3) {
+        set2[c3] = true;
+        return set2;
+      }, {});
+    }
+    __name(charSet, "charSet");
+    var slashSplit = /\/+/;
+    minimatch2.filter = filter2;
+    function filter2(pattern, options) {
+      options = options || {};
+      return function(p3, i3, list3) {
+        return minimatch2(p3, pattern, options);
+      };
+    }
+    __name(filter2, "filter");
+    function ext2(a3, b3) {
+      b3 = b3 || {};
+      var t3 = {};
+      Object.keys(a3).forEach(function(k3) {
+        t3[k3] = a3[k3];
+      });
+      Object.keys(b3).forEach(function(k3) {
+        t3[k3] = b3[k3];
+      });
+      return t3;
+    }
+    __name(ext2, "ext");
+    minimatch2.defaults = function(def) {
+      if (!def || typeof def !== "object" || !Object.keys(def).length) {
+        return minimatch2;
+      }
+      var orig = minimatch2;
+      var m3 = /* @__PURE__ */ __name(function minimatch3(p3, pattern, options) {
+        return orig(p3, pattern, ext2(def, options));
+      }, "minimatch");
+      m3.Minimatch = /* @__PURE__ */ __name(function Minimatch3(pattern, options) {
+        return new orig.Minimatch(pattern, ext2(def, options));
+      }, "Minimatch");
+      m3.Minimatch.defaults = /* @__PURE__ */ __name(function defaults2(options) {
+        return orig.defaults(ext2(def, options)).Minimatch;
+      }, "defaults");
+      m3.filter = /* @__PURE__ */ __name(function filter3(pattern, options) {
+        return orig.filter(pattern, ext2(def, options));
+      }, "filter");
+      m3.defaults = /* @__PURE__ */ __name(function defaults2(options) {
+        return orig.defaults(ext2(def, options));
+      }, "defaults");
+      m3.makeRe = /* @__PURE__ */ __name(function makeRe3(pattern, options) {
+        return orig.makeRe(pattern, ext2(def, options));
+      }, "makeRe");
+      m3.braceExpand = /* @__PURE__ */ __name(function braceExpand3(pattern, options) {
+        return orig.braceExpand(pattern, ext2(def, options));
+      }, "braceExpand");
+      m3.match = function(list3, pattern, options) {
+        return orig.match(list3, pattern, ext2(def, options));
+      };
+      return m3;
+    };
+    Minimatch2.defaults = function(def) {
+      return minimatch2.defaults(def).Minimatch;
+    };
+    function minimatch2(p3, pattern, options) {
+      assertValidPattern2(pattern);
+      if (!options) options = {};
+      if (!options.nocomment && pattern.charAt(0) === "#") {
+        return false;
+      }
+      return new Minimatch2(pattern, options).match(p3);
+    }
+    __name(minimatch2, "minimatch");
+    function Minimatch2(pattern, options) {
+      if (!(this instanceof Minimatch2)) {
+        return new Minimatch2(pattern, options);
+      }
+      assertValidPattern2(pattern);
+      if (!options) options = {};
+      pattern = pattern.trim();
+      if (!options.allowWindowsEscape && path14.sep !== "/") {
+        pattern = pattern.split(path14.sep).join("/");
+      }
+      this.options = options;
+      this.set = [];
+      this.pattern = pattern;
+      this.regexp = null;
+      this.negate = false;
+      this.comment = false;
+      this.empty = false;
+      this.partial = !!options.partial;
+      this.make();
+    }
+    __name(Minimatch2, "Minimatch");
+    Minimatch2.prototype.debug = function() {
+    };
+    Minimatch2.prototype.make = make;
+    function make() {
+      var pattern = this.pattern;
+      var options = this.options;
+      if (!options.nocomment && pattern.charAt(0) === "#") {
+        this.comment = true;
+        return;
+      }
+      if (!pattern) {
+        this.empty = true;
+        return;
+      }
+      this.parseNegate();
+      var set2 = this.globSet = this.braceExpand();
+      if (options.debug) this.debug = /* @__PURE__ */ __name(function debug3() {
+        console.error.apply(console, arguments);
+      }, "debug");
+      this.debug(this.pattern, set2);
+      set2 = this.globParts = set2.map(function(s3) {
+        return s3.split(slashSplit);
+      });
+      this.debug(this.pattern, set2);
+      set2 = set2.map(function(s3, si2, set3) {
+        return s3.map(this.parse, this);
+      }, this);
+      this.debug(this.pattern, set2);
+      set2 = set2.filter(function(s3) {
+        return s3.indexOf(false) === -1;
+      });
+      this.debug(this.pattern, set2);
+      this.set = set2;
+    }
+    __name(make, "make");
+    Minimatch2.prototype.parseNegate = parseNegate;
+    function parseNegate() {
+      var pattern = this.pattern;
+      var negate = false;
+      var options = this.options;
+      var negateOffset = 0;
+      if (options.nonegate) return;
+      for (var i3 = 0, l3 = pattern.length; i3 < l3 && pattern.charAt(i3) === "!"; i3++) {
+        negate = !negate;
+        negateOffset++;
+      }
+      if (negateOffset) this.pattern = pattern.substr(negateOffset);
+      this.negate = negate;
+    }
+    __name(parseNegate, "parseNegate");
+    minimatch2.braceExpand = function(pattern, options) {
+      return braceExpand2(pattern, options);
+    };
+    Minimatch2.prototype.braceExpand = braceExpand2;
+    function braceExpand2(pattern, options) {
+      if (!options) {
+        if (this instanceof Minimatch2) {
+          options = this.options;
+        } else {
+          options = {};
+        }
+      }
+      pattern = typeof pattern === "undefined" ? this.pattern : pattern;
+      assertValidPattern2(pattern);
+      if (options.nobrace || !/\{(?:(?!\{).)*\}/.test(pattern)) {
+        return [pattern];
+      }
+      return expand2(pattern);
+    }
+    __name(braceExpand2, "braceExpand");
+    var MAX_PATTERN_LENGTH2 = 1024 * 64;
+    var assertValidPattern2 = /* @__PURE__ */ __name(function(pattern) {
+      if (typeof pattern !== "string") {
+        throw new TypeError("invalid pattern");
+      }
+      if (pattern.length > MAX_PATTERN_LENGTH2) {
+        throw new TypeError("pattern is too long");
+      }
+    }, "assertValidPattern");
+    Minimatch2.prototype.parse = parse3;
+    var SUBPARSE = {};
+    function parse3(pattern, isSub) {
+      assertValidPattern2(pattern);
+      var options = this.options;
+      if (pattern === "**") {
+        if (!options.noglobstar)
+          return GLOBSTAR2;
+        else
+          pattern = "*";
+      }
+      if (pattern === "") return "";
+      var re2 = "";
+      var hasMagic = !!options.nocase;
+      var escaping = false;
+      var patternListStack = [];
+      var negativeLists = [];
+      var stateChar;
+      var inClass = false;
+      var reClassStart = -1;
+      var classStart = -1;
+      var patternStart = pattern.charAt(0) === "." ? "" : options.dot ? "(?!(?:^|\\/)\\.{1,2}(?:$|\\/))" : "(?!\\.)";
+      var self2 = this;
+      function clearStateChar() {
+        if (stateChar) {
+          switch (stateChar) {
+            case "*":
+              re2 += star3;
+              hasMagic = true;
+              break;
+            case "?":
+              re2 += qmark3;
+              hasMagic = true;
+              break;
+            default:
+              re2 += "\\" + stateChar;
+              break;
+          }
+          self2.debug("clearStateChar %j %j", stateChar, re2);
+          stateChar = false;
+        }
+      }
+      __name(clearStateChar, "clearStateChar");
+      for (var i3 = 0, len = pattern.length, c3; i3 < len && (c3 = pattern.charAt(i3)); i3++) {
+        this.debug("%s	%s %s %j", pattern, i3, re2, c3);
+        if (escaping && reSpecials2[c3]) {
+          re2 += "\\" + c3;
+          escaping = false;
+          continue;
+        }
+        switch (c3) {
+          /* istanbul ignore next */
+          case "/": {
+            return false;
+          }
+          case "\\":
+            clearStateChar();
+            escaping = true;
+            continue;
+          // the various stateChar values
+          // for the "extglob" stuff.
+          case "?":
+          case "*":
+          case "+":
+          case "@":
+          case "!":
+            this.debug("%s	%s %s %j <-- stateChar", pattern, i3, re2, c3);
+            if (inClass) {
+              this.debug("  in class");
+              if (c3 === "!" && i3 === classStart + 1) c3 = "^";
+              re2 += c3;
+              continue;
+            }
+            self2.debug("call clearStateChar %j", stateChar);
+            clearStateChar();
+            stateChar = c3;
+            if (options.noext) clearStateChar();
+            continue;
+          case "(":
+            if (inClass) {
+              re2 += "(";
+              continue;
+            }
+            if (!stateChar) {
+              re2 += "\\(";
+              continue;
+            }
+            patternListStack.push({
+              type: stateChar,
+              start: i3 - 1,
+              reStart: re2.length,
+              open: plTypes[stateChar].open,
+              close: plTypes[stateChar].close
+            });
+            re2 += stateChar === "!" ? "(?:(?!(?:" : "(?:";
+            this.debug("plType %j %j", stateChar, re2);
+            stateChar = false;
+            continue;
+          case ")":
+            if (inClass || !patternListStack.length) {
+              re2 += "\\)";
+              continue;
+            }
+            clearStateChar();
+            hasMagic = true;
+            var pl = patternListStack.pop();
+            re2 += pl.close;
+            if (pl.type === "!") {
+              negativeLists.push(pl);
+            }
+            pl.reEnd = re2.length;
+            continue;
+          case "|":
+            if (inClass || !patternListStack.length || escaping) {
+              re2 += "\\|";
+              escaping = false;
+              continue;
+            }
+            clearStateChar();
+            re2 += "|";
+            continue;
+          // these are mostly the same in regexp and glob
+          case "[":
+            clearStateChar();
+            if (inClass) {
+              re2 += "\\" + c3;
+              continue;
+            }
+            inClass = true;
+            classStart = i3;
+            reClassStart = re2.length;
+            re2 += c3;
+            continue;
+          case "]":
+            if (i3 === classStart + 1 || !inClass) {
+              re2 += "\\" + c3;
+              escaping = false;
+              continue;
+            }
+            var cs = pattern.substring(classStart + 1, i3);
+            try {
+              RegExp("[" + cs + "]");
+            } catch (er2) {
+              var sp = this.parse(cs, SUBPARSE);
+              re2 = re2.substr(0, reClassStart) + "\\[" + sp[0] + "\\]";
+              hasMagic = hasMagic || sp[1];
+              inClass = false;
+              continue;
+            }
+            hasMagic = true;
+            inClass = false;
+            re2 += c3;
+            continue;
+          default:
+            clearStateChar();
+            if (escaping) {
+              escaping = false;
+            } else if (reSpecials2[c3] && !(c3 === "^" && inClass)) {
+              re2 += "\\";
+            }
+            re2 += c3;
+        }
+      }
+      if (inClass) {
+        cs = pattern.substr(classStart + 1);
+        sp = this.parse(cs, SUBPARSE);
+        re2 = re2.substr(0, reClassStart) + "\\[" + sp[0];
+        hasMagic = hasMagic || sp[1];
+      }
+      for (pl = patternListStack.pop(); pl; pl = patternListStack.pop()) {
+        var tail = re2.slice(pl.reStart + pl.open.length);
+        this.debug("setting tail", re2, pl);
+        tail = tail.replace(/((?:\\{2}){0,64})(\\?)\|/g, function(_3, $1, $22) {
+          if (!$22) {
+            $22 = "\\";
+          }
+          return $1 + $1 + $22 + "|";
+        });
+        this.debug("tail=%j\n   %s", tail, tail, pl, re2);
+        var t3 = pl.type === "*" ? star3 : pl.type === "?" ? qmark3 : "\\" + pl.type;
+        hasMagic = true;
+        re2 = re2.slice(0, pl.reStart) + t3 + "\\(" + tail;
+      }
+      clearStateChar();
+      if (escaping) {
+        re2 += "\\\\";
+      }
+      var addPatternStart2 = false;
+      switch (re2.charAt(0)) {
+        case "[":
+        case ".":
+        case "(":
+          addPatternStart2 = true;
+      }
+      for (var n3 = negativeLists.length - 1; n3 > -1; n3--) {
+        var nl = negativeLists[n3];
+        var nlBefore = re2.slice(0, nl.reStart);
+        var nlFirst = re2.slice(nl.reStart, nl.reEnd - 8);
+        var nlLast = re2.slice(nl.reEnd - 8, nl.reEnd);
+        var nlAfter = re2.slice(nl.reEnd);
+        nlLast += nlAfter;
+        var openParensBefore = nlBefore.split("(").length - 1;
+        var cleanAfter = nlAfter;
+        for (i3 = 0; i3 < openParensBefore; i3++) {
+          cleanAfter = cleanAfter.replace(/\)[+*?]?/, "");
+        }
+        nlAfter = cleanAfter;
+        var dollar = "";
+        if (nlAfter === "" && isSub !== SUBPARSE) {
+          dollar = "$";
+        }
+        var newRe = nlBefore + nlFirst + nlAfter + dollar + nlLast;
+        re2 = newRe;
+      }
+      if (re2 !== "" && hasMagic) {
+        re2 = "(?=.)" + re2;
+      }
+      if (addPatternStart2) {
+        re2 = patternStart + re2;
+      }
+      if (isSub === SUBPARSE) {
+        return [re2, hasMagic];
+      }
+      if (!hasMagic) {
+        return globUnescape(pattern);
+      }
+      var flags = options.nocase ? "i" : "";
+      try {
+        var regExp = new RegExp("^" + re2 + "$", flags);
+      } catch (er2) {
+        return new RegExp("$.");
+      }
+      regExp._glob = pattern;
+      regExp._src = re2;
+      return regExp;
+    }
+    __name(parse3, "parse");
+    minimatch2.makeRe = function(pattern, options) {
+      return new Minimatch2(pattern, options || {}).makeRe();
+    };
+    Minimatch2.prototype.makeRe = makeRe2;
+    function makeRe2() {
+      if (this.regexp || this.regexp === false) return this.regexp;
+      var set2 = this.set;
+      if (!set2.length) {
+        this.regexp = false;
+        return this.regexp;
+      }
+      var options = this.options;
+      var twoStar = options.noglobstar ? star3 : options.dot ? twoStarDot2 : twoStarNoDot2;
+      var flags = options.nocase ? "i" : "";
+      var re2 = set2.map(function(pattern) {
+        return pattern.map(function(p3) {
+          return p3 === GLOBSTAR2 ? twoStar : typeof p3 === "string" ? regExpEscape3(p3) : p3._src;
+        }).join("\\/");
+      }).join("|");
+      re2 = "^(?:" + re2 + ")$";
+      if (this.negate) re2 = "^(?!" + re2 + ").*$";
+      try {
+        this.regexp = new RegExp(re2, flags);
+      } catch (ex) {
+        this.regexp = false;
+      }
+      return this.regexp;
+    }
+    __name(makeRe2, "makeRe");
+    minimatch2.match = function(list3, pattern, options) {
+      options = options || {};
+      var mm = new Minimatch2(pattern, options);
+      list3 = list3.filter(function(f3) {
+        return mm.match(f3);
+      });
+      if (mm.options.nonull && !list3.length) {
+        list3.push(pattern);
+      }
+      return list3;
+    };
+    Minimatch2.prototype.match = /* @__PURE__ */ __name(function match3(f3, partial) {
+      if (typeof partial === "undefined") partial = this.partial;
+      this.debug("match", f3, this.pattern);
+      if (this.comment) return false;
+      if (this.empty) return f3 === "";
+      if (f3 === "/" && partial) return true;
+      var options = this.options;
+      if (path14.sep !== "/") {
+        f3 = f3.split(path14.sep).join("/");
+      }
+      f3 = f3.split(slashSplit);
+      this.debug(this.pattern, "split", f3);
+      var set2 = this.set;
+      this.debug(this.pattern, "set", set2);
+      var filename;
+      var i3;
+      for (i3 = f3.length - 1; i3 >= 0; i3--) {
+        filename = f3[i3];
+        if (filename) break;
+      }
+      for (i3 = 0; i3 < set2.length; i3++) {
+        var pattern = set2[i3];
+        var file = f3;
+        if (options.matchBase && pattern.length === 1) {
+          file = [filename];
+        }
+        var hit = this.matchOne(file, pattern, partial);
+        if (hit) {
+          if (options.flipNegate) return true;
+          return !this.negate;
+        }
+      }
+      if (options.flipNegate) return false;
+      return this.negate;
+    }, "match");
+    Minimatch2.prototype.matchOne = function(file, pattern, partial) {
+      var options = this.options;
+      this.debug(
+        "matchOne",
+        { "this": this, file, pattern }
+      );
+      this.debug("matchOne", file.length, pattern.length);
+      for (var fi2 = 0, pi2 = 0, fl = file.length, pl = pattern.length; fi2 < fl && pi2 < pl; fi2++, pi2++) {
+        this.debug("matchOne loop");
+        var p3 = pattern[pi2];
+        var f3 = file[fi2];
+        this.debug(pattern, p3, f3);
+        if (p3 === false) return false;
+        if (p3 === GLOBSTAR2) {
+          this.debug("GLOBSTAR", [pattern, p3, f3]);
+          var fr2 = fi2;
+          var pr2 = pi2 + 1;
+          if (pr2 === pl) {
+            this.debug("** at the end");
+            for (; fi2 < fl; fi2++) {
+              if (file[fi2] === "." || file[fi2] === ".." || !options.dot && file[fi2].charAt(0) === ".") return false;
+            }
+            return true;
+          }
+          while (fr2 < fl) {
+            var swallowee = file[fr2];
+            this.debug("\nglobstar while", file, fr2, pattern, pr2, swallowee);
+            if (this.matchOne(file.slice(fr2), pattern.slice(pr2), partial)) {
+              this.debug("globstar found match!", fr2, fl, swallowee);
+              return true;
+            } else {
+              if (swallowee === "." || swallowee === ".." || !options.dot && swallowee.charAt(0) === ".") {
+                this.debug("dot detected!", file, fr2, pattern, pr2);
+                break;
+              }
+              this.debug("globstar swallow a segment, and continue");
+              fr2++;
+            }
+          }
+          if (partial) {
+            this.debug("\n>>> no match, partial?", file, fr2, pattern, pr2);
+            if (fr2 === fl) return true;
+          }
+          return false;
+        }
+        var hit;
+        if (typeof p3 === "string") {
+          hit = f3 === p3;
+          this.debug("string match", p3, f3, hit);
+        } else {
+          hit = f3.match(p3);
+          this.debug("pattern match", p3, f3, hit);
+        }
+        if (!hit) return false;
+      }
+      if (fi2 === fl && pi2 === pl) {
+        return true;
+      } else if (fi2 === fl) {
+        return partial;
+      } else if (pi2 === pl) {
+        return fi2 === fl - 1 && file[fi2] === "";
+      }
+      throw new Error("wtf?");
+    };
+    function globUnescape(s3) {
+      return s3.replace(/\\(.)/g, "$1");
+    }
+    __name(globUnescape, "globUnescape");
+    function regExpEscape3(s3) {
+      return s3.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+    }
+    __name(regExpEscape3, "regExpEscape");
+  }
+});
+
 // node_modules/@actions/glob/lib/internal-path.js
 var require_internal_path2 = __commonJS({
   "node_modules/@actions/glob/lib/internal-path.js"(exports2) {
@@ -69524,11 +70185,11 @@ var require_internal_pattern2 = __commonJS({
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.Pattern = void 0;
-    var os5 = __importStar(__require("os"));
+    var os4 = __importStar(__require("os"));
     var path14 = __importStar(__require("path"));
     var pathHelper = __importStar(require_internal_path_helper2());
     var assert_1 = __importDefault(__require("assert"));
-    var minimatch_1 = require_minimatch();
+    var minimatch_1 = require_minimatch2();
     var internal_match_kind_1 = require_internal_match_kind2();
     var internal_path_1 = require_internal_path2();
     var IS_WINDOWS = process.platform === "win32";
@@ -69620,7 +70281,7 @@ var require_internal_pattern2 = __commonJS({
         if (pattern === "." || pattern.startsWith(`.${path14.sep}`)) {
           pattern = _Pattern.globEscape(process.cwd()) + pattern.substr(1);
         } else if (pattern === "~" || pattern.startsWith(`~${path14.sep}`)) {
-          homedir = homedir || os5.homedir();
+          homedir = homedir || os4.homedir();
           (0, assert_1.default)(homedir, "Unable to determine HOME directory");
           (0, assert_1.default)(pathHelper.hasAbsoluteRoot(homedir), `Expected HOME directory to be a rooted path. Actual '${homedir}'`);
           pattern = _Pattern.globEscape(homedir) + pattern.substr(1);
@@ -69843,7 +70504,7 @@ var require_internal_globber2 = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.DefaultGlobber = void 0;
     var core2 = __importStar(require_core());
-    var fs4 = __importStar(__require("fs"));
+    var fs3 = __importStar(__require("fs"));
     var globOptionsHelper = __importStar(require_internal_glob_options_helper2());
     var path14 = __importStar(__require("path"));
     var patternHelper = __importStar(require_internal_pattern_helper2());
@@ -69864,11 +70525,11 @@ var require_internal_globber2 = __commonJS({
         return this.searchPaths.slice();
       }
       glob() {
-        var _a4, e_1, _b2, _c2;
+        var _a3, e_1, _b2, _c2;
         return __awaiter6(this, void 0, void 0, function* () {
           const result = [];
           try {
-            for (var _d2 = true, _e2 = __asyncValues2(this.globGenerator()), _f; _f = yield _e2.next(), _a4 = _f.done, !_a4; _d2 = true) {
+            for (var _d2 = true, _e2 = __asyncValues2(this.globGenerator()), _f; _f = yield _e2.next(), _a3 = _f.done, !_a3; _d2 = true) {
               _c2 = _f.value;
               _d2 = false;
               const itemPath = _c2;
@@ -69878,7 +70539,7 @@ var require_internal_globber2 = __commonJS({
             e_1 = { error: e_1_1 };
           } finally {
             try {
-              if (!_d2 && !_a4 && (_b2 = _e2.return)) yield _b2.call(_e2);
+              if (!_d2 && !_a3 && (_b2 = _e2.return)) yield _b2.call(_e2);
             } finally {
               if (e_1) throw e_1.error;
             }
@@ -69900,7 +70561,7 @@ var require_internal_globber2 = __commonJS({
           for (const searchPath of patternHelper.getSearchPaths(patterns)) {
             core2.debug(`Search path '${searchPath}'`);
             try {
-              yield __await2(fs4.promises.lstat(searchPath));
+              yield __await2(fs3.promises.lstat(searchPath));
             } catch (err) {
               if (err.code === "ENOENT") {
                 continue;
@@ -69934,7 +70595,7 @@ var require_internal_globber2 = __commonJS({
                 continue;
               }
               const childLevel = item.level + 1;
-              const childItems = (yield __await2(fs4.promises.readdir(item.path))).map((x3) => new internal_search_state_1.SearchState(path14.join(item.path, x3), childLevel));
+              const childItems = (yield __await2(fs3.promises.readdir(item.path))).map((x3) => new internal_search_state_1.SearchState(path14.join(item.path, x3), childLevel));
               stack.push(...childItems.reverse());
             } else if (match3 & internal_match_kind_1.MatchKind.File) {
               yield yield __await2(item.path);
@@ -69969,7 +70630,7 @@ var require_internal_globber2 = __commonJS({
           let stats;
           if (options.followSymbolicLinks) {
             try {
-              stats = yield fs4.promises.stat(item.path);
+              stats = yield fs3.promises.stat(item.path);
             } catch (err) {
               if (err.code === "ENOENT") {
                 if (options.omitBrokenSymbolicLinks) {
@@ -69981,10 +70642,10 @@ var require_internal_globber2 = __commonJS({
               throw err;
             }
           } else {
-            stats = yield fs4.promises.lstat(item.path);
+            stats = yield fs3.promises.lstat(item.path);
           }
           if (stats.isDirectory() && options.followSymbolicLinks) {
-            const realPath = yield fs4.promises.realpath(item.path);
+            const realPath = yield fs3.promises.realpath(item.path);
             while (traversalChain.length >= item.level) {
               traversalChain.pop();
             }
@@ -70089,12 +70750,12 @@ var require_internal_hash_files = __commonJS({
     exports2.hashFiles = void 0;
     var crypto = __importStar(__require("crypto"));
     var core2 = __importStar(require_core());
-    var fs4 = __importStar(__require("fs"));
+    var fs3 = __importStar(__require("fs"));
     var stream = __importStar(__require("stream"));
     var util3 = __importStar(__require("util"));
     var path14 = __importStar(__require("path"));
     function hashFiles(globber, currentWorkspace, verbose = false) {
-      var _a4, e_1, _b2, _c2;
+      var _a3, e_1, _b2, _c2;
       var _d2;
       return __awaiter6(this, void 0, void 0, function* () {
         const writeDelegate = verbose ? core2.info : core2.debug;
@@ -70103,7 +70764,7 @@ var require_internal_hash_files = __commonJS({
         const result = crypto.createHash("sha256");
         let count = 0;
         try {
-          for (var _e2 = true, _f = __asyncValues2(globber.globGenerator()), _g; _g = yield _f.next(), _a4 = _g.done, !_a4; _e2 = true) {
+          for (var _e2 = true, _f = __asyncValues2(globber.globGenerator()), _g; _g = yield _f.next(), _a3 = _g.done, !_a3; _e2 = true) {
             _c2 = _g.value;
             _e2 = false;
             const file = _c2;
@@ -70112,13 +70773,13 @@ var require_internal_hash_files = __commonJS({
               writeDelegate(`Ignore '${file}' since it is not under GITHUB_WORKSPACE.`);
               continue;
             }
-            if (fs4.statSync(file).isDirectory()) {
+            if (fs3.statSync(file).isDirectory()) {
               writeDelegate(`Skip directory '${file}'.`);
               continue;
             }
             const hash = crypto.createHash("sha256");
             const pipeline = util3.promisify(stream.pipeline);
-            yield pipeline(fs4.createReadStream(file), hash);
+            yield pipeline(fs3.createReadStream(file), hash);
             result.write(hash.digest());
             count++;
             if (!hasMatch) {
@@ -70129,7 +70790,7 @@ var require_internal_hash_files = __commonJS({
           e_1 = { error: e_1_1 };
         } finally {
           try {
-            if (!_e2 && !_a4 && (_b2 = _f.return)) yield _b2.call(_f);
+            if (!_e2 && !_a3 && (_b2 = _f.return)) yield _b2.call(_f);
           } finally {
             if (e_1) throw e_1.error;
           }
@@ -70719,7 +71380,13 @@ Object.assign(Reflect, Reflection);
 
 // node_modules/temporal-polyfill/chunks/internal.js
 function clampProp(e3, n3, t3, o3, r3) {
-  return clampEntity(n3, getDefinedProp(e3, n3), t3, o3, r3);
+  return clampEntity(n3, ((e4, n4) => {
+    const t4 = e4[n4];
+    if (void 0 === t4) {
+      throw new TypeError(missingField(n4));
+    }
+    return t4;
+  })(e3, n3), t3, o3, r3);
 }
 __name(clampProp, "clampProp");
 function clampEntity(e3, n3, t3, o3, r3, i3) {
@@ -70730,19 +71397,11 @@ function clampEntity(e3, n3, t3, o3, r3, i3) {
   return a3;
 }
 __name(clampEntity, "clampEntity");
-function getDefinedProp(e3, n3) {
-  const t3 = e3[n3];
-  if (void 0 === t3) {
-    throw new TypeError(missingField(n3));
-  }
-  return t3;
-}
-__name(getDefinedProp, "getDefinedProp");
-function z(e3) {
+function s(e3) {
   return null !== e3 && /object|function/.test(typeof e3);
 }
-__name(z, "z");
-function Jn(e3, n3 = Map) {
+__name(s, "s");
+function on(e3, n3 = Map) {
   const t3 = new n3();
   return (n4, ...o3) => {
     if (t3.has(n4)) {
@@ -70752,29 +71411,29 @@ function Jn(e3, n3 = Map) {
     return t3.set(n4, r3), r3;
   };
 }
-__name(Jn, "Jn");
-function D(e3) {
-  return p({
+__name(on, "on");
+function r(e3) {
+  return n({
     name: e3
   }, 1);
 }
-__name(D, "D");
-function p(e3, n3) {
-  return T((e4) => ({
-    value: e4,
+__name(r, "r");
+function n(n3, t3) {
+  return e((e3) => ({
+    value: e3,
     configurable: 1,
-    writable: !n3
-  }), e3);
+    writable: !t3
+  }), n3);
 }
-__name(p, "p");
-function O(e3) {
-  return T((e4) => ({
-    get: e4,
+__name(n, "n");
+function t(n3) {
+  return e((e3) => ({
+    get: e3,
     configurable: 1
-  }), e3);
+  }), n3);
 }
-__name(O, "O");
-function h(e3) {
+__name(t, "t");
+function o(e3) {
   return {
     [Symbol.toStringTag]: {
       value: e3,
@@ -70782,7 +71441,7 @@ function h(e3) {
     }
   };
 }
-__name(h, "h");
+__name(o, "o");
 function zipProps(e3, n3) {
   const t3 = {};
   let o3 = e3.length;
@@ -70792,15 +71451,15 @@ function zipProps(e3, n3) {
   return t3;
 }
 __name(zipProps, "zipProps");
-function T(e3, n3, t3) {
+function e(e3, n3, t3) {
   const o3 = {};
   for (const r3 in n3) {
     o3[r3] = e3(n3[r3], r3, t3);
   }
   return o3;
 }
-__name(T, "T");
-function b(e3, n3, t3) {
+__name(e, "e");
+function g(e3, n3, t3) {
   const o3 = {};
   for (let r3 = 0; r3 < n3.length; r3++) {
     const i3 = n3[r3];
@@ -70808,7 +71467,7 @@ function b(e3, n3, t3) {
   }
   return o3;
 }
-__name(b, "b");
+__name(g, "g");
 function remapProps(e3, n3, t3) {
   const o3 = {};
   for (let r3 = 0; r3 < e3.length; r3++) {
@@ -70817,42 +71476,23 @@ function remapProps(e3, n3, t3) {
   return o3;
 }
 __name(remapProps, "remapProps");
-function Vn(e3, n3) {
-  const t3 = {};
+function nn(e3, n3) {
+  const t3 = /* @__PURE__ */ Object.create(null);
   for (const o3 of e3) {
     t3[o3] = n3[o3];
   }
   return t3;
 }
-__name(Vn, "Vn");
-function V(e3, n3) {
-  const t3 = {};
-  for (const o3 in n3) {
-    e3.has(o3) || (t3[o3] = n3[o3]);
-  }
-  return t3;
-}
-__name(V, "V");
-function nn(e3) {
-  e3 = {
-    ...e3
-  };
-  const n3 = Object.keys(e3);
-  for (const t3 of n3) {
-    void 0 === e3[t3] && delete e3[t3];
-  }
-  return e3;
-}
 __name(nn, "nn");
-function C(e3, n3) {
+function hasAnyPropsByName(e3, n3) {
   for (const t3 of n3) {
-    if (!(t3 in e3)) {
-      return 0;
+    if (t3 in e3) {
+      return 1;
     }
   }
-  return 1;
+  return 0;
 }
-__name(C, "C");
+__name(hasAnyPropsByName, "hasAnyPropsByName");
 function allPropsEqual(e3, n3, t3) {
   for (const o3 of e3) {
     if (n3[o3] !== t3[o3]) {
@@ -70872,10 +71512,10 @@ function zeroOutProps(e3, n3, t3) {
   return o3;
 }
 __name(zeroOutProps, "zeroOutProps");
-function E(e3, ...n3) {
+function Pt(e3, ...n3) {
   return (...t3) => e3(...n3, ...t3);
 }
-__name(E, "E");
+__name(Pt, "Pt");
 function capitalize(e3) {
   return e3[0].toUpperCase() + e3.substring(1);
 }
@@ -70923,67 +71563,48 @@ __name(hasHalf, "hasHalf");
 function givenFieldsToBigNano(e3, n3, t3) {
   let o3 = 0, r3 = 0;
   for (let i4 = 0; i4 <= n3; i4++) {
-    const n4 = e3[t3[i4]], a4 = Xr[i4], s3 = Qr / a4, [c3, u3] = divModTrunc(n4, s3);
+    const n4 = e3[t3[i4]], a4 = Ao[i4], s3 = Uo / a4, [c3, u3] = divModTrunc(n4, s3);
     o3 += u3 * a4, r3 += c3;
   }
-  const [i3, a3] = divModTrunc(o3, Qr);
+  const [i3, a3] = divModTrunc(o3, Uo);
   return [r3 + i3, a3];
 }
 __name(givenFieldsToBigNano, "givenFieldsToBigNano");
 function nanoToGivenFields(e3, n3, t3) {
   const o3 = {};
   for (let r3 = n3; r3 >= 0; r3--) {
-    const n4 = Xr[r3];
+    const n4 = Ao[r3];
     o3[t3[r3]] = divTrunc(e3, n4), e3 = modTrunc(e3, n4);
   }
   return o3;
 }
 __name(nanoToGivenFields, "nanoToGivenFields");
-function un(e3) {
-  return e3 === X ? si : [];
-}
-__name(un, "un");
-function cn(e3) {
-  return e3 === X ? li : [];
-}
-__name(cn, "cn");
-function ln(e3) {
-  return e3 === X ? ["year", "day"] : [];
-}
-__name(ln, "ln");
-function l(e3) {
+function d(e3) {
   if (void 0 !== e3) {
     return m(e3);
   }
 }
-__name(l, "l");
+__name(d, "d");
+function P(e3) {
+  if (void 0 !== e3) {
+    return h(e3);
+  }
+}
+__name(P, "P");
 function S(e3) {
   if (void 0 !== e3) {
-    return d(e3);
+    return T(e3);
   }
 }
 __name(S, "S");
-function c(e3) {
-  if (void 0 !== e3) {
-    return u(e3);
-  }
+function h(e3) {
+  return requireNumberIsPositive(T(e3));
 }
-__name(c, "c");
-function d(e3) {
-  return requireNumberIsPositive(u(e3));
+__name(h, "h");
+function T(e3) {
+  return ze(cr(e3));
 }
-__name(d, "d");
-function u(e3) {
-  return requireNumberIsInteger(Mi(e3));
-}
-__name(u, "u");
-function on(e3) {
-  if (null == e3) {
-    throw new TypeError("Cannot be null or undefined");
-  }
-  return e3;
-}
-__name(on, "on");
+__name(T, "T");
 function requirePropDefined(e3, n3) {
   if (null == n3) {
     throw new RangeError(missingField(e3));
@@ -70991,13 +71612,13 @@ function requirePropDefined(e3, n3) {
   return n3;
 }
 __name(requirePropDefined, "requirePropDefined");
-function de(e3) {
-  if (!z(e3)) {
-    throw new TypeError(hr);
+function requireObjectLike(e3) {
+  if (!s(e3)) {
+    throw new TypeError(oo);
   }
   return e3;
 }
-__name(de, "de");
+__name(requireObjectLike, "requireObjectLike");
 function requireType(e3, n3, t3 = e3) {
   if (typeof n3 !== e3) {
     throw new TypeError(invalidEntity(t3, n3));
@@ -71005,13 +71626,13 @@ function requireType(e3, n3, t3 = e3) {
   return n3;
 }
 __name(requireType, "requireType");
-function requireNumberIsInteger(e3, n3 = "number") {
+function ze(e3, n3 = "number") {
   if (!Number.isInteger(e3)) {
     throw new RangeError(expectedInteger(n3, e3));
   }
   return e3 || 0;
 }
-__name(requireNumberIsInteger, "requireNumberIsInteger");
+__name(ze, "ze");
 function requireNumberIsPositive(e3, n3 = "number") {
   if (e3 <= 0) {
     throw new RangeError(expectedPositive(n3, e3));
@@ -71021,13 +71642,13 @@ function requireNumberIsPositive(e3, n3 = "number") {
 __name(requireNumberIsPositive, "requireNumberIsPositive");
 function toString(e3) {
   if ("symbol" == typeof e3) {
-    throw new TypeError(pr);
+    throw new TypeError(no);
   }
   return String(e3);
 }
 __name(toString, "toString");
 function toStringViaPrimitive(e3, n3) {
-  return z(e3) ? String(e3) : m(e3, n3);
+  return s(e3) ? String(e3) : m(e3, n3);
 }
 __name(toStringViaPrimitive, "toStringViaPrimitive");
 function toBigInt(e3) {
@@ -71055,7 +71676,7 @@ function toInteger(e3, n3) {
 }
 __name(toInteger, "toInteger");
 function toStrictInteger(e3, n3) {
-  return requireNumberIsInteger(toNumber(e3, n3), n3);
+  return ze(toNumber(e3, n3), n3);
 }
 __name(toStrictInteger, "toStrictInteger");
 function toPositiveInteger(e3, n3) {
@@ -71063,9 +71684,9 @@ function toPositiveInteger(e3, n3) {
 }
 __name(toPositiveInteger, "toPositiveInteger");
 function createBigNano(e3, n3) {
-  let [t3, o3] = divModTrunc(n3, Qr), r3 = e3 + t3;
+  let [t3, o3] = divModTrunc(n3, Uo), r3 = e3 + t3;
   const i3 = Math.sign(r3);
-  return i3 && i3 === -Math.sign(o3) && (r3 -= i3, o3 += i3 * Qr), [r3, o3];
+  return i3 && i3 === -Math.sign(o3) && (r3 -= i3, o3 += i3 * Uo), [r3, o3];
 }
 __name(createBigNano, "createBigNano");
 function addBigNanos(e3, n3, t3 = 1) {
@@ -71076,65 +71697,52 @@ function moveBigNano(e3, n3) {
   return createBigNano(e3[0], e3[1] + n3);
 }
 __name(moveBigNano, "moveBigNano");
-function re(e3, n3) {
+function diffBigNanos(e3, n3) {
   return addBigNanos(n3, e3, -1);
 }
-__name(re, "re");
-function te(e3, n3) {
+__name(diffBigNanos, "diffBigNanos");
+function compareBigNanos(e3, n3) {
   return compareNumbers(e3[0], n3[0]) || compareNumbers(e3[1], n3[1]);
 }
-__name(te, "te");
+__name(compareBigNanos, "compareBigNanos");
 function bigNanoOutside(e3, n3, t3) {
-  return -1 === te(e3, n3) || 1 === te(e3, t3);
+  return -1 === compareBigNanos(e3, n3) || 1 === compareBigNanos(e3, t3);
 }
 __name(bigNanoOutside, "bigNanoOutside");
 function bigIntToBigNano(e3, n3 = 1) {
-  const t3 = BigInt(Qr / n3);
+  const t3 = BigInt(Uo / n3);
   return [Number(e3 / t3), Number(e3 % t3) * n3];
 }
 __name(bigIntToBigNano, "bigIntToBigNano");
-function he(e3, n3 = 1) {
-  const t3 = Qr / n3, [o3, r3] = divModTrunc(e3, t3);
+function Ge(e3, n3 = 1) {
+  const t3 = Uo / n3, [o3, r3] = divModTrunc(e3, t3);
   return [o3, r3 * n3];
 }
-__name(he, "he");
-function bigNanoToBigInt(e3, n3 = 1) {
-  const [t3, o3] = e3, r3 = Math.floor(o3 / n3), i3 = Qr / n3;
-  return BigInt(t3) * BigInt(i3) + BigInt(r3);
-}
-__name(bigNanoToBigInt, "bigNanoToBigInt");
-function oe(e3, n3 = 1, t3) {
+__name(Ge, "Ge");
+function bigNanoToNumber(e3, n3 = 1, t3) {
   const [o3, r3] = e3, [i3, a3] = divModTrunc(r3, n3);
-  return o3 * (Qr / n3) + (i3 + (t3 ? a3 / n3 : 0));
+  return o3 * (Uo / n3) + (i3 + (t3 ? a3 / n3 : 0));
 }
-__name(oe, "oe");
+__name(bigNanoToNumber, "bigNanoToNumber");
 function divModBigNano(e3, n3, t3 = divModFloor) {
   const [o3, r3] = e3, [i3, a3] = t3(r3, n3);
-  return [o3 * (Qr / n3) + i3, a3];
+  return [o3 * (Uo / n3) + i3, a3];
 }
 __name(divModBigNano, "divModBigNano");
-function hashIntlFormatParts(e3, n3) {
-  const t3 = e3.formatToParts(n3), o3 = {};
-  for (const e4 of t3) {
-    o3[e4.type] = e4.value;
-  }
-  return o3;
-}
-__name(hashIntlFormatParts, "hashIntlFormatParts");
 function checkIsoYearMonthInBounds(e3) {
-  return clampProp(e3, "isoYear", Li, Ai, 1), e3.isoYear === Li ? clampProp(e3, "isoMonth", 4, 12, 1) : e3.isoYear === Ai && clampProp(e3, "isoMonth", 1, 9, 1), e3;
+  return clampProp(e3, "isoYear", wr, Fr, 1), e3.isoYear === wr ? clampProp(e3, "isoMonth", 4, 12, 1) : e3.isoYear === Fr && clampProp(e3, "isoMonth", 1, 9, 1), e3;
 }
 __name(checkIsoYearMonthInBounds, "checkIsoYearMonthInBounds");
 function checkIsoDateInBounds(e3) {
   return checkIsoDateTimeInBounds({
     ...e3,
-    ...Dt,
+    ...Nt,
     isoHour: 12
   }), e3;
 }
 __name(checkIsoDateInBounds, "checkIsoDateInBounds");
 function checkIsoDateTimeInBounds(e3) {
-  const n3 = clampProp(e3, "isoYear", Li, Ai, 1), t3 = n3 === Li ? 1 : n3 === Ai ? -1 : 0;
+  const n3 = clampProp(e3, "isoYear", wr, Fr, 1), t3 = n3 === wr ? 1 : n3 === Fr ? -1 : 0;
   return t3 && checkEpochNanoInBounds(isoToEpochNano({
     ...e3,
     isoDay: e3.isoDay + t3,
@@ -71143,27 +71751,23 @@ function checkIsoDateTimeInBounds(e3) {
 }
 __name(checkIsoDateTimeInBounds, "checkIsoDateTimeInBounds");
 function checkEpochNanoInBounds(e3) {
-  if (!e3 || bigNanoOutside(e3, Ui, qi)) {
-    throw new RangeError(Cr);
+  if (!e3 || bigNanoOutside(e3, Sr, Er)) {
+    throw new RangeError(Io);
   }
   return e3;
 }
 __name(checkEpochNanoInBounds, "checkEpochNanoInBounds");
 function isoTimeFieldsToNano(e3) {
-  return givenFieldsToBigNano(e3, 5, j)[1];
+  return givenFieldsToBigNano(e3, 5, w)[1];
 }
 __name(isoTimeFieldsToNano, "isoTimeFieldsToNano");
 function nanoToIsoTimeAndDay(e3) {
-  const [n3, t3] = divModFloor(e3, Qr);
-  return [nanoToGivenFields(t3, 5, j), n3];
+  const [n3, t3] = divModFloor(e3, Uo);
+  return [nanoToGivenFields(t3, 5, w), n3];
 }
 __name(nanoToIsoTimeAndDay, "nanoToIsoTimeAndDay");
-function epochNanoToSec(e3) {
-  return epochNanoToSecMod(e3)[0];
-}
-__name(epochNanoToSec, "epochNanoToSec");
 function epochNanoToSecMod(e3) {
-  return divModBigNano(e3, _r);
+  return divModBigNano(e3, Ro);
 }
 __name(epochNanoToSecMod, "epochNanoToSecMod");
 function isoToEpochMilli(e3) {
@@ -71173,8 +71777,8 @@ __name(isoToEpochMilli, "isoToEpochMilli");
 function isoToEpochNano(e3) {
   const n3 = isoToEpochMilli(e3);
   if (void 0 !== n3) {
-    const [t3, o3] = divModTrunc(n3, Gr);
-    return [t3, o3 * be + (e3.isoMicrosecond || 0) * Vr + (e3.isoNanosecond || 0)];
+    const [t3, o3] = divModTrunc(n3, ko);
+    return [t3, o3 * Qe + (e3.isoMicrosecond || 0) * Yo + (e3.isoNanosecond || 0)];
   }
 }
 __name(isoToEpochNano, "isoToEpochNano");
@@ -71188,39 +71792,54 @@ function isoToEpochNanoWithOffset(e3, n3) {
 }
 __name(isoToEpochNanoWithOffset, "isoToEpochNanoWithOffset");
 function isoArgsToEpochSec(...e3) {
-  return isoArgsToEpochMilli(...e3) / Hr;
+  return isoArgsToEpochMilli(...e3) / Co;
 }
 __name(isoArgsToEpochSec, "isoArgsToEpochSec");
 function isoArgsToEpochMilli(...e3) {
   const [n3, t3] = isoToLegacyDate(...e3), o3 = n3.valueOf();
   if (!isNaN(o3)) {
-    return o3 - t3 * Gr;
+    return o3 - t3 * ko;
   }
 }
 __name(isoArgsToEpochMilli, "isoArgsToEpochMilli");
 function isoToLegacyDate(e3, n3 = 1, t3 = 1, o3 = 0, r3 = 0, i3 = 0, a3 = 0) {
-  const s3 = e3 === Li ? 1 : e3 === Ai ? -1 : 0, c3 = /* @__PURE__ */ new Date();
+  const s3 = e3 === wr ? 1 : e3 === Fr ? -1 : 0, c3 = /* @__PURE__ */ new Date();
   return c3.setUTCHours(o3, r3, i3, a3), c3.setUTCFullYear(e3, n3 - 1, t3 + s3), [c3, s3];
 }
 __name(isoToLegacyDate, "isoToLegacyDate");
-function Ie(e3, n3) {
+function epochNanoToIso(e3, n3) {
   let [t3, o3] = moveBigNano(e3, n3);
-  o3 < 0 && (o3 += Qr, t3 -= 1);
-  const [r3, i3] = divModFloor(o3, be), [a3, s3] = divModFloor(i3, Vr);
-  return epochMilliToIso(t3 * Gr + r3, a3, s3);
+  o3 < 0 && (o3 += Uo, t3 -= 1);
+  const [r3, i3] = divModFloor(o3, Qe), [a3, s3] = divModFloor(i3, Yo);
+  return epochMilliToIso(t3 * ko + r3, a3, s3);
 }
-__name(Ie, "Ie");
+__name(epochNanoToIso, "epochNanoToIso");
 function epochMilliToIso(e3, n3 = 0, t3 = 0) {
-  const o3 = Math.ceil(Math.max(0, Math.abs(e3) - zi) / Gr) * Math.sign(e3), r3 = new Date(e3 - o3 * Gr);
-  return zipProps(wi, [r3.getUTCFullYear(), r3.getUTCMonth() + 1, r3.getUTCDate() + o3, r3.getUTCHours(), r3.getUTCMinutes(), r3.getUTCSeconds(), r3.getUTCMilliseconds(), n3, t3]);
+  const o3 = Math.ceil(Math.max(0, Math.abs(e3) - Pr) / ko) * Math.sign(e3), r3 = new Date(e3 - o3 * ko);
+  return zipProps(Tr, [r3.getUTCFullYear(), r3.getUTCMonth() + 1, r3.getUTCDate() + o3, r3.getUTCHours(), r3.getUTCMinutes(), r3.getUTCSeconds(), r3.getUTCMilliseconds(), n3, t3]);
 }
 __name(epochMilliToIso, "epochMilliToIso");
+function hashIntlFormatParts(e3, n3) {
+  if (n3 < -Pr) {
+    throw new RangeError(Io);
+  }
+  const t3 = e3.formatToParts(n3), o3 = {};
+  for (const e4 of t3) {
+    o3[e4.type] = e4.value;
+  }
+  return o3;
+}
+__name(hashIntlFormatParts, "hashIntlFormatParts");
 function computeIsoDateParts(e3) {
   return [e3.isoYear, e3.isoMonth, e3.isoDay];
 }
 __name(computeIsoDateParts, "computeIsoDateParts");
+function computeIsoMonthCodeParts(e3, n3) {
+  return [n3, 0];
+}
+__name(computeIsoMonthCodeParts, "computeIsoMonthCodeParts");
 function computeIsoMonthsInYear() {
-  return xi;
+  return kr;
 }
 __name(computeIsoMonthsInYear, "computeIsoMonthsInYear");
 function computeIsoDaysInMonth(e3, n3) {
@@ -71249,16 +71868,17 @@ function computeIsoDayOfWeek(e3) {
   return modFloor(n3.getUTCDay() - t3, 7) || 7;
 }
 __name(computeIsoDayOfWeek, "computeIsoDayOfWeek");
-function computeGregoryEraParts({ isoYear: e3 }) {
-  return e3 < 1 ? ["bce", 1 - e3] : ["ce", e3];
+function computeIsoEraParts(e3) {
+  return this.id === or ? (({ isoYear: e4 }) => e4 < 1 ? ["gregory-inverse", 1 - e4] : ["gregory", e4])(e3) : this.id === rr ? Yr(e3) : [];
 }
-__name(computeGregoryEraParts, "computeGregoryEraParts");
+__name(computeIsoEraParts, "computeIsoEraParts");
 function computeJapaneseEraParts(e3) {
   const n3 = isoToEpochMilli(e3);
-  if (n3 < $i) {
-    return computeGregoryEraParts(e3);
+  if (n3 < Cr) {
+    const { isoYear: n4 } = e3;
+    return n4 < 1 ? ["japanese-inverse", 1 - n4] : ["japanese", n4];
   }
-  const t3 = hashIntlFormatParts(La(Ti), n3), { era: o3, eraYear: r3 } = parseIntlYear(t3, Ti);
+  const t3 = hashIntlFormatParts(Ci(rr), n3), { era: o3, eraYear: r3 } = parseIntlYear(t3, rr);
   return [o3, r3];
 }
 __name(computeJapaneseEraParts, "computeJapaneseEraParts");
@@ -71271,7 +71891,7 @@ function checkIsoDateFields(e3) {
 }
 __name(checkIsoDateFields, "checkIsoDateFields");
 function isIsoDateFieldsValid(e3) {
-  return allPropsEqual(Oi, e3, constrainIsoDateFields(e3));
+  return allPropsEqual(Dr, e3, constrainIsoDateFields(e3));
 }
 __name(isIsoDateFieldsValid, "isIsoDateFieldsValid");
 function constrainIsoDateFields(e3, n3) {
@@ -71284,115 +71904,106 @@ function constrainIsoDateFields(e3, n3) {
 }
 __name(constrainIsoDateFields, "constrainIsoDateFields");
 function constrainIsoTimeFields(e3, n3) {
-  return zipProps(j, [clampProp(e3, "isoHour", 0, 23, n3), clampProp(e3, "isoMinute", 0, 59, n3), clampProp(e3, "isoSecond", 0, 59, n3), clampProp(e3, "isoMillisecond", 0, 999, n3), clampProp(e3, "isoMicrosecond", 0, 999, n3), clampProp(e3, "isoNanosecond", 0, 999, n3)]);
+  return zipProps(w, [clampProp(e3, "isoHour", 0, 23, n3), clampProp(e3, "isoMinute", 0, 59, n3), clampProp(e3, "isoSecond", 0, 59, n3), clampProp(e3, "isoMillisecond", 0, 999, n3), clampProp(e3, "isoMicrosecond", 0, 999, n3), clampProp(e3, "isoNanosecond", 0, 999, n3)]);
 }
 __name(constrainIsoTimeFields, "constrainIsoTimeFields");
-function H(e3) {
-  return void 0 === e3 ? 0 : ua(de(e3));
+function mt(e3) {
+  return void 0 === e3 ? 0 : Xr(requireObjectLike(e3));
 }
-__name(H, "H");
-function wn(e3, n3 = 0) {
+__name(mt, "mt");
+function je(e3, n3 = 0) {
   e3 = normalizeOptions(e3);
-  const t3 = la(e3), o3 = fa(e3, n3);
-  return [ua(e3), o3, t3];
+  const t3 = ei(e3), o3 = ni(e3, n3);
+  return [Xr(e3), o3, t3];
 }
-__name(wn, "wn");
-function ve(e3) {
-  return la(normalizeOptions(e3));
-}
-__name(ve, "ve");
-function _t(e3) {
-  return e3 = normalizeOptions(e3), sa(e3, 9, 6, 1);
-}
-__name(_t, "_t");
+__name(je, "je");
 function refineDiffOptions(e3, n3, t3, o3 = 9, r3 = 0, i3 = 4) {
   n3 = normalizeOptions(n3);
-  let a3 = sa(n3, o3, r3), s3 = parseRoundingIncInteger(n3), c3 = ha(n3, i3);
-  const u3 = aa(n3, o3, r3, 1);
+  let a3 = Kr(n3, o3, r3), s3 = parseRoundingIncInteger(n3), c3 = ii(n3, i3);
+  const u3 = Jr(n3, o3, r3, 1);
   return null == a3 ? a3 = Math.max(t3, u3) : checkLargestSmallestUnit(a3, u3), s3 = refineRoundingInc(s3, u3, 1), e3 && (c3 = ((e4) => e4 < 4 ? (e4 + 2) % 4 : e4)(c3)), [a3, u3, s3, c3];
 }
 __name(refineDiffOptions, "refineDiffOptions");
 function refineRoundingOptions(e3, n3 = 6, t3) {
-  let o3 = parseRoundingIncInteger(e3 = normalizeOptionsOrString(e3, Hi));
-  const r3 = ha(e3, 7);
-  let i3 = aa(e3, n3);
-  return i3 = requirePropDefined(Hi, i3), o3 = refineRoundingInc(o3, i3, void 0, t3), [i3, o3, r3];
+  let o3 = parseRoundingIncInteger(e3 = normalizeOptionsOrString(e3, Rr));
+  const r3 = ii(e3, 7);
+  let i3 = Jr(e3, n3);
+  return i3 = requirePropDefined(Rr, i3), o3 = refineRoundingInc(o3, i3, void 0, t3), [i3, o3, r3];
 }
 __name(refineRoundingOptions, "refineRoundingOptions");
 function refineDateDisplayOptions(e3) {
-  return da(normalizeOptions(e3));
+  return ti(normalizeOptions(e3));
 }
 __name(refineDateDisplayOptions, "refineDateDisplayOptions");
 function refineTimeDisplayOptions(e3, n3) {
   return refineTimeDisplayTuple(normalizeOptions(e3), n3);
 }
 __name(refineTimeDisplayOptions, "refineTimeDisplayOptions");
+function Me(e3) {
+  const n3 = normalizeOptionsOrString(e3, qr), t3 = refineChoiceOption(qr, _r, n3, 0);
+  if (!t3) {
+    throw new RangeError(invalidEntity(qr, t3));
+  }
+  return t3;
+}
+__name(Me, "Me");
 function refineTimeDisplayTuple(e3, n3 = 4) {
   const t3 = refineSubsecDigits(e3);
-  return [ha(e3, 4), ...refineSmallestUnitAndSubsecDigits(aa(e3, n3), t3)];
+  return [ii(e3, 4), ...refineSmallestUnitAndSubsecDigits(Jr(e3, n3), t3)];
 }
 __name(refineTimeDisplayTuple, "refineTimeDisplayTuple");
 function refineSmallestUnitAndSubsecDigits(e3, n3) {
-  return null != e3 ? [Xr[e3], e3 < 4 ? 9 - 3 * e3 : -1] : [void 0 === n3 ? 1 : 10 ** (9 - n3), n3];
+  return null != e3 ? [Ao[e3], e3 < 4 ? 9 - 3 * e3 : -1] : [void 0 === n3 ? 1 : 10 ** (9 - n3), n3];
 }
 __name(refineSmallestUnitAndSubsecDigits, "refineSmallestUnitAndSubsecDigits");
 function parseRoundingIncInteger(e3) {
-  const n3 = e3[_i];
-  return void 0 === n3 ? 1 : toInteger(n3, _i);
+  const n3 = e3[zr];
+  return void 0 === n3 ? 1 : toInteger(n3, zr);
 }
 __name(parseRoundingIncInteger, "parseRoundingIncInteger");
 function refineRoundingInc(e3, n3, t3, o3) {
-  const r3 = o3 ? Qr : Xr[n3 + 1];
+  const r3 = o3 ? Uo : Ao[n3 + 1];
   if (r3) {
-    const t4 = Xr[n3];
-    if (r3 % ((e3 = clampEntity(_i, e3, 1, r3 / t4 - (o3 ? 0 : 1), 1)) * t4)) {
-      throw new RangeError(invalidEntity(_i, e3));
+    const t4 = Ao[n3];
+    if (r3 % ((e3 = clampEntity(zr, e3, 1, r3 / t4 - (o3 ? 0 : 1), 1)) * t4)) {
+      throw new RangeError(invalidEntity(zr, e3));
     }
   } else {
-    e3 = clampEntity(_i, e3, 1, t3 ? 10 ** 9 : 1, 1);
+    e3 = clampEntity(zr, e3, 1, t3 ? 10 ** 9 : 1, 1);
   }
   return e3;
 }
 __name(refineRoundingInc, "refineRoundingInc");
 function refineSubsecDigits(e3) {
-  let n3 = e3[Ji];
+  let n3 = e3[Ur];
   if (void 0 !== n3) {
     if ("number" != typeof n3) {
       if ("auto" === toString(n3)) {
         return;
       }
-      throw new RangeError(invalidEntity(Ji, n3));
+      throw new RangeError(invalidEntity(Ur, n3));
     }
-    n3 = clampEntity(Ji, Math.floor(n3), 0, 9, 1);
+    n3 = clampEntity(Ur, Math.floor(n3), 0, 9, 1);
   }
   return n3;
 }
 __name(refineSubsecDigits, "refineSubsecDigits");
 function normalizeOptions(e3) {
-  return void 0 === e3 ? {} : de(e3);
+  return void 0 === e3 ? {} : requireObjectLike(e3);
 }
 __name(normalizeOptions, "normalizeOptions");
 function normalizeOptionsOrString(e3, n3) {
   return "string" == typeof e3 ? {
     [n3]: e3
-  } : de(e3);
+  } : requireObjectLike(e3);
 }
 __name(normalizeOptionsOrString, "normalizeOptionsOrString");
-function U(e3) {
-  if (void 0 !== e3) {
-    if (z(e3)) {
-      return Object.assign(/* @__PURE__ */ Object.create(null), e3);
-    }
-    throw new TypeError(hr);
-  }
+function fabricateOverflowOptions(e3) {
+  return {
+    overflow: jr[e3]
+  };
 }
-__name(U, "U");
-function overrideOverflowOptions(e3, n3) {
-  return e3 && Object.assign(/* @__PURE__ */ Object.create(null), e3, {
-    overflow: Xi[n3]
-  });
-}
-__name(overrideOverflowOptions, "overrideOverflowOptions");
+__name(fabricateOverflowOptions, "fabricateOverflowOptions");
 function refineUnitOption(e3, n3, t3 = 9, o3 = 0, r3) {
   let i3 = n3[e3];
   if (void 0 === i3) {
@@ -71401,11 +72012,11 @@ function refineUnitOption(e3, n3, t3 = 9, o3 = 0, r3) {
   if (i3 = toString(i3), "auto" === i3) {
     return r3 ? o3 : null;
   }
-  let a3 = $r[i3];
-  if (void 0 === a3 && (a3 = Ei[i3]), void 0 === a3) {
-    throw new RangeError(invalidChoice(e3, i3, $r));
+  let a3 = Oo[i3];
+  if (void 0 === a3 && (a3 = mr[i3]), void 0 === a3) {
+    throw new RangeError(invalidChoice(e3, i3, Oo));
   }
-  return clampEntity(e3, a3, o3, t3, 1, Et), a3;
+  return clampEntity(e3, a3, o3, t3, 1, Bo), a3;
 }
 __name(refineUnitOption, "refineUnitOption");
 function refineChoiceOption(e3, n3, t3, o3 = 0) {
@@ -71422,146 +72033,138 @@ function refineChoiceOption(e3, n3, t3, o3 = 0) {
 __name(refineChoiceOption, "refineChoiceOption");
 function checkLargestSmallestUnit(e3, n3) {
   if (n3 > e3) {
-    throw new RangeError(Ar);
+    throw new RangeError(Eo);
   }
 }
 __name(checkLargestSmallestUnit, "checkLargestSmallestUnit");
-function _(e3) {
+function xe(e3) {
   return {
-    branding: Oe,
+    branding: Re,
     epochNanoseconds: e3
   };
 }
-__name(_, "_");
-function Yn(e3, n3, t3) {
+__name(xe, "xe");
+function _e(e3, n3, t3) {
   return {
-    branding: Te,
+    branding: z,
     calendar: t3,
     timeZone: n3,
     epochNanoseconds: e3
   };
 }
-__name(Yn, "Yn");
-function ee(e3, n3 = e3.calendar) {
+__name(_e, "_e");
+function jt(e3, n3 = e3.calendar) {
   return {
-    branding: We,
+    branding: x,
     calendar: n3,
-    ...Vn(Yi, e3)
+    ...nn(Nr, e3)
   };
 }
-__name(ee, "ee");
-function v(e3, n3 = e3.calendar) {
+__name(jt, "jt");
+function W(e3, n3 = e3.calendar) {
   return {
-    branding: J,
+    branding: G,
     calendar: n3,
-    ...Vn(Bi, e3)
+    ...nn(Ir, e3)
   };
 }
-__name(v, "v");
+__name(W, "W");
 function createPlainYearMonthSlots(e3, n3 = e3.calendar) {
   return {
-    branding: L,
+    branding: Ut,
     calendar: n3,
-    ...Vn(Bi, e3)
+    ...nn(Ir, e3)
   };
 }
 __name(createPlainYearMonthSlots, "createPlainYearMonthSlots");
 function createPlainMonthDaySlots(e3, n3 = e3.calendar) {
   return {
-    branding: q,
+    branding: qt,
     calendar: n3,
-    ...Vn(Bi, e3)
+    ...nn(Ir, e3)
   };
 }
 __name(createPlainMonthDaySlots, "createPlainMonthDaySlots");
-function Ge(e3) {
+function St(e3) {
   return {
-    branding: xe,
-    ...Vn(ki, e3)
+    branding: ft,
+    ...nn(Mr, e3)
   };
 }
-__name(Ge, "Ge");
-function Vt(e3) {
+__name(St, "St");
+function Oe(e3) {
   return {
-    branding: qt,
+    branding: N,
     sign: computeDurationSign(e3),
-    ...Vn(Ni, e3)
+    ...nn(ur, e3)
   };
 }
-__name(Vt, "Vt");
-function M(e3) {
-  return epochNanoToSec(e3.epochNanoseconds);
+__name(Oe, "Oe");
+function I(e3) {
+  return divModBigNano(e3.epochNanoseconds, Qe)[0];
 }
-__name(M, "M");
-function y(e3) {
-  return divModBigNano(e3.epochNanoseconds, be)[0];
+__name(I, "I");
+function v(e3) {
+  return ((e4, n3 = 1) => {
+    const [t3, o3] = e4, r3 = Math.floor(o3 / n3), i3 = Uo / n3;
+    return BigInt(t3) * BigInt(i3) + BigInt(r3);
+  })(e3.epochNanoseconds);
 }
-__name(y, "y");
-function N(e3) {
-  return bigNanoToBigInt(e3.epochNanoseconds, Vr);
-}
-__name(N, "N");
-function B(e3) {
-  return bigNanoToBigInt(e3.epochNanoseconds);
-}
-__name(B, "B");
+__name(v, "v");
 function extractEpochNano(e3) {
   return e3.epochNanoseconds;
 }
 __name(extractEpochNano, "extractEpochNano");
-function I(e3) {
-  return "string" == typeof e3 ? e3 : m(e3.id);
-}
-__name(I, "I");
-function isIdLikeEqual(e3, n3) {
-  return e3 === n3 || I(e3) === I(n3);
-}
-__name(isIdLikeEqual, "isIdLikeEqual");
-function Ut(e3, n3, t3, o3, r3) {
+function J(e3, n3, t3, o3, r3) {
   const i3 = getMaxDurationUnit(o3), [a3, s3] = ((e4, n4) => {
-    const t4 = n4((e4 = normalizeOptionsOrString(e4, Vi))[Ki]);
-    let o4 = ca(e4);
-    return o4 = requirePropDefined(Vi, o4), [o4, t4];
-  })(r3, e3);
-  if (isUniformUnit(Math.max(a3, i3), s3)) {
+    const t4 = n4((e4 = normalizeOptionsOrString(e4, Zr))[Ar]);
+    let o4 = Qr(e4);
+    return o4 = requirePropDefined(Zr, o4), [o4, t4];
+  })(r3, e3), c3 = Math.max(a3, i3);
+  if (!s3 && isUniformUnit(c3, s3)) {
     return totalDayTimeDuration(o3, a3);
   }
   if (!s3) {
-    throw new RangeError(zr);
+    throw new RangeError(yo);
   }
-  const [c3, u3, l3] = createMarkerSystem(n3, t3, s3), f3 = createMarkerToEpochNano(l3), d3 = createMoveMarker(l3), m3 = createDiffMarkers(l3), p3 = d3(u3, c3, o3), h3 = m3(u3, c3, p3, a3);
-  return isUniformUnit(a3, s3) ? totalDayTimeDuration(h3, a3) : ((e4, n4, t4, o4, r4, i4, a4) => {
-    const s4 = computeDurationSign(e4), [c4, u4] = clampRelativeDuration(o4, bi(t4, e4), t4, s4, r4, i4, a4), l4 = computeEpochNanoFrac(n4, c4, u4);
-    return e4[F[t4]] + l4 * s4;
-  })(h3, f3(p3), a3, u3, c3, f3, d3);
+  if (!o3.sign) {
+    return 0;
+  }
+  const [u3, f3, l3] = createMarkerSystem(n3, t3, s3), d3 = createMarkerToEpochNano(l3), m3 = createMoveMarker(l3), h3 = createDiffMarkers(l3), g3 = m3(f3, u3, o3);
+  isZonedEpochSlots(s3) || (checkIsoDateTimeInBounds(u3), checkIsoDateTimeInBounds(g3));
+  const D2 = h3(f3, u3, g3, a3);
+  return isUniformUnit(a3, s3) ? totalDayTimeDuration(D2, a3) : ((e4, n4, t4, o4, r4, i4, a4) => {
+    const s4 = computeDurationSign(e4), [c4, u4] = clampRelativeDuration(o4, gr(t4, e4), t4, s4, r4, i4, a4), f4 = computeEpochNanoFrac(n4, c4, u4);
+    return e4[p[t4]] + f4 * s4;
+  })(D2, d3(g3), a3, f3, u3, d3, m3);
 }
-__name(Ut, "Ut");
+__name(J, "J");
 function totalDayTimeDuration(e3, n3) {
-  return oe(durationFieldsToBigNano(e3), Xr[n3], 1);
+  return bigNanoToNumber(durationFieldsToBigNano(e3), Ao[n3], 1);
 }
 __name(totalDayTimeDuration, "totalDayTimeDuration");
 function clampRelativeDuration(e3, n3, t3, o3, r3, i3, a3) {
-  const s3 = F[t3], c3 = {
+  const s3 = p[t3], c3 = {
     ...n3,
     [s3]: n3[s3] + o3
-  }, u3 = a3(e3, r3, n3), l3 = a3(e3, r3, c3);
-  return [i3(u3), i3(l3)];
+  }, u3 = a3(e3, r3, n3), f3 = a3(e3, r3, c3);
+  return [i3(u3), i3(f3)];
 }
 __name(clampRelativeDuration, "clampRelativeDuration");
 function computeEpochNanoFrac(e3, n3, t3) {
-  const o3 = oe(re(n3, t3));
+  const o3 = bigNanoToNumber(diffBigNanos(n3, t3));
   if (!o3) {
-    throw new RangeError(vr);
+    throw new RangeError(fo);
   }
-  return oe(re(n3, e3)) / o3;
+  return bigNanoToNumber(diffBigNanos(n3, e3)) / o3;
 }
 __name(computeEpochNanoFrac, "computeEpochNanoFrac");
-function ce(e3, n3) {
+function Le(e3, n3) {
   const [t3, o3, r3] = refineRoundingOptions(n3, 5, 1);
-  return _(roundBigNano(e3.epochNanoseconds, t3, o3, r3, 1));
+  return xe(roundBigNano(e3.epochNanoseconds, t3, o3, r3, 1));
 }
-__name(ce, "ce");
-function Pn(e3, n3, t3) {
+__name(Le, "Le");
+function Ie(e3, n3, t3) {
   let { epochNanoseconds: o3, timeZone: r3, calendar: i3 } = n3;
   const [a3, s3, c3] = refineRoundingOptions(t3);
   if (0 === a3 && 1 === s3) {
@@ -71570,42 +72173,42 @@ function Pn(e3, n3, t3) {
   const u3 = e3(r3);
   if (6 === a3) {
     o3 = ((e4, n4, t4, o4) => {
-      const r4 = fn(t4, n4), [i4, a4] = e4(r4), s4 = t4.epochNanoseconds, c4 = we(n4, i4), u4 = we(n4, a4);
+      const r4 = he(t4, n4), [i4, a4] = e4(r4), s4 = t4.epochNanoseconds, c4 = getStartOfDayInstantFor(n4, i4), u4 = getStartOfDayInstantFor(n4, a4);
       if (bigNanoOutside(s4, c4, u4)) {
-        throw new RangeError(vr);
+        throw new RangeError(fo);
       }
       return roundWithMode(computeEpochNanoFrac(s4, c4, u4), o4) ? u4 : c4;
     })(computeDayInterval, u3, n3, c3);
   } else {
-    const e4 = u3.getOffsetNanosecondsFor(o3);
-    o3 = getMatchingInstantFor(u3, roundDateTime(Ie(o3, e4), a3, s3, c3), e4, 2, 0, 1);
+    const e4 = u3.R(o3);
+    o3 = getMatchingInstantFor(u3, roundDateTime(epochNanoToIso(o3, e4), a3, s3, c3), e4, 2, 0, 1);
   }
-  return Yn(o3, r3, i3);
+  return _e(o3, r3, i3);
 }
-__name(Pn, "Pn");
-function dt(e3, n3) {
-  return ee(roundDateTime(e3, ...refineRoundingOptions(n3)), e3.calendar);
+__name(Ie, "Ie");
+function vt(e3, n3) {
+  return jt(roundDateTime(e3, ...refineRoundingOptions(n3)), e3.calendar);
 }
-__name(dt, "dt");
-function Ee(e3, n3) {
+__name(vt, "vt");
+function lt(e3, n3) {
   const [t3, o3, r3] = refineRoundingOptions(n3, 5);
   var i3;
-  return Ge((i3 = r3, roundTimeToNano(e3, computeNanoInc(t3, o3), i3)[0]));
+  return St((i3 = r3, roundTimeToNano(e3, computeNanoInc(t3, o3), i3)[0]));
 }
-__name(Ee, "Ee");
-function dn(e3, n3) {
-  const t3 = e3(n3.timeZone), o3 = fn(n3, t3), [r3, i3] = computeDayInterval(o3), a3 = oe(re(we(t3, r3), we(t3, i3)), Kr, 1);
+__name(lt, "lt");
+function Te(e3, n3) {
+  const t3 = e3(n3.timeZone), o3 = he(n3, t3), [r3, i3] = computeDayInterval(o3), a3 = bigNanoToNumber(diffBigNanos(getStartOfDayInstantFor(t3, r3), getStartOfDayInstantFor(t3, i3)), zo, 1);
   if (a3 <= 0) {
-    throw new RangeError(vr);
+    throw new RangeError(fo);
   }
   return a3;
 }
-__name(dn, "dn");
-function Cn(e3, n3) {
-  const { timeZone: t3, calendar: o3 } = n3, r3 = ((e4, n4, t4) => we(n4, e4(fn(t4, n4))))(computeDayFloor, e3(t3), n3);
-  return Yn(r3, t3, o3);
+__name(Te, "Te");
+function ve(e3, n3) {
+  const { timeZone: t3, calendar: o3 } = n3, r3 = ((e4, n4, t4) => getStartOfDayInstantFor(n4, e4(he(t4, n4))))(computeDayFloor, e3(t3), n3);
+  return _e(r3, t3, o3);
 }
-__name(Cn, "Cn");
+__name(ve, "ve");
 function roundDateTime(e3, n3, t3, o3) {
   return roundDateTimeToNano(e3, computeNanoInc(n3, t3), o3);
 }
@@ -71623,11 +72226,11 @@ function roundTimeToNano(e3, n3, t3) {
 }
 __name(roundTimeToNano, "roundTimeToNano");
 function roundToMinute(e3) {
-  return roundByInc(e3, Jr, 7);
+  return roundByInc(e3, Zo, 7);
 }
 __name(roundToMinute, "roundToMinute");
 function computeNanoInc(e3, n3) {
-  return Xr[e3] * n3;
+  return Ao[e3] * n3;
 }
 __name(computeNanoInc, "computeNanoInc");
 function computeDayInterval(e3) {
@@ -71636,7 +72239,7 @@ function computeDayInterval(e3) {
 }
 __name(computeDayInterval, "computeDayInterval");
 function computeDayFloor(e3) {
-  return Ci(6, e3);
+  return yr(6, e3);
 }
 __name(computeDayFloor, "computeDayFloor");
 function roundDayTimeDurationByInc(e3, n3, t3) {
@@ -71648,29 +72251,29 @@ function roundRelativeDuration(e3, n3, t3, o3, r3, i3, a3, s3, c3, u3) {
   if (0 === o3 && 1 === r3) {
     return e3;
   }
-  const l3 = isUniformUnit(o3, s3) ? isZonedEpochSlots(s3) && o3 < 6 && t3 >= 6 ? nudgeZonedTimeDuration : nudgeDayTimeDuration : nudgeRelativeDuration;
-  let [f3, d3, m3] = l3(e3, n3, t3, o3, r3, i3, a3, s3, c3, u3);
-  return m3 && 7 !== o3 && (f3 = ((e4, n4, t4, o4, r4, i4, a4, s4) => {
+  const f3 = isUniformUnit(o3, s3) ? isZonedEpochSlots(s3) && o3 < 6 && t3 >= 6 ? nudgeZonedTimeDuration : nudgeDayTimeDuration : nudgeRelativeDuration;
+  let [l3, d3, m3] = f3(e3, n3, t3, o3, r3, i3, a3, s3, c3, u3);
+  return m3 && 7 !== o3 && (l3 = ((e4, n4, t4, o4, r4, i4, a4, s4) => {
     const c4 = computeDurationSign(e4);
     for (let u4 = o4 + 1; u4 <= t4; u4++) {
       if (7 === u4 && 7 !== t4) {
         continue;
       }
-      const o5 = bi(u4, e4);
-      o5[F[u4]] += c4;
-      const l4 = oe(re(a4(s4(r4, i4, o5)), n4));
-      if (l4 && Math.sign(l4) !== c4) {
+      const o5 = gr(u4, e4);
+      o5[p[u4]] += c4;
+      const f4 = bigNanoToNumber(diffBigNanos(a4(s4(r4, i4, o5)), n4));
+      if (f4 && Math.sign(f4) !== c4) {
         break;
       }
       e4 = o5;
     }
     return e4;
-  })(f3, d3, t3, Math.max(6, o3), a3, s3, c3, u3)), f3;
+  })(l3, d3, t3, Math.max(6, o3), a3, s3, c3, u3)), l3;
 }
 __name(roundRelativeDuration, "roundRelativeDuration");
 function roundBigNano(e3, n3, t3, o3, r3) {
   if (6 === n3) {
-    const n4 = ((e4) => e4[0] + e4[1] / Qr)(e3);
+    const n4 = ((e4) => e4[0] + e4[1] / Uo)(e3);
     return [roundByInc(n4, t3, o3), 0];
   }
   return roundBigNanoByInc(e3, computeNanoInc(n3, t3), o3, r3);
@@ -71678,8 +72281,8 @@ function roundBigNano(e3, n3, t3, o3, r3) {
 __name(roundBigNano, "roundBigNano");
 function roundBigNanoByInc(e3, n3, t3, o3) {
   let [r3, i3] = e3;
-  o3 && i3 < 0 && (i3 += Qr, r3 -= 1);
-  const [a3, s3] = divModFloor(roundByInc(i3, n3, t3), Qr);
+  o3 && i3 < 0 && (i3 += Uo, r3 -= 1);
+  const [a3, s3] = divModFloor(roundByInc(i3, n3, t3), Uo);
   return createBigNano(r3 + a3, s3);
 }
 __name(roundBigNanoByInc, "roundBigNanoByInc");
@@ -71688,103 +72291,103 @@ function roundByInc(e3, n3, t3) {
 }
 __name(roundByInc, "roundByInc");
 function roundWithMode(e3, n3) {
-  return ga[n3](e3);
+  return ai[n3](e3);
 }
 __name(roundWithMode, "roundWithMode");
 function nudgeDayTimeDuration(e3, n3, t3, o3, r3, i3) {
-  const a3 = computeDurationSign(e3), s3 = durationFieldsToBigNano(e3), c3 = roundBigNano(s3, o3, r3, i3), u3 = re(s3, c3), l3 = Math.sign(c3[0] - s3[0]) === a3, f3 = nanoToDurationDayTimeFields(c3, Math.min(t3, 6));
+  const a3 = computeDurationSign(e3), s3 = durationFieldsToBigNano(e3), c3 = roundBigNano(s3, o3, r3, i3), u3 = diffBigNanos(s3, c3), f3 = Math.sign(c3[0] - s3[0]) === a3, l3 = nanoToDurationDayTimeFields(c3, Math.min(t3, 6));
   return [{
     ...e3,
-    ...f3
-  }, addBigNanos(n3, u3), l3];
+    ...l3
+  }, addBigNanos(n3, u3), f3];
 }
 __name(nudgeDayTimeDuration, "nudgeDayTimeDuration");
 function nudgeZonedTimeDuration(e3, n3, t3, o3, r3, i3, a3, s3, c3, u3) {
-  const l3 = computeDurationSign(e3), f3 = oe(durationFieldsToBigNano(e3, 5)), d3 = computeNanoInc(o3, r3);
-  let m3 = roundByInc(f3, d3, i3);
+  const f3 = computeDurationSign(e3) || 1, l3 = bigNanoToNumber(durationFieldsToBigNano(e3, 5)), d3 = computeNanoInc(o3, r3);
+  let m3 = roundByInc(l3, d3, i3);
   const [p3, h3] = clampRelativeDuration(a3, {
     ...e3,
-    ...Fi
-  }, 6, l3, s3, c3, u3), g3 = m3 - oe(re(p3, h3));
-  let T3 = 0;
-  g3 && Math.sign(g3) !== l3 ? n3 = moveBigNano(p3, m3) : (T3 += l3, m3 = roundByInc(g3, d3, i3), n3 = moveBigNano(h3, m3));
-  const D2 = nanoToDurationTimeFields(m3);
+    ...hr
+  }, 6, f3, s3, c3, u3), g3 = m3 - bigNanoToNumber(diffBigNanos(p3, h3));
+  let D2 = 0;
+  g3 && Math.sign(g3) !== f3 ? n3 = moveBigNano(p3, m3) : (D2 += f3, m3 = roundByInc(g3, d3, i3), n3 = moveBigNano(h3, m3));
+  const T3 = nanoToDurationTimeFields(m3);
   return [{
     ...e3,
-    ...D2,
-    days: e3.days + T3
-  }, n3, Boolean(T3)];
+    ...T3,
+    days: e3.days + D2
+  }, n3, Boolean(D2)];
 }
 __name(nudgeZonedTimeDuration, "nudgeZonedTimeDuration");
 function nudgeRelativeDuration(e3, n3, t3, o3, r3, i3, a3, s3, c3, u3) {
-  const l3 = computeDurationSign(e3), f3 = F[o3], d3 = bi(o3, e3);
+  const f3 = computeDurationSign(e3), l3 = p[o3], d3 = gr(o3, e3);
   7 === o3 && (e3 = {
     ...e3,
     weeks: e3.weeks + Math.trunc(e3.days / 7)
   });
-  const m3 = divTrunc(e3[f3], r3) * r3;
-  d3[f3] = m3;
-  const [p3, h3] = clampRelativeDuration(a3, d3, o3, r3 * l3, s3, c3, u3), g3 = m3 + computeEpochNanoFrac(n3, p3, h3) * l3 * r3, T3 = roundByInc(g3, r3, i3), D2 = Math.sign(T3 - g3) === l3;
-  return d3[f3] = T3, [d3, D2 ? h3 : p3, D2];
+  const m3 = divTrunc(e3[l3], r3) * r3;
+  d3[l3] = m3;
+  const [h3, g3] = clampRelativeDuration(a3, d3, o3, r3 * f3, s3, c3, u3), D2 = m3 + computeEpochNanoFrac(n3, h3, g3) * f3 * r3, T3 = roundByInc(D2, r3, i3), I3 = Math.sign(T3 - D2) === f3;
+  return d3[l3] = T3, [d3, I3 ? g3 : h3, I3];
 }
 __name(nudgeRelativeDuration, "nudgeRelativeDuration");
-function me(e3, n3, t3, o3) {
+function ke(e3, n3, t3, o3) {
   const [r3, i3, a3, s3] = ((e4) => {
     const n4 = refineTimeDisplayTuple(e4 = normalizeOptions(e4));
     return [e4.timeZone, ...n4];
   })(o3), c3 = void 0 !== r3;
   return ((e4, n4, t4, o4, r4, i4) => {
     t4 = roundBigNanoByInc(t4, r4, o4, 1);
-    const a4 = n4.getOffsetNanosecondsFor(t4);
-    return formatIsoDateTimeFields(Ie(t4, a4), i4) + (e4 ? Fe(roundToMinute(a4)) : "Z");
-  })(c3, n3(c3 ? e3(r3) : Ta), t3.epochNanoseconds, i3, a3, s3);
+    const a4 = n4.R(t4);
+    return formatIsoDateTimeFields(epochNanoToIso(t4, a4), i4) + (e4 ? Se(roundToMinute(a4)) : "Z");
+  })(c3, n3(c3 ? e3(r3) : si), t3.epochNanoseconds, i3, a3, s3);
 }
-__name(me, "me");
-function In(e3, n3, t3) {
+__name(ke, "ke");
+function Fe(e3, n3, t3) {
   const [o3, r3, i3, a3, s3, c3] = ((e4) => {
     e4 = normalizeOptions(e4);
-    const n4 = da(e4), t4 = refineSubsecDigits(e4), o4 = pa(e4), r4 = ha(e4, 4), i4 = aa(e4, 4);
-    return [n4, ma(e4), o4, r4, ...refineSmallestUnitAndSubsecDigits(i4, t4)];
+    const n4 = ti(e4), t4 = refineSubsecDigits(e4), o4 = ri(e4), r4 = ii(e4, 4), i4 = Jr(e4, 4);
+    return [n4, oi(e4), o4, r4, ...refineSmallestUnitAndSubsecDigits(i4, t4)];
   })(t3);
   return ((e4, n4, t4, o4, r4, i4, a4, s4, c4, u3) => {
     o4 = roundBigNanoByInc(o4, c4, s4, 1);
-    const l3 = e4(t4).getOffsetNanosecondsFor(o4);
-    return formatIsoDateTimeFields(Ie(o4, l3), u3) + Fe(roundToMinute(l3), a4) + ((e5, n5) => 1 !== n5 ? "[" + (2 === n5 ? "!" : "") + I(e5) + "]" : "")(t4, i4) + formatCalendar(n4, r4);
+    const f3 = e4(t4).R(o4);
+    return formatIsoDateTimeFields(epochNanoToIso(o4, f3), u3) + Se(roundToMinute(f3), a4) + ((e5, n5) => 1 !== n5 ? "[" + (2 === n5 ? "!" : "") + e5 + "]" : "")(t4, i4) + formatCalendar(n4, r4);
   })(e3, n3.calendar, n3.timeZone, n3.epochNanoseconds, o3, r3, i3, a3, s3, c3);
 }
-__name(In, "In");
-function Tt(e3, n3) {
-  const [t3, o3, r3, i3] = ((e4) => (e4 = normalizeOptions(e4), [da(e4), ...refineTimeDisplayTuple(e4)]))(n3);
+__name(Fe, "Fe");
+function Ft(e3, n3) {
+  const [t3, o3, r3, i3] = ((e4) => (e4 = normalizeOptions(e4), [ti(e4), ...refineTimeDisplayTuple(e4)]))(n3);
   return a3 = e3.calendar, s3 = t3, c3 = i3, formatIsoDateTimeFields(roundDateTimeToNano(e3, r3, o3), c3) + formatCalendar(a3, s3);
   var a3, s3, c3;
 }
-__name(Tt, "Tt");
-function yt(e3, n3) {
+__name(Ft, "Ft");
+function ce(e3, n3) {
   return t3 = e3.calendar, o3 = e3, r3 = refineDateDisplayOptions(n3), formatIsoDateFields(o3) + formatCalendar(t3, r3);
   var t3, o3, r3;
 }
-__name(yt, "yt");
-function et(e3, n3) {
+__name(ce, "ce");
+function Kt(e3, n3) {
   return formatDateLikeIso(e3.calendar, formatIsoYearMonthFields, e3, refineDateDisplayOptions(n3));
 }
-__name(et, "et");
-function W(e3, n3) {
+__name(Kt, "Kt");
+function Jt(e3, n3) {
   return formatDateLikeIso(e3.calendar, formatIsoMonthDayFields, e3, refineDateDisplayOptions(n3));
 }
-__name(W, "W");
-function qe(e3, n3) {
+__name(Jt, "Jt");
+function ct(e3, n3) {
   const [t3, o3, r3] = refineTimeDisplayOptions(n3);
   return i3 = r3, formatIsoTimeFields(roundTimeToNano(e3, o3, t3)[0], i3);
   var i3;
 }
-__name(qe, "qe");
-function zt(e3, n3) {
+__name(ct, "ct");
+function k(e3, n3) {
   const [t3, o3, r3] = refineTimeDisplayOptions(n3, 3);
-  return o3 > 1 && (e3 = {
+  return o3 > 1 && checkDurationUnits(e3 = {
     ...e3,
     ...roundDayTimeDurationByInc(e3, o3, t3)
   }), ((e4, n4) => {
-    const { sign: t4 } = e4, o4 = -1 === t4 ? negateDurationFields(e4) : e4, { hours: r4, minutes: i3 } = o4, [a3, s3] = divModBigNano(durationFieldsToBigNano(o4, 3), _r, divModTrunc);
+    const { sign: t4 } = e4, o4 = -1 === t4 ? negateDurationFields(e4) : e4, { hours: r4, minutes: i3 } = o4, [a3, s3] = divModBigNano(durationFieldsToBigNano(o4, 3), Ro, divModTrunc);
     checkDurationTimeUnit(a3);
     const c3 = formatSubsecNano(s3, n4), u3 = n4 >= 0 || !t4 || c3;
     return (t4 < 0 ? "-" : "") + "P" + formatDurationFragments({
@@ -71799,10 +72402,10 @@ function zt(e3, n3) {
     }) : "");
   })(e3, r3);
 }
-__name(zt, "zt");
+__name(k, "k");
 function formatDateLikeIso(e3, n3, t3, o3) {
-  const r3 = I(e3), i3 = o3 > 1 || 0 === o3 && r3 !== X;
-  return 1 === o3 ? r3 === X ? n3(t3) : formatIsoDateFields(t3) : i3 ? formatIsoDateFields(t3) + formatCalendarId(r3, 2 === o3) : n3(t3);
+  const r3 = o3 > 1 || 0 === o3 && e3 !== l;
+  return 1 === o3 ? e3 === l ? n3(t3) : formatIsoDateFields(t3) : r3 ? formatIsoDateFields(t3) + formatCalendarId(e3, 2 === o3) : n3(t3);
 }
 __name(formatDateLikeIso, "formatDateLikeIso");
 function formatDurationFragments(e3) {
@@ -71819,39 +72422,33 @@ function formatIsoDateTimeFields(e3, n3) {
 }
 __name(formatIsoDateTimeFields, "formatIsoDateTimeFields");
 function formatIsoDateFields(e3) {
-  return formatIsoYearMonthFields(e3) + "-" + xr(e3.isoDay);
+  return formatIsoYearMonthFields(e3) + "-" + bo(e3.isoDay);
 }
 __name(formatIsoDateFields, "formatIsoDateFields");
 function formatIsoYearMonthFields(e3) {
   const { isoYear: n3 } = e3;
-  return (n3 < 0 || n3 > 9999 ? getSignStr(n3) + padNumber(6, Math.abs(n3)) : padNumber(4, n3)) + "-" + xr(e3.isoMonth);
+  return (n3 < 0 || n3 > 9999 ? getSignStr(n3) + padNumber(6, Math.abs(n3)) : padNumber(4, n3)) + "-" + bo(e3.isoMonth);
 }
 __name(formatIsoYearMonthFields, "formatIsoYearMonthFields");
 function formatIsoMonthDayFields(e3) {
-  return xr(e3.isoMonth) + "-" + xr(e3.isoDay);
+  return bo(e3.isoMonth) + "-" + bo(e3.isoDay);
 }
 __name(formatIsoMonthDayFields, "formatIsoMonthDayFields");
 function formatIsoTimeFields(e3, n3) {
-  const t3 = [xr(e3.isoHour), xr(e3.isoMinute)];
-  return -1 !== n3 && t3.push(xr(e3.isoSecond) + ((e4, n4, t4, o3) => formatSubsecNano(e4 * be + n4 * Vr + t4, o3))(e3.isoMillisecond, e3.isoMicrosecond, e3.isoNanosecond, n3)), t3.join(":");
+  const t3 = [bo(e3.isoHour), bo(e3.isoMinute)];
+  return -1 !== n3 && t3.push(bo(e3.isoSecond) + ((e4, n4, t4, o3) => formatSubsecNano(e4 * Qe + n4 * Yo + t4, o3))(e3.isoMillisecond, e3.isoMicrosecond, e3.isoNanosecond, n3)), t3.join(":");
 }
 __name(formatIsoTimeFields, "formatIsoTimeFields");
-function Fe(e3, n3 = 0) {
+function Se(e3, n3 = 0) {
   if (1 === n3) {
     return "";
   }
-  const [t3, o3] = divModFloor(Math.abs(e3), Kr), [r3, i3] = divModFloor(o3, Jr), [a3, s3] = divModFloor(i3, _r);
-  return getSignStr(e3) + xr(t3) + ":" + xr(r3) + (a3 || s3 ? ":" + xr(a3) + formatSubsecNano(s3) : "");
+  const [t3, o3] = divModFloor(Math.abs(e3), zo), [r3, i3] = divModFloor(o3, Zo), [a3, s3] = divModFloor(i3, Ro);
+  return getSignStr(e3) + bo(t3) + ":" + bo(r3) + (a3 || s3 ? ":" + bo(a3) + formatSubsecNano(s3) : "");
 }
-__name(Fe, "Fe");
+__name(Se, "Se");
 function formatCalendar(e3, n3) {
-  if (1 !== n3) {
-    const t3 = I(e3);
-    if (n3 > 1 || 0 === n3 && t3 !== X) {
-      return formatCalendarId(t3, 2 === n3);
-    }
-  }
-  return "";
+  return 1 !== n3 && (n3 > 1 || 0 === n3 && e3 !== l) ? formatCalendarId(e3, 2 === n3) : "";
 }
 __name(formatCalendar, "formatCalendar");
 function formatCalendarId(e3, n3) {
@@ -71860,7 +72457,7 @@ function formatCalendarId(e3, n3) {
 __name(formatCalendarId, "formatCalendarId");
 function formatSubsecNano(e3, n3) {
   let t3 = padNumber(9, e3);
-  return t3 = void 0 === n3 ? t3.replace(Na, "") : t3.slice(0, n3), t3 ? "." + t3 : "";
+  return t3 = void 0 === n3 ? t3.replace(li, "") : t3.slice(0, n3), t3 ? "." + t3 : "";
 }
 __name(formatSubsecNano, "formatSubsecNano");
 function getSignStr(e3) {
@@ -71874,7 +72471,7 @@ function formatDurationNumber(e3, n3) {
 }
 __name(formatDurationNumber, "formatDurationNumber");
 function _zonedEpochSlotsToIso(e3, n3) {
-  const { epochNanoseconds: t3 } = e3, o3 = (n3.getOffsetNanosecondsFor ? n3 : n3(e3.timeZone)).getOffsetNanosecondsFor(t3), r3 = Ie(t3, o3);
+  const { epochNanoseconds: t3 } = e3, o3 = (n3.R ? n3 : n3(e3.timeZone)).R(t3), r3 = epochNanoToIso(t3, o3);
   return {
     calendar: e3.calendar,
     ...r3,
@@ -71882,27 +72479,17 @@ function _zonedEpochSlotsToIso(e3, n3) {
   };
 }
 __name(_zonedEpochSlotsToIso, "_zonedEpochSlotsToIso");
-function mn(e3, n3) {
-  const t3 = fn(n3, e3);
-  return {
-    calendar: n3.calendar,
-    ...Vn(Yi, t3),
-    offset: Fe(t3.offsetNanoseconds),
-    timeZone: n3.timeZone
-  };
-}
-__name(mn, "mn");
 function getMatchingInstantFor(e3, n3, t3, o3 = 0, r3 = 0, i3, a3) {
   if (void 0 !== t3 && 1 === o3 && (1 === o3 || a3)) {
     return isoToEpochNanoWithOffset(n3, t3);
   }
-  const s3 = e3.getPossibleInstantsFor(n3);
+  const s3 = e3.I(n3);
   if (void 0 !== t3 && 3 !== o3) {
     const e4 = ((e5, n4, t4, o4) => {
       const r4 = isoToEpochNano(n4);
       o4 && (t4 = roundToMinute(t4));
       for (const n5 of e5) {
-        let e6 = oe(re(n5, r4));
+        let e6 = bigNanoToNumber(diffBigNanos(n5, r4));
         if (o4 && (e6 = roundToMinute(e6)), e6 === t4) {
           return n5;
         }
@@ -71912,99 +72499,99 @@ function getMatchingInstantFor(e3, n3, t3, o3 = 0, r3 = 0, i3, a3) {
       return e4;
     }
     if (0 === o3) {
-      throw new RangeError(kr);
+      throw new RangeError(Do);
     }
   }
-  return a3 ? isoToEpochNano(n3) : we(e3, n3, r3, s3);
+  return a3 ? isoToEpochNano(n3) : getSingleInstantFor(e3, n3, r3, s3);
 }
 __name(getMatchingInstantFor, "getMatchingInstantFor");
-function we(e3, n3, t3 = 0, o3 = e3.getPossibleInstantsFor(n3)) {
+function getSingleInstantFor(e3, n3, t3 = 0, o3 = e3.I(n3)) {
   if (1 === o3.length) {
     return o3[0];
   }
   if (1 === t3) {
-    throw new RangeError(Yr);
+    throw new RangeError(To);
   }
   if (o3.length) {
     return o3[3 === t3 ? 1 : 0];
   }
   const r3 = isoToEpochNano(n3), i3 = ((e4, n4) => {
-    const t4 = e4.getOffsetNanosecondsFor(moveBigNano(n4, -Qr));
-    return ne(e4.getOffsetNanosecondsFor(moveBigNano(n4, Qr)) - t4);
+    const t4 = e4.R(moveBigNano(n4, -Uo));
+    return ((e5) => {
+      if (e5 > Uo) {
+        throw new RangeError(go);
+      }
+      return e5;
+    })(e4.R(moveBigNano(n4, Uo)) - t4);
   })(e3, r3), a3 = i3 * (2 === t3 ? -1 : 1);
-  return (o3 = e3.getPossibleInstantsFor(Ie(r3, a3)))[2 === t3 ? 0 : o3.length - 1];
+  return (o3 = e3.I(epochNanoToIso(r3, a3)))[2 === t3 ? 0 : o3.length - 1];
 }
-__name(we, "we");
-function ae(e3) {
-  if (Math.abs(e3) >= Qr) {
-    throw new RangeError(wr);
+__name(getSingleInstantFor, "getSingleInstantFor");
+function getStartOfDayInstantFor(e3, n3) {
+  const t3 = e3.I(n3);
+  if (t3.length) {
+    return t3[0];
   }
-  return e3;
+  const o3 = moveBigNano(isoToEpochNano(n3), -Uo);
+  return e3.O(o3, 1);
 }
-__name(ae, "ae");
-function ne(e3) {
-  if (e3 > Qr) {
-    throw new RangeError(Br);
-  }
-  return e3;
-}
-__name(ne, "ne");
-function se(e3, n3, t3) {
-  return _(checkEpochNanoInBounds(addBigNanos(n3.epochNanoseconds, ((e4) => {
+__name(getStartOfDayInstantFor, "getStartOfDayInstantFor");
+function Ye(e3, n3, t3) {
+  return xe(checkEpochNanoInBounds(addBigNanos(n3.epochNanoseconds, ((e4) => {
     if (durationHasDateParts(e4)) {
-      throw new RangeError(qr);
+      throw new RangeError(vo);
     }
     return durationFieldsToBigNano(e4, 5);
   })(e3 ? negateDurationFields(t3) : t3))));
 }
-__name(se, "se");
-function hn(e3, n3, t3, o3, r3, i3 = /* @__PURE__ */ Object.create(null)) {
+__name(Ye, "Ye");
+function pe(e3, n3, t3, o3, r3, i3 = /* @__PURE__ */ Object.create(null)) {
   const a3 = n3(o3.timeZone), s3 = e3(o3.calendar);
   return {
     ...o3,
     ...moveZonedEpochs(a3, s3, o3, t3 ? negateDurationFields(r3) : r3, i3)
   };
 }
-__name(hn, "hn");
-function ct(e3, n3, t3, o3, r3 = /* @__PURE__ */ Object.create(null)) {
+__name(pe, "pe");
+function wt(e3, n3, t3, o3, r3 = /* @__PURE__ */ Object.create(null)) {
   const { calendar: i3 } = t3;
-  return ee(moveDateTime(e3(i3), t3, n3 ? negateDurationFields(o3) : o3, r3), i3);
+  return jt(moveDateTime(e3(i3), t3, n3 ? negateDurationFields(o3) : o3, r3), i3);
 }
-__name(ct, "ct");
-function bt(e3, n3, t3, o3, r3) {
+__name(wt, "wt");
+function ne(e3, n3, t3, o3, r3) {
   const { calendar: i3 } = t3;
-  return v(moveDate(e3(i3), t3, n3 ? negateDurationFields(o3) : o3, r3), i3);
+  return W(moveDate(e3(i3), t3, n3 ? negateDurationFields(o3) : o3, r3), i3);
 }
-__name(bt, "bt");
-function Qe(e3, n3, t3, o3, r3 = /* @__PURE__ */ Object.create(null)) {
+__name(ne, "ne");
+function Gt(e3, n3, t3, o3, r3) {
   const i3 = t3.calendar, a3 = e3(i3);
-  let s3 = moveToDayOfMonthUnsafe(a3, t3);
-  n3 && (o3 = xt(o3)), o3.sign < 0 && (s3 = a3.dateAdd(s3, {
-    ...Si,
+  let s3 = checkIsoDateInBounds(moveToDayOfMonthUnsafe(a3, t3));
+  n3 && (o3 = B(o3)), o3.sign < 0 && (s3 = a3.P(s3, {
+    ...pr,
     months: 1
   }), s3 = moveByDays(s3, -1));
-  const c3 = a3.dateAdd(s3, o3, r3);
+  const c3 = a3.P(s3, o3, r3);
   return createPlainYearMonthSlots(moveToDayOfMonthUnsafe(a3, c3), i3);
 }
-__name(Qe, "Qe");
-function Ye(e3, n3, t3) {
-  return Ge(moveTime(n3, e3 ? negateDurationFields(t3) : t3)[0]);
+__name(Gt, "Gt");
+function at(e3, n3, t3) {
+  return St(moveTime(n3, e3 ? negateDurationFields(t3) : t3)[0]);
 }
-__name(Ye, "Ye");
+__name(at, "at");
 function moveZonedEpochs(e3, n3, t3, o3, r3) {
   const i3 = durationFieldsToBigNano(o3, 5);
   let a3 = t3.epochNanoseconds;
   if (durationHasDateParts(o3)) {
-    const s3 = fn(t3, e3);
-    a3 = addBigNanos(we(e3, {
+    const s3 = he(t3, e3);
+    a3 = addBigNanos(getSingleInstantFor(e3, {
       ...moveDate(n3, s3, {
         ...o3,
-        ...Fi
+        ...hr
       }, r3),
-      ...Vn(j, s3)
+      ...nn(w, s3)
     }), i3);
   } else {
-    a3 = addBigNanos(a3, i3), H(r3);
+    a3 = addBigNanos(a3, i3), mt(r3);
   }
   return {
     epochNanoseconds: checkEpochNanoInBounds(a3)
@@ -72016,7 +72603,7 @@ function moveDateTime(e3, n3, t3, o3) {
   return checkIsoDateTimeInBounds({
     ...moveDate(e3, n3, {
       ...t3,
-      ...Fi,
+      ...hr,
       days: t3.days + i3
     }, o3),
     ...r3
@@ -72025,9 +72612,9 @@ function moveDateTime(e3, n3, t3, o3) {
 __name(moveDateTime, "moveDateTime");
 function moveDate(e3, n3, t3, o3) {
   if (t3.years || t3.months || t3.weeks) {
-    return e3.dateAdd(n3, t3, o3);
+    return e3.P(n3, t3, o3);
   }
-  H(o3);
+  mt(o3);
   const r3 = t3.days + durationFieldsToBigNano(t3, 5)[0];
   return r3 ? checkIsoDateInBounds(moveByDays(n3, r3)) : n3;
 }
@@ -72044,7 +72631,7 @@ __name(moveTime, "moveTime");
 function moveByDays(e3, n3) {
   return n3 ? {
     ...e3,
-    ...epochMilliToIso(isoToEpochMilli(e3) + n3 * Gr)
+    ...epochMilliToIso(isoToEpochMilli(e3) + n3 * ko)
   } : e3;
 }
 __name(moveByDays, "moveByDays");
@@ -72052,7 +72639,7 @@ function createMarkerSystem(e3, n3, t3) {
   const o3 = e3(t3.calendar);
   return isZonedEpochSlots(t3) ? [t3, o3, n3(t3.timeZone)] : [{
     ...t3,
-    ...Dt
+    ...Nt
   }, o3];
 }
 __name(createMarkerSystem, "createMarkerSystem");
@@ -72061,11 +72648,11 @@ function createMarkerToEpochNano(e3) {
 }
 __name(createMarkerToEpochNano, "createMarkerToEpochNano");
 function createMoveMarker(e3) {
-  return e3 ? E(moveZonedEpochs, e3) : moveDateTime;
+  return e3 ? Pt(moveZonedEpochs, e3) : moveDateTime;
 }
 __name(createMoveMarker, "createMoveMarker");
 function createDiffMarkers(e3) {
-  return e3 ? E(diffZonedEpochsExact, e3) : diffDateTimesExact;
+  return e3 ? Pt(diffZonedEpochsExact, e3) : diffDateTimesExact;
 }
 __name(createDiffMarkers, "createDiffMarkers");
 function isZonedEpochSlots(e3) {
@@ -72076,89 +72663,96 @@ function isUniformUnit(e3, n3) {
   return e3 <= 6 - (isZonedEpochSlots(n3) ? 1 : 0);
 }
 __name(isUniformUnit, "isUniformUnit");
-function Wt(e3, n3, t3, o3, r3, i3, a3) {
+function E(e3, n3, t3, o3, r3, i3, a3) {
   const s3 = e3(normalizeOptions(a3).relativeTo), c3 = Math.max(getMaxDurationUnit(r3), getMaxDurationUnit(i3));
   if (isUniformUnit(c3, s3)) {
-    return Vt(checkDurationUnits(((e4, n4, t4, o4) => {
+    return Oe(checkDurationUnits(((e4, n4, t4, o4) => {
       const r4 = addBigNanos(durationFieldsToBigNano(e4), durationFieldsToBigNano(n4), o4 ? -1 : 1);
       if (!Number.isFinite(r4[0])) {
-        throw new RangeError(Cr);
+        throw new RangeError(Io);
       }
       return {
-        ...Si,
+        ...pr,
         ...nanoToDurationDayTimeFields(r4, t4)
       };
     })(r3, i3, c3, o3)));
   }
   if (!s3) {
-    throw new RangeError(zr);
+    throw new RangeError(yo);
   }
   o3 && (i3 = negateDurationFields(i3));
-  const [u3, l3, f3] = createMarkerSystem(n3, t3, s3), d3 = createMoveMarker(f3), m3 = createDiffMarkers(f3), p3 = d3(l3, u3, r3);
-  return Vt(m3(l3, u3, d3(l3, p3, i3), c3));
+  const [u3, f3, l3] = createMarkerSystem(n3, t3, s3), d3 = createMoveMarker(l3), m3 = createDiffMarkers(l3), p3 = d3(f3, u3, r3);
+  return Oe(m3(f3, u3, d3(f3, p3, i3), c3));
 }
-__name(Wt, "Wt");
-function Gt(e3, n3, t3, o3, r3) {
-  const i3 = getMaxDurationUnit(o3), [a3, s3, c3, u3, l3] = ((e4, n4, t4) => {
-    e4 = normalizeOptionsOrString(e4, Hi);
-    let o4 = sa(e4);
-    const r4 = t4(e4[Ki]);
+__name(E, "E");
+function V(e3, n3, t3, o3, r3) {
+  const i3 = getMaxDurationUnit(o3), [a3, s3, c3, u3, f3] = ((e4, n4, t4) => {
+    e4 = normalizeOptionsOrString(e4, Rr);
+    let o4 = Kr(e4);
+    const r4 = t4(e4[Ar]);
     let i4 = parseRoundingIncInteger(e4);
-    const a4 = ha(e4, 7);
-    let s4 = aa(e4);
+    const a4 = ii(e4, 7);
+    let s4 = Jr(e4);
     if (void 0 === o4 && void 0 === s4) {
-      throw new RangeError(Ur);
+      throw new RangeError(Po);
     }
-    return null == s4 && (s4 = 0), null == o4 && (o4 = Math.max(s4, n4)), checkLargestSmallestUnit(o4, s4), i4 = refineRoundingInc(i4, s4, 1), [o4, s4, i4, a4, r4];
-  })(r3, i3, e3), f3 = Math.max(i3, a3);
-  if (!isZonedEpochSlots(l3) && f3 <= 6) {
-    return Vt(checkDurationUnits(((e4, n4, t4, o4, r4) => {
+    if (null == s4 && (s4 = 0), null == o4 && (o4 = Math.max(s4, n4)), checkLargestSmallestUnit(o4, s4), i4 = refineRoundingInc(i4, s4, 1), i4 > 1 && s4 > 5 && o4 !== s4) {
+      throw new RangeError("For calendar units with roundingIncrement > 1, use largestUnit = smallestUnit");
+    }
+    return [o4, s4, i4, a4, r4];
+  })(r3, i3, e3), l3 = Math.max(i3, a3);
+  if (!f3 && l3 <= 6) {
+    return Oe(checkDurationUnits(((e4, n4, t4, o4, r4) => {
       const i4 = roundBigNano(durationFieldsToBigNano(e4), t4, o4, r4);
       return {
-        ...Si,
+        ...pr,
         ...nanoToDurationDayTimeFields(i4, n4)
       };
     })(o3, a3, s3, c3, u3)));
   }
-  if (!l3) {
-    throw new RangeError(zr);
+  if (!isZonedEpochSlots(f3) && !o3.sign) {
+    return o3;
   }
-  const [d3, m3, p3] = createMarkerSystem(n3, t3, l3), h3 = createMarkerToEpochNano(p3), g3 = createMoveMarker(p3), T3 = createDiffMarkers(p3), D2 = g3(m3, d3, o3);
-  let I3 = T3(m3, d3, D2, a3);
+  if (!f3) {
+    throw new RangeError(yo);
+  }
+  const [d3, m3, p3] = createMarkerSystem(n3, t3, f3), h3 = createMarkerToEpochNano(p3), g3 = createMoveMarker(p3), D2 = createDiffMarkers(p3), T3 = g3(m3, d3, o3);
+  isZonedEpochSlots(f3) || (checkIsoDateTimeInBounds(d3), checkIsoDateTimeInBounds(T3));
+  let I3 = D2(m3, d3, T3, a3);
   const M2 = o3.sign, N3 = computeDurationSign(I3);
   if (M2 && N3 && M2 !== N3) {
-    throw new RangeError(vr);
+    throw new RangeError(fo);
   }
-  return N3 && (I3 = roundRelativeDuration(I3, h3(D2), a3, s3, c3, u3, m3, d3, h3, g3)), Vt(I3);
+  return I3 = roundRelativeDuration(I3, h3(T3), a3, s3, c3, u3, m3, d3, h3, g3), Oe(I3);
 }
-__name(Gt, "Gt");
-function Rt(e3) {
-  return -1 === e3.sign ? xt(e3) : e3;
+__name(V, "V");
+function Y(e3) {
+  return -1 === e3.sign ? B(e3) : e3;
 }
-__name(Rt, "Rt");
-function xt(e3) {
-  return Vt(negateDurationFields(e3));
+__name(Y, "Y");
+function B(e3) {
+  return Oe(negateDurationFields(e3));
 }
-__name(xt, "xt");
+__name(B, "B");
 function negateDurationFields(e3) {
   const n3 = {};
-  for (const t3 of F) {
+  for (const t3 of p) {
     n3[t3] = -1 * e3[t3] || 0;
   }
   return n3;
 }
 __name(negateDurationFields, "negateDurationFields");
-function Jt(e3) {
+function y(e3) {
   return !e3.sign;
 }
-__name(Jt, "Jt");
-function computeDurationSign(e3, n3 = F) {
+__name(y, "y");
+function computeDurationSign(e3, n3 = p) {
   let t3 = 0;
   for (const o3 of n3) {
     const n4 = Math.sign(e3[o3]);
     if (n4) {
       if (t3 && t3 !== n4) {
-        throw new RangeError(Rr);
+        throw new RangeError(No);
       }
       t3 = n4;
     }
@@ -72167,41 +72761,41 @@ function computeDurationSign(e3, n3 = F) {
 }
 __name(computeDurationSign, "computeDurationSign");
 function checkDurationUnits(e3) {
-  for (const n3 of vi) {
-    clampEntity(n3, e3[n3], -ya, ya, 1);
+  for (const n3 of dr) {
+    clampEntity(n3, e3[n3], -di, di, 1);
   }
-  return checkDurationTimeUnit(oe(durationFieldsToBigNano(e3), _r)), e3;
+  return checkDurationTimeUnit(bigNanoToNumber(durationFieldsToBigNano(e3), Ro)), e3;
 }
 __name(checkDurationUnits, "checkDurationUnits");
 function checkDurationTimeUnit(e3) {
   if (!Number.isSafeInteger(e3)) {
-    throw new RangeError(Zr);
+    throw new RangeError(Mo);
   }
 }
 __name(checkDurationTimeUnit, "checkDurationTimeUnit");
 function durationFieldsToBigNano(e3, n3 = 6) {
-  return givenFieldsToBigNano(e3, n3, F);
+  return givenFieldsToBigNano(e3, n3, p);
 }
 __name(durationFieldsToBigNano, "durationFieldsToBigNano");
 function nanoToDurationDayTimeFields(e3, n3 = 6) {
-  const [t3, o3] = e3, r3 = nanoToGivenFields(o3, n3, F);
-  if (r3[F[n3]] += t3 * (Qr / Xr[n3]), !Number.isFinite(r3[F[n3]])) {
-    throw new RangeError(Cr);
+  const [t3, o3] = e3, r3 = nanoToGivenFields(o3, n3, p);
+  if (r3[p[n3]] += t3 * (Uo / Ao[n3]), !Number.isFinite(r3[p[n3]])) {
+    throw new RangeError(Io);
   }
   return r3;
 }
 __name(nanoToDurationDayTimeFields, "nanoToDurationDayTimeFields");
 function nanoToDurationTimeFields(e3, n3 = 5) {
-  return nanoToGivenFields(e3, n3, F);
+  return nanoToGivenFields(e3, n3, p);
 }
 __name(nanoToDurationTimeFields, "nanoToDurationTimeFields");
 function durationHasDateParts(e3) {
-  return Boolean(computeDurationSign(e3, Pi));
+  return Boolean(computeDurationSign(e3, lr));
 }
 __name(durationHasDateParts, "durationHasDateParts");
 function getMaxDurationUnit(e3) {
   let n3 = 9;
-  for (; n3 > 0 && !e3[F[n3]]; n3--) {
+  for (; n3 > 0 && !e3[p[n3]]; n3--) {
   }
   return n3;
 }
@@ -72211,17 +72805,17 @@ function createSplitTuple(e3, n3) {
 }
 __name(createSplitTuple, "createSplitTuple");
 function computePeriod(e3) {
-  const n3 = Math.floor(e3 / Da) * Da;
-  return [n3, n3 + Da];
+  const n3 = Math.floor(e3 / ci) * ci;
+  return [n3, n3 + ci];
 }
 __name(computePeriod, "computePeriod");
-function pe(e3) {
+function We(e3) {
   const n3 = parseDateTimeLike(e3 = toStringViaPrimitive(e3));
   if (!n3) {
     throw new RangeError(failedParse(e3));
   }
   let t3;
-  if (n3.m) {
+  if (n3.j) {
     t3 = 0;
   } else {
     if (!n3.offset) {
@@ -72229,10 +72823,10 @@ function pe(e3) {
     }
     t3 = parseOffsetNano(n3.offset);
   }
-  return n3.timeZone && parseOffsetNanoMaybe(n3.timeZone, 1), _(isoToEpochNanoWithOffset(checkIsoDateTimeFields(n3), t3));
+  return n3.timeZone && parseOffsetNanoMaybe(n3.timeZone, 1), xe(isoToEpochNanoWithOffset(checkIsoDateTimeFields(n3), t3));
 }
-__name(pe, "pe");
-function Xt(e3) {
+__name(We, "We");
+function H(e3) {
   const n3 = parseDateTimeLike(m(e3));
   if (!n3) {
     throw new RangeError(failedParse(e3));
@@ -72240,21 +72834,21 @@ function Xt(e3) {
   if (n3.timeZone) {
     return finalizeZonedDateTime(n3, n3.offset ? parseOffsetNano(n3.offset) : void 0);
   }
-  if (n3.m) {
+  if (n3.j) {
     throw new RangeError(failedParse(e3));
   }
   return finalizeDate(n3);
 }
-__name(Xt, "Xt");
-function Mn(e3, n3) {
+__name(H, "H");
+function Ae(e3, n3) {
   const t3 = parseDateTimeLike(m(e3));
   if (!t3 || !t3.timeZone) {
     throw new RangeError(failedParse(e3));
   }
-  const { offset: o3 } = t3, r3 = o3 ? parseOffsetNano(o3) : void 0, [, i3, a3] = wn(n3);
+  const { offset: o3 } = t3, r3 = o3 ? parseOffsetNano(o3) : void 0, [, i3, a3] = je(n3);
   return finalizeZonedDateTime(t3, r3, i3, a3);
 }
-__name(Mn, "Mn");
+__name(Ae, "Ae");
 function parseOffsetNano(e3) {
   const n3 = parseOffsetNanoMaybe(e3);
   if (void 0 === n3) {
@@ -72263,59 +72857,70 @@ function parseOffsetNano(e3) {
   return n3;
 }
 __name(parseOffsetNano, "parseOffsetNano");
-function Ct(e3) {
+function Bt(e3) {
   const n3 = parseDateTimeLike(m(e3));
-  if (!n3 || n3.m) {
+  if (!n3 || n3.j) {
     throw new RangeError(failedParse(e3));
   }
-  return ee(finalizeDateTime(n3));
+  return jt(finalizeDateTime(n3));
 }
-__name(Ct, "Ct");
-function At(e3) {
-  const n3 = parseDateTimeLike(m(e3));
-  if (!n3 || n3.m) {
+__name(Bt, "Bt");
+function de(e3, n3, t3) {
+  let o3 = parseDateTimeLike(m(e3));
+  if (!o3 || o3.j) {
     throw new RangeError(failedParse(e3));
   }
-  return v(n3.p ? finalizeDateTime(n3) : finalizeDate(n3));
+  return n3 ? o3.calendar === l && (o3 = -271821 === o3.isoYear && 4 === o3.isoMonth ? {
+    ...o3,
+    isoDay: 20,
+    ...Nt
+  } : {
+    ...o3,
+    isoDay: 1,
+    ...Nt
+  }) : t3 && o3.calendar === l && (o3 = {
+    ...o3,
+    isoYear: Br
+  }), W(o3.C ? finalizeDateTime(o3) : finalizeDate(o3));
 }
-__name(At, "At");
-function ot(e3, n3) {
+__name(de, "de");
+function _t(e3, n3) {
   const t3 = parseYearMonthOnly(m(n3));
   if (t3) {
     return requireIsoCalendar(t3), createPlainYearMonthSlots(checkIsoYearMonthInBounds(checkIsoDateFields(t3)));
   }
-  const o3 = At(n3);
+  const o3 = de(n3, 1);
   return createPlainYearMonthSlots(moveToDayOfMonthUnsafe(e3(o3.calendar), o3));
 }
-__name(ot, "ot");
+__name(_t, "_t");
 function requireIsoCalendar(e3) {
-  if (e3.calendar !== X) {
+  if (e3.calendar !== l) {
     throw new RangeError(invalidSubstring(e3.calendar));
   }
 }
 __name(requireIsoCalendar, "requireIsoCalendar");
-function Q(e3, n3) {
+function xt(e3, n3) {
   const t3 = parseMonthDayOnly(m(n3));
   if (t3) {
     return requireIsoCalendar(t3), createPlainMonthDaySlots(checkIsoDateFields(t3));
   }
-  const o3 = At(n3), { calendar: r3 } = o3, i3 = e3(r3), [a3, s3, c3] = i3.h(o3), [u3, l3] = i3.I(a3, s3), [f3, d3] = i3.N(u3, l3, c3);
-  return createPlainMonthDaySlots(checkIsoDateInBounds(i3.P(f3, d3, c3)), r3);
+  const o3 = de(n3, 0, 1), { calendar: r3 } = o3, i3 = e3(r3), [a3, s3, c3] = i3.v(o3), [u3, f3] = i3.q(a3, s3), [l3, d3] = i3.G(u3, f3, c3);
+  return createPlainMonthDaySlots(checkIsoDateInBounds(i3.V(l3, d3, c3)), r3);
 }
-__name(Q, "Q");
-function ze(e3) {
+__name(xt, "xt");
+function ht(e3) {
   let n3, t3 = ((e4) => {
-    const n4 = Ca.exec(e4);
+    const n4 = Pi.exec(e4);
     return n4 ? (organizeAnnotationParts(n4[10]), organizeTimeParts(n4)) : void 0;
   })(m(e3));
   if (!t3) {
     if (t3 = parseDateTimeLike(e3), !t3) {
       throw new RangeError(failedParse(e3));
     }
-    if (!t3.p) {
+    if (!t3.C) {
       throw new RangeError(failedParse(e3));
     }
-    if (t3.m) {
+    if (t3.j) {
       throw new RangeError(invalidSubstring("Z"));
     }
     requireIsoCalendar(t3);
@@ -72326,16 +72931,16 @@ function ze(e3) {
   if ((n3 = parseMonthDayOnly(e3)) && isIsoDateFieldsValid(n3)) {
     throw new RangeError(failedParse(e3));
   }
-  return Ge(constrainIsoTimeFields(t3, 1));
+  return St(constrainIsoTimeFields(t3, 1));
 }
-__name(ze, "ze");
-function Kt(e3) {
+__name(ht, "ht");
+function R(e3) {
   const n3 = ((e4) => {
-    const n4 = za.exec(e4);
+    const n4 = Fi.exec(e4);
     return n4 ? ((e5) => {
       function parseUnit(e6, r4, i3) {
         let a3 = 0, s3 = 0;
-        if (i3 && ([a3, o3] = divModFloor(o3, Xr[i3])), void 0 !== e6) {
+        if (i3 && ([a3, o3] = divModFloor(o3, Ao[i3])), void 0 !== e6) {
           if (t3) {
             throw new RangeError(invalidSubstring(e6));
           }
@@ -72345,17 +72950,17 @@ function Kt(e3) {
               throw new RangeError(invalidSubstring(e7));
             }
             return n6;
-          })(e6), n5 = 1, r4 && (o3 = parseSubsecNano(r4) * (Xr[i3] / _r), t3 = 1);
+          })(e6), n5 = 1, r4 && (o3 = parseSubsecNano(r4) * (Ao[i3] / Ro), t3 = 1);
         }
         return a3 + s3;
       }
       __name(parseUnit, "parseUnit");
       let n5 = 0, t3 = 0, o3 = 0, r3 = {
-        ...zipProps(F, [parseUnit(e5[2]), parseUnit(e5[3]), parseUnit(e5[4]), parseUnit(e5[5]), parseUnit(e5[6], e5[7], 5), parseUnit(e5[8], e5[9], 4), parseUnit(e5[10], e5[11], 3)]),
-        ...nanoToGivenFields(o3, 2, F)
+        ...zipProps(p, [parseUnit(e5[2]), parseUnit(e5[3]), parseUnit(e5[4]), parseUnit(e5[5]), parseUnit(e5[6], e5[7], 5), parseUnit(e5[8], e5[9], 4), parseUnit(e5[10], e5[11], 3)]),
+        ...nanoToGivenFields(o3, 2, p)
       };
       if (!n5) {
-        throw new RangeError(noValidFields(F));
+        throw new RangeError(noValidFields(p));
       }
       return parseSign(e5[1]) < 0 && (r3 = negateDurationFields(r3)), r3;
     })(n4) : void 0;
@@ -72363,22 +72968,23 @@ function Kt(e3) {
   if (!n3) {
     throw new RangeError(failedParse(e3));
   }
-  return Vt(checkDurationUnits(n3));
+  return Oe(checkDurationUnits(n3));
 }
-__name(Kt, "Kt");
-function sn(e3) {
+__name(R, "R");
+function f(e3) {
   const n3 = parseDateTimeLike(e3) || parseYearMonthOnly(e3) || parseMonthDayOnly(e3);
   return n3 ? n3.calendar : e3;
 }
-__name(sn, "sn");
-function Ne(e3) {
+__name(f, "f");
+function Z(e3) {
   const n3 = parseDateTimeLike(e3);
-  return n3 && (n3.timeZone || n3.m && Ta || n3.offset) || e3;
+  return n3 && (n3.timeZone || n3.j && si || n3.offset) || e3;
 }
-__name(Ne, "Ne");
+__name(Z, "Z");
 function finalizeZonedDateTime(e3, n3, t3 = 0, o3 = 0) {
-  const r3 = ye(e3.timeZone), i3 = ie(r3);
-  return Yn(getMatchingInstantFor(i3, checkIsoDateTimeFields(e3), n3, t3, o3, !i3.v, e3.m), r3, an(e3.calendar));
+  const r3 = M(e3.timeZone), i3 = L(r3);
+  let a3;
+  return checkIsoDateTimeFields(e3), a3 = e3.C ? getMatchingInstantFor(i3, e3, n3, t3, o3, !i3.$, e3.j) : getStartOfDayInstantFor(i3, e3), _e(a3, r3, u(e3.calendar));
 }
 __name(finalizeZonedDateTime, "finalizeZonedDateTime");
 function finalizeDateTime(e3) {
@@ -72392,12 +72998,12 @@ __name(finalizeDate, "finalizeDate");
 function resolveSlotsCalendar(e3) {
   return {
     ...e3,
-    calendar: an(e3.calendar)
+    calendar: u(e3.calendar)
   };
 }
 __name(resolveSlotsCalendar, "resolveSlotsCalendar");
 function parseDateTimeLike(e3) {
-  const n3 = Ya.exec(e3);
+  const n3 = vi.exec(e3);
   return n3 ? ((e4) => {
     const n4 = e4[10], t3 = "Z" === (n4 || "").toUpperCase();
     return {
@@ -72406,15 +73012,15 @@ function parseDateTimeLike(e3) {
       isoDay: parseInt(e4[5]),
       ...organizeTimeParts(e4.slice(5)),
       ...organizeAnnotationParts(e4[16]),
-      p: Boolean(e4[6]),
-      m: t3,
+      C: Boolean(e4[6]),
+      j: t3,
       offset: t3 ? void 0 : n4
     };
   })(n3) : void 0;
 }
 __name(parseDateTimeLike, "parseDateTimeLike");
 function parseYearMonthOnly(e3) {
-  const n3 = Ba.exec(e3);
+  const n3 = Ni.exec(e3);
   return n3 ? ((e4) => ({
     isoYear: organizeIsoYearParts(e4),
     isoMonth: parseInt(e4[4]),
@@ -72424,9 +73030,9 @@ function parseYearMonthOnly(e3) {
 }
 __name(parseYearMonthOnly, "parseYearMonthOnly");
 function parseMonthDayOnly(e3) {
-  const n3 = ka.exec(e3);
+  const n3 = yi.exec(e3);
   return n3 ? ((e4) => ({
-    isoYear: ji,
+    isoYear: Br,
     isoMonth: parseInt(e4[1]),
     isoDay: parseInt(e4[2]),
     ...organizeAnnotationParts(e4[3])
@@ -72434,13 +73040,18 @@ function parseMonthDayOnly(e3) {
 }
 __name(parseMonthDayOnly, "parseMonthDayOnly");
 function parseOffsetNanoMaybe(e3, n3) {
-  const t3 = Za.exec(e3);
+  const t3 = Ei.exec(e3);
   return t3 ? ((e4, n4) => {
     const t4 = e4[4] || e4[5];
     if (n4 && t4) {
       throw new RangeError(invalidSubstring(t4));
     }
-    return ae((parseInt0(e4[2]) * Kr + parseInt0(e4[3]) * Jr + parseInt0(e4[4]) * _r + parseSubsecNano(e4[5] || "")) * parseSign(e4[1]));
+    return ((e5) => {
+      if (Math.abs(e5) >= Uo) {
+        throw new RangeError(ho);
+      }
+      return e5;
+    })((parseInt0(e4[2]) * zo + parseInt0(e4[3]) * Zo + parseInt0(e4[4]) * Ro + parseSubsecNano(e4[5] || "")) * parseSign(e4[1]));
   })(t3, n3) : void 0;
 }
 __name(parseOffsetNanoMaybe, "parseOffsetNanoMaybe");
@@ -72465,7 +73076,7 @@ __name(organizeTimeParts, "organizeTimeParts");
 function organizeAnnotationParts(e3) {
   let n3, t3;
   const o3 = [];
-  if (e3.replace(Ra, (e4, r3, i3) => {
+  if (e3.replace(Si, (e4, r3, i3) => {
     const a3 = Boolean(r3), [s3, c3] = i3.split("=").reverse();
     if (c3) {
       if ("u-ca" === c3) {
@@ -72485,7 +73096,7 @@ function organizeAnnotationParts(e3) {
   }
   return {
     timeZone: t3,
-    calendar: o3[0] || X
+    calendar: o3[0] || l
   };
 }
 __name(organizeAnnotationParts, "organizeAnnotationParts");
@@ -72505,218 +73116,220 @@ function parseInt0(e3) {
   return void 0 === e3 ? 0 : parseInt(e3);
 }
 __name(parseInt0, "parseInt0");
-function Me(e3) {
-  return ye(m(e3));
+function Ze(e3) {
+  return M(m(e3));
 }
-__name(Me, "Me");
-function ye(e3) {
+__name(Ze, "Ze");
+function M(e3) {
   const n3 = getTimeZoneEssence(e3);
-  return "number" == typeof n3 ? Fe(n3) : n3 ? ((e4) => {
-    if (Ua.test(e4)) {
-      throw new RangeError(br);
+  return "number" == typeof n3 ? Se(n3) : n3 ? ((e4) => {
+    if (Oi.test(e4)) {
+      throw new RangeError(F(e4));
+    }
+    if (bi.test(e4)) {
+      throw new RangeError(po);
     }
     return e4.toLowerCase().split("/").map((e5, n4) => (e5.length <= 3 || /\d/.test(e5)) && !/etc|yap/.test(e5) ? e5.toUpperCase() : e5.replace(/baja|dumont|[a-z]+/g, (e6, t3) => e6.length <= 2 && !n4 || "in" === e6 || "chat" === e6 ? e6.toUpperCase() : e6.length > 2 || !t3 ? capitalize(e6).replace(/island|noronha|murdo|rivadavia|urville/, capitalize) : e6)).join("/");
-  })(e3) : Ta;
+  })(e3) : si;
 }
-__name(ye, "ye");
+__name(M, "M");
 function getTimeZoneAtomic(e3) {
   const n3 = getTimeZoneEssence(e3);
-  return "number" == typeof n3 ? n3 : n3 ? n3.resolvedOptions().timeZone : Ta;
+  return "number" == typeof n3 ? n3 : n3 ? n3.resolvedOptions().timeZone : si;
 }
 __name(getTimeZoneAtomic, "getTimeZoneAtomic");
 function getTimeZoneEssence(e3) {
   const n3 = parseOffsetNanoMaybe(e3 = e3.toUpperCase(), 1);
-  return void 0 !== n3 ? n3 : e3 !== Ta ? qa(e3) : void 0;
+  return void 0 !== n3 ? n3 : e3 !== si ? wi(e3) : void 0;
 }
 __name(getTimeZoneEssence, "getTimeZoneEssence");
-function Ze(e3, n3) {
-  return te(e3.epochNanoseconds, n3.epochNanoseconds);
+function Ke(e3, n3) {
+  return compareBigNanos(e3.epochNanoseconds, n3.epochNanoseconds);
 }
-__name(Ze, "Ze");
-function yn(e3, n3) {
-  return te(e3.epochNanoseconds, n3.epochNanoseconds);
+__name(Ke, "Ke");
+function Be(e3, n3) {
+  return compareBigNanos(e3.epochNanoseconds, n3.epochNanoseconds);
 }
-__name(yn, "yn");
-function $t(e3, n3, t3, o3, r3, i3) {
+__name(Be, "Be");
+function K(e3, n3, t3, o3, r3, i3) {
   const a3 = e3(normalizeOptions(i3).relativeTo), s3 = Math.max(getMaxDurationUnit(o3), getMaxDurationUnit(r3));
-  if (allPropsEqual(F, o3, r3)) {
+  if (allPropsEqual(p, o3, r3)) {
     return 0;
   }
   if (isUniformUnit(s3, a3)) {
-    return te(durationFieldsToBigNano(o3), durationFieldsToBigNano(r3));
+    return compareBigNanos(durationFieldsToBigNano(o3), durationFieldsToBigNano(r3));
   }
   if (!a3) {
-    throw new RangeError(zr);
+    throw new RangeError(yo);
   }
-  const [c3, u3, l3] = createMarkerSystem(n3, t3, a3), f3 = createMarkerToEpochNano(l3), d3 = createMoveMarker(l3);
-  return te(f3(d3(u3, c3, o3)), f3(d3(u3, c3, r3)));
+  const [c3, u3, f3] = createMarkerSystem(n3, t3, a3), l3 = createMarkerToEpochNano(f3), d3 = createMoveMarker(f3);
+  return compareBigNanos(l3(d3(u3, c3, o3)), l3(d3(u3, c3, r3)));
 }
-__name($t, "$t");
-function gt(e3, n3) {
-  return rt(e3, n3) || He(e3, n3);
+__name(K, "K");
+function Yt(e3, n3) {
+  return te(e3, n3) || Dt(e3, n3);
 }
-__name(gt, "gt");
-function rt(e3, n3) {
+__name(Yt, "Yt");
+function te(e3, n3) {
   return compareNumbers(isoToEpochMilli(e3), isoToEpochMilli(n3));
 }
-__name(rt, "rt");
-function He(e3, n3) {
+__name(te, "te");
+function Dt(e3, n3) {
   return compareNumbers(isoTimeFieldsToNano(e3), isoTimeFieldsToNano(n3));
 }
-__name(He, "He");
-function ue(e3, n3) {
-  return !Ze(e3, n3);
-}
-__name(ue, "ue");
-function gn(e3, n3) {
-  return !yn(e3, n3) && !!je(e3.timeZone, n3.timeZone) && isIdLikeEqual(e3.calendar, n3.calendar);
-}
-__name(gn, "gn");
-function ft(e3, n3) {
-  return !gt(e3, n3) && isIdLikeEqual(e3.calendar, n3.calendar);
-}
-__name(ft, "ft");
-function It(e3, n3) {
-  return !rt(e3, n3) && isIdLikeEqual(e3.calendar, n3.calendar);
-}
-__name(It, "It");
-function $e(e3, n3) {
-  return !rt(e3, n3) && isIdLikeEqual(e3.calendar, n3.calendar);
-}
-__name($e, "$e");
-function x(e3, n3) {
-  return !rt(e3, n3) && isIdLikeEqual(e3.calendar, n3.calendar);
-}
-__name(x, "x");
+__name(Dt, "Dt");
 function Ve(e3, n3) {
-  return !He(e3, n3);
+  return !Ke(e3, n3);
 }
 __name(Ve, "Ve");
-function je(e3, n3) {
+function Ce(e3, n3) {
+  return !Be(e3, n3) && !!isTimeZoneIdsEqual(e3.timeZone, n3.timeZone) && e3.calendar === n3.calendar;
+}
+__name(Ce, "Ce");
+function Ct(e3, n3) {
+  return !Yt(e3, n3) && e3.calendar === n3.calendar;
+}
+__name(Ct, "Ct");
+function re(e3, n3) {
+  return !te(e3, n3) && e3.calendar === n3.calendar;
+}
+__name(re, "re");
+function $t(e3, n3) {
+  return !te(e3, n3) && e3.calendar === n3.calendar;
+}
+__name($t, "$t");
+function Lt(e3, n3) {
+  return !te(e3, n3) && e3.calendar === n3.calendar;
+}
+__name(Lt, "Lt");
+function st(e3, n3) {
+  return !Dt(e3, n3);
+}
+__name(st, "st");
+function isTimeZoneIdsEqual(e3, n3) {
   if (e3 === n3) {
     return 1;
   }
-  const t3 = I(e3), o3 = I(n3);
-  if (t3 === o3) {
-    return 1;
-  }
   try {
-    return getTimeZoneAtomic(t3) === getTimeZoneAtomic(o3);
+    return getTimeZoneAtomic(e3) === getTimeZoneAtomic(n3);
   } catch (e4) {
   }
 }
-__name(je, "je");
-function le(e3, n3, t3, o3) {
-  const r3 = refineDiffOptions(e3, U(o3), 3, 5), i3 = diffEpochNanos(n3.epochNanoseconds, t3.epochNanoseconds, ...r3);
-  return Vt(e3 ? negateDurationFields(i3) : i3);
+__name(isTimeZoneIdsEqual, "isTimeZoneIdsEqual");
+function Ee(e3, n3, t3, o3) {
+  const r3 = refineDiffOptions(e3, o3, 3, 5), i3 = diffEpochNanos(n3.epochNanoseconds, t3.epochNanoseconds, ...r3);
+  return Oe(e3 ? negateDurationFields(i3) : i3);
 }
-__name(le, "le");
-function Dn(e3, n3, t3, o3, r3, i3) {
-  const a3 = getCommonCalendarSlot(o3.calendar, r3.calendar), s3 = U(i3), [c3, u3, l3, f3] = refineDiffOptions(t3, s3, 5), d3 = o3.epochNanoseconds, m3 = r3.epochNanoseconds, p3 = te(m3, d3);
-  let h3;
-  if (p3) {
-    if (c3 < 6) {
-      h3 = diffEpochNanos(d3, m3, c3, u3, l3, f3);
-    } else {
-      const t4 = n3(((e4, n4) => {
-        if (!je(e4, n4)) {
-          throw new RangeError(Fr);
-        }
-        return e4;
-      })(o3.timeZone, r3.timeZone)), i4 = e3(a3);
-      h3 = diffZonedEpochsBig(i4, t4, o3, r3, p3, c3, s3), h3 = roundRelativeDuration(h3, m3, c3, u3, l3, f3, i4, o3, extractEpochNano, E(moveZonedEpochs, t4));
-    }
-  } else {
-    h3 = Si;
-  }
-  return Vt(t3 ? negateDurationFields(h3) : h3);
-}
-__name(Dn, "Dn");
-function ut(e3, n3, t3, o3, r3) {
-  const i3 = getCommonCalendarSlot(t3.calendar, o3.calendar), a3 = U(r3), [s3, c3, u3, l3] = refineDiffOptions(n3, a3, 6), f3 = isoToEpochNano(t3), d3 = isoToEpochNano(o3), m3 = te(d3, f3);
+__name(Ee, "Ee");
+function we(e3, n3, t3, o3, r3, i3) {
+  const a3 = getCommonCalendarId(o3.calendar, r3.calendar), [s3, c3, u3, f3] = refineDiffOptions(t3, i3, 5), l3 = o3.epochNanoseconds, d3 = r3.epochNanoseconds, m3 = compareBigNanos(d3, l3);
   let p3;
   if (m3) {
-    if (s3 <= 6) {
-      p3 = diffEpochNanos(f3, d3, s3, c3, u3, l3);
+    if (s3 < 6) {
+      p3 = diffEpochNanos(l3, d3, s3, c3, u3, f3);
+    } else {
+      const t4 = n3(((e4, n4) => {
+        if (!isTimeZoneIdsEqual(e4, n4)) {
+          throw new RangeError(mo);
+        }
+        return e4;
+      })(o3.timeZone, r3.timeZone)), l4 = e3(a3);
+      p3 = diffZonedEpochsBig(l4, t4, o3, r3, m3, s3, i3), p3 = roundRelativeDuration(p3, d3, s3, c3, u3, f3, l4, o3, extractEpochNano, Pt(moveZonedEpochs, t4));
+    }
+  } else {
+    p3 = pr;
+  }
+  return Oe(t3 ? negateDurationFields(p3) : p3);
+}
+__name(we, "we");
+function It(e3, n3, t3, o3, r3) {
+  const i3 = getCommonCalendarId(t3.calendar, o3.calendar), [a3, s3, c3, u3] = refineDiffOptions(n3, r3, 6), f3 = isoToEpochNano(t3), l3 = isoToEpochNano(o3), d3 = compareBigNanos(l3, f3);
+  let m3;
+  if (d3) {
+    if (a3 <= 6) {
+      m3 = diffEpochNanos(f3, l3, a3, s3, c3, u3);
     } else {
       const n4 = e3(i3);
-      p3 = diffDateTimesBig(n4, t3, o3, m3, s3, a3), p3 = roundRelativeDuration(p3, d3, s3, c3, u3, l3, n4, t3, isoToEpochNano, moveDateTime);
+      m3 = diffDateTimesBig(n4, t3, o3, d3, a3, r3), m3 = roundRelativeDuration(m3, l3, a3, s3, c3, u3, n4, t3, isoToEpochNano, moveDateTime);
     }
   } else {
-    p3 = Si;
+    m3 = pr;
   }
-  return Vt(n3 ? negateDurationFields(p3) : p3);
+  return Oe(n3 ? negateDurationFields(m3) : m3);
 }
-__name(ut, "ut");
-function Ft(e3, n3, t3, o3, r3) {
-  const i3 = getCommonCalendarSlot(t3.calendar, o3.calendar), a3 = U(r3);
-  return diffDateLike(n3, () => e3(i3), t3, o3, ...refineDiffOptions(n3, a3, 6, 9, 6), a3);
+__name(It, "It");
+function oe(e3, n3, t3, o3, r3) {
+  const i3 = getCommonCalendarId(t3.calendar, o3.calendar);
+  return diffDateLike(n3, () => e3(i3), t3, o3, ...refineDiffOptions(n3, r3, 6, 9, 6));
 }
-__name(Ft, "Ft");
-function Xe(e3, n3, t3, o3, r3) {
-  const i3 = getCommonCalendarSlot(t3.calendar, o3.calendar), a3 = U(r3), s3 = refineDiffOptions(n3, a3, 9, 9, 8), c3 = e3(i3);
-  return diffDateLike(n3, () => c3, moveToDayOfMonthUnsafe(c3, t3), moveToDayOfMonthUnsafe(c3, o3), ...s3, a3);
+__name(oe, "oe");
+function zt(e3, n3, t3, o3, r3) {
+  const i3 = getCommonCalendarId(t3.calendar, o3.calendar), a3 = refineDiffOptions(n3, r3, 9, 9, 8), s3 = e3(i3), c3 = moveToDayOfMonthUnsafe(s3, t3), u3 = moveToDayOfMonthUnsafe(s3, o3);
+  return c3.isoYear === u3.isoYear && c3.isoMonth === u3.isoMonth && c3.isoDay === u3.isoDay ? Oe(pr) : diffDateLike(n3, () => s3, checkIsoDateInBounds(c3), checkIsoDateInBounds(u3), ...a3, 8);
 }
-__name(Xe, "Xe");
-function diffDateLike(e3, n3, t3, o3, r3, i3, a3, s3, c3) {
-  const u3 = isoToEpochNano(t3), l3 = isoToEpochNano(o3);
-  let f3;
-  if (te(l3, u3)) {
+__name(zt, "zt");
+function diffDateLike(e3, n3, t3, o3, r3, i3, a3, s3, c3 = 6) {
+  const u3 = isoToEpochNano(t3), f3 = isoToEpochNano(o3);
+  if (void 0 === u3 || void 0 === f3) {
+    throw new RangeError(Io);
+  }
+  let l3;
+  if (compareBigNanos(f3, u3)) {
     if (6 === r3) {
-      f3 = diffEpochNanos(u3, l3, r3, i3, a3, s3);
+      l3 = diffEpochNanos(u3, f3, r3, i3, a3, s3);
     } else {
       const e4 = n3();
-      f3 = e4.dateUntil(t3, o3, r3, c3), 6 === i3 && 1 === a3 || (f3 = roundRelativeDuration(f3, l3, r3, i3, a3, s3, e4, t3, isoToEpochNano, moveDate));
+      l3 = e4.N(t3, o3, r3), i3 === c3 && 1 === a3 || (l3 = roundRelativeDuration(l3, f3, r3, i3, a3, s3, e4, t3, isoToEpochNano, moveDate));
     }
   } else {
-    f3 = Si;
+    l3 = pr;
   }
-  return Vt(e3 ? negateDurationFields(f3) : f3);
+  return Oe(e3 ? negateDurationFields(l3) : l3);
 }
 __name(diffDateLike, "diffDateLike");
-function Ae(e3, n3, t3, o3) {
-  const r3 = U(o3), [i3, a3, s3, c3] = refineDiffOptions(e3, r3, 5, 5), u3 = roundByInc(diffTimes(n3, t3), computeNanoInc(a3, s3), c3), l3 = {
-    ...Si,
-    ...nanoToDurationTimeFields(u3, i3)
+function it(e3, n3, t3, o3) {
+  const [r3, i3, a3, s3] = refineDiffOptions(e3, o3, 5, 5), c3 = roundByInc(diffTimes(n3, t3), computeNanoInc(i3, a3), s3), u3 = {
+    ...pr,
+    ...nanoToDurationTimeFields(c3, r3)
   };
-  return Vt(e3 ? negateDurationFields(l3) : l3);
+  return Oe(e3 ? negateDurationFields(u3) : u3);
 }
-__name(Ae, "Ae");
+__name(it, "it");
 function diffZonedEpochsExact(e3, n3, t3, o3, r3, i3) {
-  const a3 = te(o3.epochNanoseconds, t3.epochNanoseconds);
-  return a3 ? r3 < 6 ? diffEpochNanosExact(t3.epochNanoseconds, o3.epochNanoseconds, r3) : diffZonedEpochsBig(n3, e3, t3, o3, a3, r3, i3) : Si;
+  const a3 = compareBigNanos(o3.epochNanoseconds, t3.epochNanoseconds);
+  return a3 ? r3 < 6 ? diffEpochNanosExact(t3.epochNanoseconds, o3.epochNanoseconds, r3) : diffZonedEpochsBig(n3, e3, t3, o3, a3, r3, i3) : pr;
 }
 __name(diffZonedEpochsExact, "diffZonedEpochsExact");
 function diffDateTimesExact(e3, n3, t3, o3, r3) {
-  const i3 = isoToEpochNano(n3), a3 = isoToEpochNano(t3), s3 = te(a3, i3);
-  return s3 ? o3 <= 6 ? diffEpochNanosExact(i3, a3, o3) : diffDateTimesBig(e3, n3, t3, s3, o3, r3) : Si;
+  const i3 = isoToEpochNano(n3), a3 = isoToEpochNano(t3), s3 = compareBigNanos(a3, i3);
+  return s3 ? o3 <= 6 ? diffEpochNanosExact(i3, a3, o3) : diffDateTimesBig(e3, n3, t3, s3, o3, r3) : pr;
 }
 __name(diffDateTimesExact, "diffDateTimesExact");
 function diffZonedEpochsBig(e3, n3, t3, o3, r3, i3, a3) {
   const [s3, c3, u3] = ((e4, n4, t4, o4) => {
     function updateMid() {
-      return l4 = {
+      return f4 = {
         ...moveByDays(a4, c4++ * -o4),
         ...i4
-      }, f4 = we(e4, l4), te(s4, f4) === -o4;
+      }, l4 = getSingleInstantFor(e4, f4), compareBigNanos(s4, l4) === -o4;
     }
     __name(updateMid, "updateMid");
-    const r4 = fn(n4, e4), i4 = Vn(j, r4), a4 = fn(t4, e4), s4 = t4.epochNanoseconds;
+    const r4 = he(n4, e4), i4 = nn(w, r4), a4 = he(t4, e4), s4 = t4.epochNanoseconds;
     let c4 = 0;
     const u4 = diffTimes(r4, a4);
-    let l4, f4;
+    let f4, l4;
     if (Math.sign(u4) === -o4 && c4++, updateMid() && (-1 === o4 || updateMid())) {
-      throw new RangeError(vr);
+      throw new RangeError(fo);
     }
-    const d3 = oe(re(f4, s4));
-    return [r4, l4, d3];
+    const d3 = bigNanoToNumber(diffBigNanos(l4, s4));
+    return [r4, f4, d3];
   })(n3, t3, o3, r3);
-  var l3, f3;
+  var f3, l3;
   return {
-    ...6 === i3 ? (l3 = s3, f3 = c3, {
-      ...Si,
-      days: diffDays(l3, f3)
-    }) : e3.dateUntil(s3, c3, i3, a3),
+    ...6 === i3 ? (f3 = s3, l3 = c3, {
+      ...pr,
+      days: diffDays(f3, l3)
+    }) : e3.N(s3, c3, i3, a3),
     ...nanoToDurationTimeFields(u3)
   };
 }
@@ -72724,25 +73337,25 @@ __name(diffZonedEpochsBig, "diffZonedEpochsBig");
 function diffDateTimesBig(e3, n3, t3, o3, r3, i3) {
   const [a3, s3, c3] = ((e4, n4, t4) => {
     let o4 = n4, r4 = diffTimes(e4, n4);
-    return Math.sign(r4) === -t4 && (o4 = moveByDays(n4, -t4), r4 += Qr * t4), [e4, o4, r4];
+    return Math.sign(r4) === -t4 && (o4 = moveByDays(n4, -t4), r4 += Uo * t4), [e4, o4, r4];
   })(n3, t3, o3);
   return {
-    ...e3.dateUntil(a3, s3, r3, i3),
+    ...e3.N(a3, s3, r3, i3),
     ...nanoToDurationTimeFields(c3)
   };
 }
 __name(diffDateTimesBig, "diffDateTimesBig");
 function diffEpochNanos(e3, n3, t3, o3, r3, i3) {
   return {
-    ...Si,
-    ...nanoToDurationDayTimeFields(roundBigNano(re(e3, n3), o3, r3, i3), t3)
+    ...pr,
+    ...nanoToDurationDayTimeFields(roundBigNano(diffBigNanos(e3, n3), o3, r3, i3), t3)
   };
 }
 __name(diffEpochNanos, "diffEpochNanos");
 function diffEpochNanosExact(e3, n3, t3) {
   return {
-    ...Si,
-    ...nanoToDurationDayTimeFields(re(e3, n3), t3)
+    ...pr,
+    ...nanoToDurationDayTimeFields(diffBigNanos(e3, n3), t3)
   };
 }
 __name(diffEpochNanosExact, "diffEpochNanosExact");
@@ -72751,58 +73364,109 @@ function diffDays(e3, n3) {
 }
 __name(diffDays, "diffDays");
 function diffEpochMilliByDay(e3, n3) {
-  return Math.trunc((n3 - e3) / Gr);
+  return Math.trunc((n3 - e3) / ko);
 }
 __name(diffEpochMilliByDay, "diffEpochMilliByDay");
 function diffTimes(e3, n3) {
   return isoTimeFieldsToNano(n3) - isoTimeFieldsToNano(e3);
 }
 __name(diffTimes, "diffTimes");
-function getCommonCalendarSlot(e3, n3) {
-  if (!isIdLikeEqual(e3, n3)) {
-    throw new RangeError(Er);
+function getCommonCalendarId(e3, n3) {
+  if (e3 !== n3) {
+    throw new RangeError(lo);
   }
   return e3;
 }
-__name(getCommonCalendarSlot, "getCommonCalendarSlot");
+__name(getCommonCalendarId, "getCommonCalendarId");
+function computeNativeWeekOfYear(e3) {
+  return this.m(e3)[0];
+}
+__name(computeNativeWeekOfYear, "computeNativeWeekOfYear");
+function computeNativeYearOfWeek(e3) {
+  return this.m(e3)[1];
+}
+__name(computeNativeYearOfWeek, "computeNativeYearOfWeek");
+function computeNativeDayOfYear(e3) {
+  const [n3] = this.v(e3);
+  return diffEpochMilliByDay(this.p(n3), isoToEpochMilli(e3)) + 1;
+}
+__name(computeNativeDayOfYear, "computeNativeDayOfYear");
+function parseMonthCode(e3) {
+  const n3 = Bi.exec(e3);
+  if (!n3) {
+    throw new RangeError(invalidMonthCode(e3));
+  }
+  return [parseInt(n3[1]), Boolean(n3[2])];
+}
+__name(parseMonthCode, "parseMonthCode");
+function formatMonthCode(e3, n3) {
+  return "M" + bo(e3) + (n3 ? "L" : "");
+}
+__name(formatMonthCode, "formatMonthCode");
+function monthCodeNumberToMonth(e3, n3, t3) {
+  return e3 + (n3 || t3 && e3 >= t3 ? 1 : 0);
+}
+__name(monthCodeNumberToMonth, "monthCodeNumberToMonth");
+function monthToMonthCodeNumber(e3, n3) {
+  return e3 - (n3 && e3 >= n3 ? 1 : 0);
+}
+__name(monthToMonthCodeNumber, "monthToMonthCodeNumber");
+function eraYearToYear(e3, n3) {
+  return (n3 + e3) * (Math.sign(n3) || 1) || 0;
+}
+__name(eraYearToYear, "eraYearToYear");
+function getCalendarEraOrigins(e3) {
+  return ir[getCalendarIdBase(e3)];
+}
+__name(getCalendarEraOrigins, "getCalendarEraOrigins");
+function getCalendarLeapMonthMeta(e3) {
+  return sr[getCalendarIdBase(e3)];
+}
+__name(getCalendarLeapMonthMeta, "getCalendarLeapMonthMeta");
+function getCalendarIdBase(e3) {
+  return computeCalendarIdBase(e3.id || l);
+}
+__name(getCalendarIdBase, "getCalendarIdBase");
 function createIntlCalendar(e3) {
   function epochMilliToIntlFields(e4) {
     return ((e5, n4) => ({
       ...parseIntlYear(e5, n4),
-      F: e5.month,
+      o: e5.month,
       day: parseInt(e5.day)
     }))(hashIntlFormatParts(n3, e4), t3);
   }
   __name(epochMilliToIntlFields, "epochMilliToIntlFields");
-  const n3 = La(e3), t3 = computeCalendarIdBase(e3);
+  const n3 = Ci(e3), t3 = computeCalendarIdBase(e3);
   return {
     id: e3,
-    O: createIntlFieldCache(epochMilliToIntlFields),
-    B: createIntlYearDataCache(epochMilliToIntlFields)
+    h: createIntlFieldCache(epochMilliToIntlFields),
+    l: createIntlYearDataCache(epochMilliToIntlFields)
   };
 }
 __name(createIntlCalendar, "createIntlCalendar");
 function createIntlFieldCache(e3) {
-  return Jn((n3) => {
+  return on((n3) => {
     const t3 = isoToEpochMilli(n3);
     return e3(t3);
   }, WeakMap);
 }
 __name(createIntlFieldCache, "createIntlFieldCache");
 function createIntlYearDataCache(e3) {
-  const n3 = e3(0).year - Wi;
-  return Jn((t3) => {
-    let o3, r3 = isoArgsToEpochMilli(t3 - n3);
-    const i3 = [], a3 = [];
+  const n3 = e3(0).year - Or;
+  return on((t3) => {
+    let o3, r3 = isoArgsToEpochMilli(t3 - n3), i3 = 0;
+    const a3 = [], s3 = [];
     do {
-      r3 += 400 * Gr;
+      r3 += 400 * ko;
     } while ((o3 = e3(r3)).year <= t3);
     do {
-      r3 += (1 - o3.day) * Gr, o3.year === t3 && (i3.push(r3), a3.push(o3.F)), r3 -= Gr;
+      if (r3 += (1 - o3.day) * ko, o3.year === t3 && (a3.push(r3), s3.push(o3.o)), r3 -= ko, ++i3 > 100 || r3 < -Pr) {
+        throw new RangeError(fo);
+      }
     } while ((o3 = e3(r3)).year >= t3);
     return {
-      k: i3.reverse(),
-      C: Wr(a3.reverse())
+      i: a3.reverse(),
+      u: Fo(s3.reverse())
     };
   });
 }
@@ -72810,8 +73474,8 @@ __name(createIntlYearDataCache, "createIntlYearDataCache");
 function parseIntlYear(e3, n3) {
   let t3, o3, r3 = parseIntlPartsYear(e3);
   if (e3.era) {
-    const i3 = Di[n3];
-    void 0 !== i3 && (t3 = "islamic" === n3 ? "ah" : e3.era.normalize("NFD").toLowerCase().replace(/[^a-z0-9]/g, ""), "bc" === t3 || "b" === t3 ? t3 = "bce" : "ad" !== t3 && "a" !== t3 || (t3 = "ce"), o3 = r3, r3 = eraYearToYear(o3, i3[t3] || 0));
+    const i3 = ir[n3], a3 = ar[n3] || {};
+    void 0 !== i3 && (t3 = "islamic" === n3 ? "ah" : e3.era.normalize("NFD").toLowerCase().replace(/[^a-z0-9]/g, ""), "bc" === t3 || "b" === t3 ? t3 = "bce" : "ad" === t3 || "a" === t3 ? t3 = "ce" : "beforeroc" === t3 && (t3 = "broc"), t3 = a3[t3] || t3, o3 = r3, r3 = eraYearToYear(o3, i3[t3] || 0));
   }
   return {
     era: t3,
@@ -72825,14 +73489,19 @@ function parseIntlPartsYear(e3) {
 }
 __name(parseIntlPartsYear, "parseIntlPartsYear");
 function computeIntlDateParts(e3) {
-  const { year: n3, F: t3, day: o3 } = this.O(e3), { C: r3 } = this.B(n3);
+  const { year: n3, o: t3, day: o3 } = this.h(e3), { u: r3 } = this.l(n3);
   return [n3, r3[t3] + 1, o3];
 }
 __name(computeIntlDateParts, "computeIntlDateParts");
 function computeIntlEpochMilli(e3, n3 = 1, t3 = 1) {
-  return this.B(e3).k[n3 - 1] + (t3 - 1) * Gr;
+  return this.l(e3).i[n3 - 1] + (t3 - 1) * ko;
 }
 __name(computeIntlEpochMilli, "computeIntlEpochMilli");
+function computeIntlMonthCodeParts(e3, n3) {
+  const t3 = computeIntlLeapMonth.call(this, e3);
+  return [monthToMonthCodeNumber(n3, t3), t3 === n3];
+}
+__name(computeIntlMonthCodeParts, "computeIntlMonthCodeParts");
 function computeIntlLeapMonth(e3) {
   const n3 = queryMonthStrings(this, e3), t3 = queryMonthStrings(this, e3 - 1), o3 = n3.length;
   if (o3 > t3.length) {
@@ -72853,83 +73522,53 @@ function computeIntlDaysInYear(e3) {
 }
 __name(computeIntlDaysInYear, "computeIntlDaysInYear");
 function computeIntlDaysInMonth(e3, n3) {
-  const { k: t3 } = this.B(e3);
+  const { i: t3 } = this.l(e3);
   let o3 = n3 + 1, r3 = t3;
-  return o3 > t3.length && (o3 = 1, r3 = this.B(e3 + 1).k), diffEpochMilliByDay(t3[n3 - 1], r3[o3 - 1]);
+  return o3 > t3.length && (o3 = 1, r3 = this.l(e3 + 1).i), diffEpochMilliByDay(t3[n3 - 1], r3[o3 - 1]);
 }
 __name(computeIntlDaysInMonth, "computeIntlDaysInMonth");
 function computeIntlMonthsInYear(e3) {
-  return this.B(e3).k.length;
+  return this.l(e3).i.length;
 }
 __name(computeIntlMonthsInYear, "computeIntlMonthsInYear");
+function computeIntlEraParts(e3) {
+  const n3 = this.h(e3);
+  return [n3.era, n3.eraYear];
+}
+__name(computeIntlEraParts, "computeIntlEraParts");
 function queryMonthStrings(e3, n3) {
-  return Object.keys(e3.B(n3).C);
+  return Object.keys(e3.l(n3).u);
 }
 __name(queryMonthStrings, "queryMonthStrings");
-function rn(e3) {
-  return an(m(e3));
+function Mt(e3) {
+  return u(m(e3));
 }
-__name(rn, "rn");
-function an(e3) {
-  if ((e3 = e3.toLowerCase()) !== X && e3 !== gi && computeCalendarIdBase(e3) !== computeCalendarIdBase(La(e3).resolvedOptions().calendar)) {
-    throw new RangeError(invalidCalendar(e3));
+__name(Mt, "Mt");
+function u(e3) {
+  if ((e3 = e3.toLowerCase()) !== l && e3 !== or) {
+    const n3 = Ci(e3).resolvedOptions().calendar;
+    if (computeCalendarIdBase(e3) !== computeCalendarIdBase(n3)) {
+      throw new RangeError(c(e3));
+    }
+    return n3;
   }
   return e3;
 }
-__name(an, "an");
+__name(u, "u");
 function computeCalendarIdBase(e3) {
   return "islamicc" === e3 && (e3 = "islamic"), e3.split("-")[0];
 }
 __name(computeCalendarIdBase, "computeCalendarIdBase");
-function computeNativeWeekOfYear(e3) {
-  return this.R(e3)[0];
+function createNativeOpsCreator(e3, n3) {
+  return (t3) => t3 === l ? e3 : t3 === or || t3 === rr ? Object.assign(Object.create(e3), {
+    id: t3
+  }) : Object.assign(Object.create(n3), ki(t3));
 }
-__name(computeNativeWeekOfYear, "computeNativeWeekOfYear");
-function computeNativeYearOfWeek(e3) {
-  return this.R(e3)[1];
-}
-__name(computeNativeYearOfWeek, "computeNativeYearOfWeek");
-function computeNativeDayOfYear(e3) {
-  const [n3] = this.h(e3);
-  return diffEpochMilliByDay(this.q(n3), isoToEpochMilli(e3)) + 1;
-}
-__name(computeNativeDayOfYear, "computeNativeDayOfYear");
-function parseMonthCode(e3) {
-  const n3 = Wa.exec(e3);
-  if (!n3) {
-    throw new RangeError(invalidMonthCode(e3));
-  }
-  return [parseInt(n3[1]), Boolean(n3[2])];
-}
-__name(parseMonthCode, "parseMonthCode");
-function monthCodeNumberToMonth(e3, n3, t3) {
-  return e3 + (n3 || t3 && e3 >= t3 ? 1 : 0);
-}
-__name(monthCodeNumberToMonth, "monthCodeNumberToMonth");
-function monthToMonthCodeNumber(e3, n3) {
-  return e3 - (n3 && e3 >= n3 ? 1 : 0);
-}
-__name(monthToMonthCodeNumber, "monthToMonthCodeNumber");
-function eraYearToYear(e3, n3) {
-  return (n3 + e3) * (Math.sign(n3) || 1) || 0;
-}
-__name(eraYearToYear, "eraYearToYear");
-function getCalendarEraOrigins(e3) {
-  return Di[getCalendarIdBase(e3)];
-}
-__name(getCalendarEraOrigins, "getCalendarEraOrigins");
-function getCalendarLeapMonthMeta(e3) {
-  return Ii[getCalendarIdBase(e3)];
-}
-__name(getCalendarLeapMonthMeta, "getCalendarLeapMonthMeta");
-function getCalendarIdBase(e3) {
-  return computeCalendarIdBase(e3.id || X);
-}
-__name(getCalendarIdBase, "getCalendarIdBase");
-function Qt(e3, n3, t3, o3) {
-  const r3 = refineCalendarFields(t3, o3, en, [], ri);
+__name(createNativeOpsCreator, "createNativeOpsCreator");
+function $(e3, n3, t3, o3) {
+  const r3 = refineCalendarFields(t3, o3, Xo, [], xo);
   if (void 0 !== r3.timeZone) {
-    const o4 = t3.dateFromFields(r3), i3 = refineTimeBag(r3), a3 = e3(r3.timeZone);
+    const o4 = t3.F(r3), i3 = refineTimeBag(r3), a3 = e3(r3.timeZone);
     return {
       epochNanoseconds: getMatchingInstantFor(n3(a3), {
         ...o4,
@@ -72939,55 +73578,54 @@ function Qt(e3, n3, t3, o3) {
     };
   }
   return {
-    ...t3.dateFromFields(r3),
-    ...Dt
+    ...t3.F(r3),
+    ...Nt
   };
 }
-__name(Qt, "Qt");
-function jn(e3, n3, t3, o3, r3, i3) {
-  const a3 = refineCalendarFields(t3, r3, en, ti, ri), s3 = e3(a3.timeZone), [c3, u3, l3] = wn(i3), f3 = t3.dateFromFields(a3, overrideOverflowOptions(i3, c3)), d3 = refineTimeBag(a3, c3);
-  return Yn(getMatchingInstantFor(n3(s3), {
-    ...f3,
+__name($, "$");
+function Ne(e3, n3, t3, o3, r3, i3) {
+  const a3 = refineCalendarFields(t3, r3, Xo, jo, xo), s3 = e3(a3.timeZone), [c3, u3, f3] = je(i3), l3 = t3.F(a3, fabricateOverflowOptions(c3)), d3 = refineTimeBag(a3, c3);
+  return _e(getMatchingInstantFor(n3(s3), {
+    ...l3,
     ...d3
-  }, void 0 !== a3.offset ? parseOffsetNano(a3.offset) : void 0, u3, l3), s3, o3);
+  }, void 0 !== a3.offset ? parseOffsetNano(a3.offset) : void 0, u3, f3), s3, o3);
 }
-__name(jn, "jn");
-function Pt(e3, n3, t3) {
-  const o3 = refineCalendarFields(e3, n3, en, [], w), r3 = H(t3);
-  return ee(checkIsoDateTimeInBounds({
-    ...e3.dateFromFields(o3, overrideOverflowOptions(t3, r3)),
+__name(Ne, "Ne");
+function At(e3, n3, t3) {
+  const o3 = refineCalendarFields(e3, n3, Xo, [], O), r3 = mt(t3);
+  return jt(checkIsoDateTimeInBounds({
+    ...e3.F(o3, fabricateOverflowOptions(r3)),
     ...refineTimeBag(o3, r3)
   }));
 }
-__name(Pt, "Pt");
-function Yt(e3, n3, t3, o3 = []) {
-  const r3 = refineCalendarFields(e3, n3, en, o3);
-  return e3.dateFromFields(r3, t3);
+__name(At, "At");
+function me(e3, n3, t3, o3 = []) {
+  const r3 = refineCalendarFields(e3, n3, Xo, o3);
+  return e3.F(r3, t3);
 }
-__name(Yt, "Yt");
-function nt(e3, n3, t3, o3) {
-  const r3 = refineCalendarFields(e3, n3, fi, o3);
-  return e3.yearMonthFromFields(r3, t3);
+__name(me, "me");
+function Xt(e3, n3, t3, o3) {
+  const r3 = refineCalendarFields(e3, n3, Ko, o3);
+  return e3.K(r3, t3);
 }
-__name(nt, "nt");
-function K(e3, n3, t3, o3, r3 = []) {
-  const i3 = refineCalendarFields(e3, t3, en, r3);
-  return n3 && void 0 !== i3.month && void 0 === i3.monthCode && void 0 === i3.year && (i3.year = ji), e3.monthDayFromFields(i3, o3);
+__name(Xt, "Xt");
+function Rt(e3, n3, t3, o3) {
+  const r3 = refineCalendarFields(e3, t3, Xo, Jo);
+  return n3 && void 0 !== r3.month && void 0 === r3.monthCode && void 0 === r3.year && (r3.year = Br), e3._(r3, o3);
 }
-__name(K, "K");
-function Ue(e3, n3) {
-  const t3 = H(n3);
-  return Ge(refineTimeBag(refineFields(e3, ei, [], 1), t3));
+__name(Rt, "Rt");
+function Tt(e3, n3) {
+  return St(refineTimeBag(refineFields(e3, qo, [], 1), mt(n3)));
 }
-__name(Ue, "Ue");
-function Ht(e3) {
-  const n3 = refineFields(e3, Ni);
-  return Vt(checkDurationUnits({
-    ...Si,
+__name(Tt, "Tt");
+function q(e3) {
+  const n3 = refineFields(e3, ur);
+  return Oe(checkDurationUnits({
+    ...pr,
     ...n3
   }));
 }
-__name(Ht, "Ht");
+__name(q, "q");
 function refineCalendarFields(e3, n3, t3, o3 = [], r3 = []) {
   return refineFields(n3, [...e3.fields(t3), ...r3].sort(), o3);
 }
@@ -73000,16 +73638,16 @@ function refineFields(e3, n3, t3, o3 = !t3) {
       throw new RangeError(duplicateFields(o4));
     }
     if ("constructor" === o4 || "__proto__" === o4) {
-      throw new RangeError(tn(o4));
+      throw new RangeError(forbiddenField(o4));
     }
     let n4 = e3[o4];
     if (void 0 !== n4) {
-      a3 = 1, Ga[o4] && (n4 = Ga[o4](n4, o4)), r3[o4] = n4;
+      a3 = 1, Li[o4] && (n4 = Li[o4](n4, o4)), r3[o4] = n4;
     } else if (t3) {
       if (t3.includes(o4)) {
         throw new TypeError(missingField(o4));
       }
-      r3[o4] = hi[o4];
+      r3[o4] = tr[o4];
     }
     i3 = o4;
   }
@@ -73020,168 +73658,170 @@ function refineFields(e3, n3, t3, o3 = !t3) {
 }
 __name(refineFields, "refineFields");
 function refineTimeBag(e3, n3) {
-  return constrainIsoTimeFields(Ha({
-    ...hi,
+  return constrainIsoTimeFields(xi({
+    ...tr,
     ...e3
   }), n3);
 }
 __name(refineTimeBag, "refineTimeBag");
-function Sn(e3, n3, t3, o3, r3, i3) {
-  const a3 = U(i3), { calendar: s3, timeZone: c3 } = t3;
-  return Yn(((e4, n4, t4, o4, r4) => {
-    const i4 = mergeCalendarFields(e4, t4, o4, en, oi, ni), [a4, s4, c4] = wn(r4, 2);
-    return getMatchingInstantFor(n4, {
-      ...e4.dateFromFields(i4, overrideOverflowOptions(r4, a4)),
-      ...refineTimeBag(i4, a4)
-    }, parseOffsetNano(i4.offset), s4, c4);
-  })(e3(s3), n3(c3), o3, r3, a3), c3, s3);
+function De(e3, n3, t3, o3, r3) {
+  const { calendar: i3, timeZone: a3 } = t3, s3 = e3(i3), c3 = n3(a3), u3 = [...s3.fields(Xo), ...Lo].sort(), f3 = ((e4) => {
+    const n4 = he(e4, L), t4 = Se(n4.offsetNanoseconds), o4 = ji(e4.calendar), [r4, i4, a4] = o4.v(n4), [s4, c4] = o4.q(r4, i4), u4 = formatMonthCode(s4, c4);
+    return {
+      ...$i(n4),
+      year: r4,
+      monthCode: u4,
+      day: a4,
+      offset: t4
+    };
+  })(t3), l3 = refineFields(o3, u3), d3 = s3.k(f3, l3), m3 = {
+    ...f3,
+    ...l3
+  }, [p3, h3, g3] = je(r3, 2);
+  return _e(getMatchingInstantFor(c3, {
+    ...s3.F(d3, fabricateOverflowOptions(p3)),
+    ...constrainIsoTimeFields(xi(m3), p3)
+  }, parseOffsetNano(m3.offset), h3, g3), a3, i3);
 }
-__name(Sn, "Sn");
-function at(e3, n3, t3, o3, r3) {
-  const i3 = U(r3);
-  return ee(((e4, n4, t4, o4) => {
-    const r4 = mergeCalendarFields(e4, n4, t4, en, w), i4 = H(o4);
-    return checkIsoDateTimeInBounds({
-      ...e4.dateFromFields(r4, overrideOverflowOptions(o4, i4)),
-      ...refineTimeBag(r4, i4)
-    });
-  })(e3(n3.calendar), t3, o3, i3));
+__name(De, "De");
+function gt(e3, n3, t3, o3) {
+  const r3 = e3(n3.calendar), i3 = [...r3.fields(Xo), ...O].sort(), a3 = {
+    ...computeDateEssentials(s3 = n3),
+    hour: s3.isoHour,
+    minute: s3.isoMinute,
+    second: s3.isoSecond,
+    millisecond: s3.isoMillisecond,
+    microsecond: s3.isoMicrosecond,
+    nanosecond: s3.isoNanosecond
+  };
+  var s3;
+  const c3 = refineFields(t3, i3), u3 = mt(o3), f3 = r3.k(a3, c3), l3 = {
+    ...a3,
+    ...c3
+  };
+  return jt(checkIsoDateTimeInBounds({
+    ...r3.F(f3, fabricateOverflowOptions(u3)),
+    ...constrainIsoTimeFields(xi(l3), u3)
+  }));
 }
-__name(at, "at");
-function Zt(e3, n3, t3, o3, r3) {
-  const i3 = U(r3);
-  return ((e4, n4, t4, o4) => {
-    const r4 = mergeCalendarFields(e4, n4, t4, en);
-    return e4.dateFromFields(r4, o4);
-  })(e3(n3.calendar), t3, o3, i3);
+__name(gt, "gt");
+function ee(e3, n3, t3, o3) {
+  const r3 = e3(n3.calendar), i3 = r3.fields(Xo).sort(), a3 = computeDateEssentials(n3), s3 = refineFields(t3, i3), c3 = r3.k(a3, s3);
+  return r3.F(c3, o3);
 }
-__name(Zt, "Zt");
-function Ke(e3, n3, t3, o3, r3) {
-  const i3 = U(r3);
-  return createPlainYearMonthSlots(((e4, n4, t4, o4) => {
-    const r4 = mergeCalendarFields(e4, n4, t4, fi);
-    return e4.yearMonthFromFields(r4, o4);
-  })(e3(n3.calendar), t3, o3, i3));
+__name(ee, "ee");
+function Wt(e3, n3, t3, o3) {
+  const r3 = e3(n3.calendar), i3 = r3.fields(Ko).sort(), a3 = ((e4) => {
+    const n4 = ji(e4.calendar), [t4, o4] = n4.v(e4), [r4, i4] = n4.q(t4, o4);
+    return {
+      year: t4,
+      monthCode: formatMonthCode(r4, i4)
+    };
+  })(n3), s3 = refineFields(t3, i3), c3 = r3.k(a3, s3);
+  return r3.K(c3, o3);
 }
-__name(Ke, "Ke");
-function k(e3, n3, t3, o3, r3) {
-  const i3 = U(r3);
-  return ((e4, n4, t4, o4) => {
-    const r4 = mergeCalendarFields(e4, n4, t4, en);
-    return e4.monthDayFromFields(r4, o4);
-  })(e3(n3.calendar), t3, o3, i3);
+__name(Wt, "Wt");
+function Et(e3, n3, t3, o3) {
+  const r3 = e3(n3.calendar), i3 = r3.fields(Xo).sort(), a3 = ((e4) => {
+    const n4 = ji(e4.calendar), [t4, o4, r4] = n4.v(e4), [i4, a4] = n4.q(t4, o4);
+    return {
+      monthCode: formatMonthCode(i4, a4),
+      day: r4
+    };
+  })(n3), s3 = refineFields(t3, i3), c3 = r3.k(a3, s3);
+  return r3._(c3, o3);
 }
-__name(k, "k");
-function Be(e3, n3, t3) {
-  return Ge(((e4, n4, t4) => {
-    const o3 = H(t4);
-    return refineTimeBag({
-      ...Vn(ei, e4),
-      ...refineFields(n4, ei)
-    }, o3);
-  })(e3, n3, t3));
+__name(Et, "Et");
+function rt(e3, n3, t3) {
+  return St(((e4, n4, t4) => refineTimeBag({
+    ...nn(qo, e4),
+    ...refineFields(n4, qo)
+  }, mt(t4)))(e3, n3, t3));
 }
-__name(Be, "Be");
-function kt(e3, n3) {
-  return Vt((t3 = e3, o3 = n3, checkDurationUnits({
+__name(rt, "rt");
+function A(e3, n3) {
+  return Oe((t3 = e3, o3 = n3, checkDurationUnits({
     ...t3,
-    ...refineFields(o3, Ni)
+    ...refineFields(o3, ur)
   })));
   var t3, o3;
 }
-__name(kt, "kt");
-function mergeCalendarFields(e3, n3, t3, o3, r3 = [], i3 = []) {
-  const a3 = [...e3.fields(o3), ...r3].sort();
-  let s3 = refineFields(n3, a3, i3);
-  const c3 = refineFields(t3, a3);
-  return s3 = e3.mergeFields(s3, c3), refineFields(s3, a3, []);
-}
-__name(mergeCalendarFields, "mergeCalendarFields");
-function convertToPlainMonthDay(e3, n3) {
-  const t3 = refineCalendarFields(e3, n3, pi);
-  return e3.monthDayFromFields(t3);
-}
-__name(convertToPlainMonthDay, "convertToPlainMonthDay");
-function convertToPlainYearMonth(e3, n3, t3) {
-  const o3 = refineCalendarFields(e3, n3, di);
-  return e3.yearMonthFromFields(o3, t3);
-}
-__name(convertToPlainYearMonth, "convertToPlainYearMonth");
+__name(A, "A");
 function convertToIso(e3, n3, t3, o3, r3) {
-  n3 = Vn(t3 = e3.fields(t3), n3), o3 = refineFields(o3, r3 = e3.fields(r3), []);
-  let i3 = e3.mergeFields(n3, o3);
-  return i3 = refineFields(i3, [...t3, ...r3].sort(), []), e3.dateFromFields(i3);
+  n3 = nn(t3 = e3.fields(t3), n3), o3 = refineFields(o3, r3 = e3.fields(r3), []);
+  let i3 = e3.k(n3, o3);
+  return i3 = refineFields(i3, [...t3, ...r3].sort(), []), e3.F(i3);
 }
 __name(convertToIso, "convertToIso");
 function refineYear(e3, n3) {
-  let { era: t3, eraYear: o3, year: r3 } = n3;
-  const i3 = getCalendarEraOrigins(e3);
-  if (void 0 !== t3 || void 0 !== o3) {
-    if (void 0 === t3 || void 0 === o3) {
-      throw new TypeError(Dr);
+  const t3 = getCalendarEraOrigins(e3), o3 = ar[e3.id || ""] || {};
+  let { era: r3, eraYear: i3, year: a3 } = n3;
+  if (void 0 !== r3 || void 0 !== i3) {
+    if (void 0 === r3 || void 0 === i3) {
+      throw new TypeError(io);
     }
-    if (!i3) {
-      throw new RangeError(gr);
+    if (!t3) {
+      throw new RangeError(ro);
     }
-    const e4 = i3[t3];
+    const e4 = t3[o3[r3] || r3];
     if (void 0 === e4) {
-      throw new RangeError(invalidEra(t3));
+      throw new RangeError(invalidEra(r3));
     }
-    const n4 = eraYearToYear(o3, e4);
-    if (void 0 !== r3 && r3 !== n4) {
-      throw new RangeError(Ir);
+    const n4 = eraYearToYear(i3, e4);
+    if (void 0 !== a3 && a3 !== n4) {
+      throw new RangeError(ao);
     }
-    r3 = n4;
-  } else if (void 0 === r3) {
-    throw new TypeError(missingYear(i3));
+    a3 = n4;
+  } else if (void 0 === a3) {
+    throw new TypeError(missingYear(t3));
   }
-  return r3;
+  return a3;
 }
 __name(refineYear, "refineYear");
 function refineMonth(e3, n3, t3, o3) {
   let { month: r3, monthCode: i3 } = n3;
   if (void 0 !== i3) {
     const n4 = ((e4, n5, t4, o4) => {
-      const r4 = e4.U(t4), [i4, a3] = parseMonthCode(n5);
+      const r4 = e4.L(t4), [i4, a3] = parseMonthCode(n5);
       let s3 = monthCodeNumberToMonth(i4, a3, r4);
       if (a3) {
         const n6 = getCalendarLeapMonthMeta(e4);
         if (void 0 === n6) {
-          throw new RangeError(Pr);
+          throw new RangeError(uo);
         }
         if (n6 > 0) {
           if (s3 > n6) {
-            throw new RangeError(Pr);
+            throw new RangeError(uo);
           }
           if (void 0 === r4) {
             if (1 === o4) {
-              throw new RangeError(Pr);
+              throw new RangeError(uo);
             }
             s3--;
           }
         } else {
           if (s3 !== -n6) {
-            throw new RangeError(Pr);
+            throw new RangeError(uo);
           }
           if (void 0 === r4 && 1 === o4) {
-            throw new RangeError(Pr);
+            throw new RangeError(uo);
           }
         }
       }
       return s3;
     })(e3, i3, t3, o3);
     if (void 0 !== r3 && r3 !== n4) {
-      throw new RangeError(Mr);
+      throw new RangeError(so);
     }
     r3 = n4, o3 = 1;
   } else if (void 0 === r3) {
-    throw new TypeError(Nr);
+    throw new TypeError(co);
   }
-  return clampEntity("month", r3, 1, e3.L(t3), o3);
+  return clampEntity("month", r3, 1, e3.B(t3), o3);
 }
 __name(refineMonth, "refineMonth");
 function refineDay(e3, n3, t3, o3, r3) {
-  return clampProp(n3, "day", 1, e3.j(o3, t3), r3);
+  return clampProp(n3, "day", 1, e3.U(o3, t3), r3);
 }
 __name(refineDay, "refineDay");
 function spliceFields(e3, n3, t3, o3) {
@@ -73197,27 +73837,36 @@ function spliceFields(e3, n3, t3, o3) {
   }
 }
 __name(spliceFields, "spliceFields");
-function Se(e3) {
-  return _(checkEpochNanoInBounds(bigIntToBigNano(toBigInt(e3))));
+function computeDateEssentials(e3) {
+  const n3 = ji(e3.calendar), [t3, o3, r3] = n3.v(e3), [i3, a3] = n3.q(t3, o3);
+  return {
+    year: t3,
+    monthCode: formatMonthCode(i3, a3),
+    day: r3
+  };
 }
-__name(Se, "Se");
-function vn(e3, n3, t3, o3, r3 = X) {
-  return Yn(checkEpochNanoInBounds(bigIntToBigNano(toBigInt(t3))), n3(o3), e3(r3));
+__name(computeDateEssentials, "computeDateEssentials");
+function qe(e3) {
+  return xe(checkEpochNanoInBounds(bigIntToBigNano(toBigInt(e3))));
 }
-__name(vn, "vn");
-function pt(e3, n3, t3, o3, r3 = 0, i3 = 0, a3 = 0, s3 = 0, c3 = 0, u3 = 0, l3 = X) {
-  return ee(checkIsoDateTimeInBounds(checkIsoDateTimeFields(T(toInteger, zipProps(wi, [n3, t3, o3, r3, i3, a3, s3, c3, u3])))), e3(l3));
+__name(qe, "qe");
+function ye(e3, n3, t3, o3, r3 = l) {
+  return _e(checkEpochNanoInBounds(bigIntToBigNano(toBigInt(t3))), n3(o3), e3(r3));
 }
-__name(pt, "pt");
-function Nt(e3, n3, t3, o3, r3 = X) {
-  return v(checkIsoDateInBounds(checkIsoDateFields(T(toInteger, {
-    isoYear: n3,
-    isoMonth: t3,
-    isoDay: o3
-  }))), e3(r3));
+__name(ye, "ye");
+function Zt(n3, t3, o3, r3, i3 = 0, a3 = 0, s3 = 0, c3 = 0, u3 = 0, f3 = 0, d3 = l) {
+  return jt(checkIsoDateTimeInBounds(checkIsoDateTimeFields(e(toInteger, zipProps(Tr, [t3, o3, r3, i3, a3, s3, c3, u3, f3])))), n3(d3));
 }
-__name(Nt, "Nt");
-function tt(e3, n3, t3, o3 = X, r3 = 1) {
+__name(Zt, "Zt");
+function ue(n3, t3, o3, r3, i3 = l) {
+  return W(checkIsoDateInBounds(checkIsoDateFields(e(toInteger, {
+    isoYear: t3,
+    isoMonth: o3,
+    isoDay: r3
+  }))), n3(i3));
+}
+__name(ue, "ue");
+function Qt(e3, n3, t3, o3 = l, r3 = 1) {
   const i3 = toInteger(n3), a3 = toInteger(t3), s3 = e3(o3);
   return createPlainYearMonthSlots(checkIsoYearMonthInBounds(checkIsoDateFields({
     isoYear: i3,
@@ -73225,8 +73874,8 @@ function tt(e3, n3, t3, o3 = X, r3 = 1) {
     isoDay: toInteger(r3)
   })), s3);
 }
-__name(tt, "tt");
-function G(e3, n3, t3, o3 = X, r3 = ji) {
+__name(Qt, "Qt");
+function kt(e3, n3, t3, o3 = l, r3 = Br) {
   const i3 = toInteger(n3), a3 = toInteger(t3), s3 = e3(o3);
   return createPlainMonthDaySlots(checkIsoDateInBounds(checkIsoDateFields({
     isoYear: toInteger(r3),
@@ -73234,294 +73883,237 @@ function G(e3, n3, t3, o3 = X, r3 = ji) {
     isoDay: a3
   })), s3);
 }
-__name(G, "G");
-function ke(e3 = 0, n3 = 0, t3 = 0, o3 = 0, r3 = 0, i3 = 0) {
-  return Ge(constrainIsoTimeFields(T(toInteger, zipProps(j, [e3, n3, t3, o3, r3, i3])), 1));
+__name(kt, "kt");
+function ut(n3 = 0, t3 = 0, o3 = 0, r3 = 0, i3 = 0, a3 = 0) {
+  return St(constrainIsoTimeFields(e(toInteger, zipProps(w, [n3, t3, o3, r3, i3, a3])), 1));
 }
-__name(ke, "ke");
-function Lt(e3 = 0, n3 = 0, t3 = 0, o3 = 0, r3 = 0, i3 = 0, a3 = 0, s3 = 0, c3 = 0, u3 = 0) {
-  return Vt(checkDurationUnits(T(toStrictInteger, zipProps(F, [e3, n3, t3, o3, r3, i3, a3, s3, c3, u3]))));
+__name(ut, "ut");
+function j(n3 = 0, t3 = 0, o3 = 0, r3 = 0, i3 = 0, a3 = 0, s3 = 0, c3 = 0, u3 = 0, f3 = 0) {
+  return Oe(checkDurationUnits(e(toStrictInteger, zipProps(p, [n3, t3, o3, r3, i3, a3, s3, c3, u3, f3]))));
 }
-__name(Lt, "Lt");
-function fe(e3, n3, t3 = X) {
-  return Yn(e3.epochNanoseconds, n3, t3);
-}
-__name(fe, "fe");
-function Zn(e3) {
-  return _(e3.epochNanoseconds);
-}
-__name(Zn, "Zn");
-function ht(e3, n3) {
-  return ee(fn(n3, e3));
-}
-__name(ht, "ht");
-function Bt(e3, n3) {
-  return v(fn(n3, e3));
-}
-__name(Bt, "Bt");
-function bn(e3, n3, t3) {
-  return convertToPlainYearMonth(e3(n3.calendar), t3);
-}
-__name(bn, "bn");
-function Fn(e3, n3, t3) {
-  return convertToPlainMonthDay(e3(n3.calendar), t3);
-}
-__name(Fn, "Fn");
-function Re(e3, n3) {
-  return Ge(fn(n3, e3));
-}
-__name(Re, "Re");
-function mt(e3, n3, t3, o3) {
-  const r3 = ((e4, n4, t4, o4) => {
-    const r4 = ve(o4);
-    return we(e4(n4), t4, r4);
-  })(e3, t3, n3, o3);
-  return Yn(checkEpochNanoInBounds(r3), t3, n3.calendar);
-}
-__name(mt, "mt");
-function St(e3, n3, t3) {
-  const o3 = e3(n3.calendar);
-  return createPlainYearMonthSlots({
-    ...n3,
-    ...convertToPlainYearMonth(o3, t3)
-  });
-}
-__name(St, "St");
-function Ot(e3, n3, t3) {
-  return convertToPlainMonthDay(e3(n3.calendar), t3);
-}
-__name(Ot, "Ot");
-function vt(e3, n3, t3, o3, r3) {
-  const i3 = e3(r3.timeZone), a3 = r3.plainTime, s3 = void 0 !== a3 ? n3(a3) : Dt;
-  return Yn(we(t3(i3), {
-    ...o3,
-    ...s3
-  }), i3, o3.calendar);
-}
-__name(vt, "vt");
-function wt(e3, n3 = Dt) {
-  return ee(checkIsoDateTimeInBounds({
-    ...e3,
-    ...n3
-  }));
-}
-__name(wt, "wt");
-function jt(e3, n3, t3) {
-  return convertToPlainYearMonth(e3(n3.calendar), t3);
-}
-__name(jt, "jt");
-function Mt(e3, n3, t3) {
-  return convertToPlainMonthDay(e3(n3.calendar), t3);
-}
-__name(Mt, "Mt");
-function _e(e3, n3, t3, o3) {
-  return ((e4, n4, t4) => convertToIso(e4, n4, di, de(t4), li))(e3(n3.calendar), t3, o3);
-}
-__name(_e, "_e");
-function R(e3, n3, t3, o3) {
-  return ((e4, n4, t4) => convertToIso(e4, n4, pi, de(t4), si))(e3(n3.calendar), t3, o3);
-}
-__name(R, "R");
-function Je(e3, n3, t3, o3, r3) {
-  const i3 = de(r3), a3 = n3(i3.plainDate), s3 = e3(i3.timeZone);
-  return Yn(we(t3(s3), {
-    ...a3,
-    ...o3
-  }), s3, a3.calendar);
+__name(j, "j");
+function Je(e3, n3, t3 = l) {
+  return _e(e3.epochNanoseconds, n3, t3);
 }
 __name(Je, "Je");
-function Le(e3, n3) {
-  return ee(checkIsoDateTimeInBounds({
+function be(e3) {
+  return xe(e3.epochNanoseconds);
+}
+__name(be, "be");
+function yt(e3, n3) {
+  return jt(he(n3, e3));
+}
+__name(yt, "yt");
+function fe(e3, n3) {
+  return W(he(n3, e3));
+}
+__name(fe, "fe");
+function dt(e3, n3) {
+  return St(he(n3, e3));
+}
+__name(dt, "dt");
+function bt(e3, n3, t3, o3) {
+  const r3 = ((e4, n4, t4, o4) => {
+    const r4 = ((e5) => ei(normalizeOptions(e5)))(o4);
+    return getSingleInstantFor(e4(n4), t4, r4);
+  })(e3, t3, n3, o3);
+  return _e(checkEpochNanoInBounds(r3), t3, n3.calendar);
+}
+__name(bt, "bt");
+function ae(e3, n3, t3, o3, r3) {
+  const i3 = e3(r3.timeZone), a3 = r3.plainTime, s3 = void 0 !== a3 ? n3(a3) : void 0, c3 = t3(i3);
+  let u3;
+  return u3 = s3 ? getSingleInstantFor(c3, {
+    ...o3,
+    ...s3
+  }) : getStartOfDayInstantFor(c3, {
+    ...o3,
+    ...Nt
+  }), _e(u3, i3, o3.calendar);
+}
+__name(ae, "ae");
+function ie(e3, n3 = Nt) {
+  return jt(checkIsoDateTimeInBounds({
     ...e3,
     ...n3
   }));
 }
-__name(Le, "Le");
-function De(e3) {
-  return _(checkEpochNanoInBounds(he(e3, _r)));
+__name(ie, "ie");
+function le(e3, n3, t3) {
+  return ((e4, n4) => {
+    const t4 = refineCalendarFields(e4, n4, Qo);
+    return e4.K(t4, void 0);
+  })(e3(n3.calendar), t3);
 }
-__name(De, "De");
-function Pe(e3) {
-  return _(checkEpochNanoInBounds(he(e3, be)));
+__name(le, "le");
+function se(e3, n3, t3) {
+  return ((e4, n4) => {
+    const t4 = refineCalendarFields(e4, n4, nr);
+    return e4._(t4);
+  })(e3(n3.calendar), t3);
 }
-__name(Pe, "Pe");
-function Ce(e3) {
-  return _(checkEpochNanoInBounds(bigIntToBigNano(toBigInt(e3), Vr)));
+__name(se, "se");
+function Ht(e3, n3, t3, o3) {
+  return ((e4, n4, t4) => convertToIso(e4, n4, Qo, requireObjectLike(t4), Jo))(e3(n3.calendar), t3, o3);
 }
-__name(Ce, "Ce");
-function ge(e3) {
-  return _(checkEpochNanoInBounds(bigIntToBigNano(toBigInt(e3))));
+__name(Ht, "Ht");
+function Vt(e3, n3, t3, o3) {
+  return ((e4, n4, t4) => convertToIso(e4, n4, nr, requireObjectLike(t4), Go))(e3(n3.calendar), t3, o3);
+}
+__name(Vt, "Vt");
+function $e(e3) {
+  return xe(checkEpochNanoInBounds(Ge(toStrictInteger(e3), Qe)));
+}
+__name($e, "$e");
+function He(e3) {
+  return xe(checkEpochNanoInBounds(bigIntToBigNano(toBigInt(e3))));
+}
+__name(He, "He");
+function createOptionsTransformer(e3, n3, t3) {
+  const o3 = new Set(t3);
+  return (r3, i3) => {
+    const a3 = t3 && hasAnyPropsByName(r3, t3);
+    if (!hasAnyPropsByName(r3 = ((e4, n4) => {
+      const t4 = {};
+      for (const o4 in n4) {
+        e4.has(o4) || (t4[o4] = n4[o4]);
+      }
+      return t4;
+    })(o3, r3), e3)) {
+      if (i3 && a3) {
+        throw new TypeError("Invalid formatting options");
+      }
+      r3 = {
+        ...n3,
+        ...r3
+      };
+    }
+    return t3 && (r3.timeZone = si, ["full", "long"].includes(r3.J) && (r3.J = "medium")), r3;
+  };
+}
+__name(createOptionsTransformer, "createOptionsTransformer");
+function Q(e3, n3 = an, t3 = 0) {
+  const [o3, , , r3] = e3;
+  return (i3, a3 = Na, ...s3) => {
+    const c3 = n3(r3 && r3(...s3), i3, a3, o3, t3), u3 = c3.resolvedOptions();
+    return [c3, ...toEpochMillis(e3, u3, s3)];
+  };
+}
+__name(Q, "Q");
+function an(e3, n3, t3, o3, r3) {
+  if (t3 = o3(t3, r3), e3) {
+    if (void 0 !== t3.timeZone) {
+      throw new TypeError(So);
+    }
+    t3.timeZone = e3;
+  }
+  return new en(n3, t3);
+}
+__name(an, "an");
+function toEpochMillis(e3, n3, t3) {
+  const [, o3, r3] = e3;
+  return t3.map((e4) => (e4.calendar && ((e5, n4, t4) => {
+    if ((t4 || e5 !== l) && e5 !== n4) {
+      throw new RangeError(lo);
+    }
+  })(e4.calendar, n3.calendar, r3), o3(e4, n3)));
+}
+__name(toEpochMillis, "toEpochMillis");
+function ge(e3, n3, t3) {
+  const o3 = n3.timeZone, r3 = e3(o3), i3 = {
+    ...he(n3, r3),
+    ...t3 || Nt
+  };
+  let a3;
+  return a3 = t3 ? getMatchingInstantFor(r3, i3, i3.offsetNanoseconds, 2) : getStartOfDayInstantFor(r3, i3), _e(a3, o3, n3.calendar);
 }
 __name(ge, "ge");
-function pn(e3, n3, t3 = Dt) {
-  const o3 = n3.timeZone, r3 = e3(o3), i3 = {
-    ...fn(n3, r3),
-    ...t3
-  };
-  return Yn(getMatchingInstantFor(r3, i3, i3.offsetNanoseconds, 2), o3, n3.calendar);
-}
-__name(pn, "pn");
-function Tn(e3, n3, t3) {
-  const o3 = n3.timeZone, r3 = e3(o3), i3 = {
-    ...fn(n3, r3),
-    ...t3
-  }, a3 = getPreferredCalendarSlot(n3.calendar, t3.calendar);
-  return Yn(getMatchingInstantFor(r3, i3, i3.offsetNanoseconds, 2), o3, a3);
-}
-__name(Tn, "Tn");
-function lt(e3, n3 = Dt) {
-  return ee({
+function Ot(e3, n3 = Nt) {
+  return jt(checkIsoDateTimeInBounds({
     ...e3,
     ...n3
-  });
+  }));
 }
-__name(lt, "lt");
-function st(e3, n3) {
-  return ee({
-    ...e3,
-    ...n3
-  }, getPreferredCalendarSlot(e3.calendar, n3.calendar));
-}
-__name(st, "st");
-function it(e3, n3) {
+__name(Ot, "Ot");
+function pt(e3, n3) {
   return {
     ...e3,
     calendar: n3
   };
 }
-__name(it, "it");
-function On(e3, n3) {
+__name(pt, "pt");
+function Pe(e3, n3) {
   return {
     ...e3,
     timeZone: n3
   };
 }
-__name(On, "On");
-function getPreferredCalendarSlot(e3, n3) {
-  if (e3 === n3) {
-    return e3;
-  }
-  const t3 = I(e3), o3 = I(n3);
-  if (t3 === o3 || t3 === X) {
-    return n3;
-  }
-  if (o3 === X) {
-    return e3;
-  }
-  throw new RangeError(Er);
+__name(Pe, "Pe");
+function tn(e3) {
+  const n3 = Xe();
+  return epochNanoToIso(n3, e3.R(n3));
 }
-__name(getPreferredCalendarSlot, "getPreferredCalendarSlot");
-function createNativeOpsCreator(e3, n3) {
-  return (t3) => t3 === X ? e3 : t3 === gi || t3 === Ti ? Object.assign(Object.create(e3), {
-    id: t3
-  }) : Object.assign(Object.create(n3), Aa(t3));
+__name(tn, "tn");
+function Xe() {
+  return Ge(Date.now(), Qe);
 }
-__name(createNativeOpsCreator, "createNativeOpsCreator");
-function createOptionsTransformer(e3, n3, t3) {
-  const o3 = new Set(t3);
-  return (r3) => (((e4, n4) => {
-    for (const t4 of n4) {
-      if (t4 in e4) {
-        return 1;
-      }
-    }
-    return 0;
-  })(r3 = V(o3, r3), e3) || Object.assign(r3, n3), t3 && (r3.timeZone = Ta, ["full", "long"].includes(r3.timeStyle) && (r3.timeStyle = "medium")), r3);
+__name(Xe, "Xe");
+function Ue() {
+  return va || (va = new en().resolvedOptions().timeZone);
 }
-__name(createOptionsTransformer, "createOptionsTransformer");
-function e(e3, n3 = qn) {
-  const [t3, , , o3] = e3;
-  return (r3, i3 = Ns, ...a3) => {
-    const s3 = n3(o3 && o3(...a3), r3, i3, t3), c3 = s3.resolvedOptions();
-    return [s3, ...toEpochMillis(e3, c3, a3)];
-  };
-}
-__name(e, "e");
-function qn(e3, n3, t3, o3) {
-  if (t3 = o3(t3), e3) {
-    if (void 0 !== t3.timeZone) {
-      throw new TypeError(Lr);
-    }
-    t3.timeZone = e3;
-  }
-  return new En(n3, t3);
-}
-__name(qn, "qn");
-function toEpochMillis(e3, n3, t3) {
-  const [, o3, r3] = e3;
-  return t3.map((e4) => (e4.calendar && ((e5, n4, t4) => {
-    if ((t4 || e5 !== X) && e5 !== n4) {
-      throw new RangeError(Er);
-    }
-  })(I(e4.calendar), n3.calendar, r3), o3(e4, n3)));
-}
-__name(toEpochMillis, "toEpochMillis");
-function An(e3) {
-  const n3 = Bn();
-  return Ie(n3, e3.getOffsetNanosecondsFor(n3));
-}
-__name(An, "An");
-function Bn() {
-  return he(Date.now(), be);
-}
-__name(Bn, "Bn");
-function Nn() {
-  return ys || (ys = new En().resolvedOptions().timeZone);
-}
-__name(Nn, "Nn");
+__name(Ue, "Ue");
 var expectedInteger = /* @__PURE__ */ __name((e3, n3) => `Non-integer ${e3}: ${n3}`, "expectedInteger");
 var expectedPositive = /* @__PURE__ */ __name((e3, n3) => `Non-positive ${e3}: ${n3}`, "expectedPositive");
 var expectedFinite = /* @__PURE__ */ __name((e3, n3) => `Non-finite ${e3}: ${n3}`, "expectedFinite");
 var forbiddenBigIntToNumber = /* @__PURE__ */ __name((e3) => `Cannot convert bigint to ${e3}`, "forbiddenBigIntToNumber");
 var invalidBigInt = /* @__PURE__ */ __name((e3) => `Invalid bigint: ${e3}`, "invalidBigInt");
-var pr = "Cannot convert Symbol to string";
-var hr = "Invalid object";
+var no = "Cannot convert Symbol to string";
+var oo = "Invalid object";
 var numberOutOfRange = /* @__PURE__ */ __name((e3, n3, t3, o3, r3) => r3 ? numberOutOfRange(e3, r3[n3], r3[t3], r3[o3]) : invalidEntity(e3, n3) + `; must be between ${t3}-${o3}`, "numberOutOfRange");
 var invalidEntity = /* @__PURE__ */ __name((e3, n3) => `Invalid ${e3}: ${n3}`, "invalidEntity");
 var missingField = /* @__PURE__ */ __name((e3) => `Missing ${e3}`, "missingField");
-var tn = /* @__PURE__ */ __name((e3) => `Invalid field ${e3}`, "tn");
+var forbiddenField = /* @__PURE__ */ __name((e3) => `Invalid field ${e3}`, "forbiddenField");
 var duplicateFields = /* @__PURE__ */ __name((e3) => `Duplicate field ${e3}`, "duplicateFields");
 var noValidFields = /* @__PURE__ */ __name((e3) => "No valid fields: " + e3.join(), "noValidFields");
-var Z = "Invalid bag";
+var i = "Invalid bag";
 var invalidChoice = /* @__PURE__ */ __name((e3, n3, t3) => invalidEntity(e3, n3) + "; must be " + Object.keys(t3).join(), "invalidChoice");
-var A = "Cannot use valueOf";
-var P = "Invalid calling context";
-var gr = "Forbidden era/eraYear";
-var Dr = "Mismatching era/eraYear";
-var Ir = "Mismatching year/eraYear";
+var b = "Cannot use valueOf";
+var a = "Invalid calling context";
+var ro = "Forbidden era/eraYear";
+var io = "Mismatching era/eraYear";
+var ao = "Mismatching year/eraYear";
 var invalidEra = /* @__PURE__ */ __name((e3) => `Invalid era: ${e3}`, "invalidEra");
 var missingYear = /* @__PURE__ */ __name((e3) => "Missing year" + (e3 ? "/era/eraYear" : ""), "missingYear");
 var invalidMonthCode = /* @__PURE__ */ __name((e3) => `Invalid monthCode: ${e3}`, "invalidMonthCode");
-var Mr = "Mismatching month/monthCode";
-var Nr = "Missing month/monthCode";
-var yr = "Cannot guess year";
-var Pr = "Invalid leap month";
-var g = "Invalid protocol";
-var vr = "Invalid protocol results";
-var Er = "Mismatching Calendars";
-var invalidCalendar = /* @__PURE__ */ __name((e3) => `Invalid Calendar: ${e3}`, "invalidCalendar");
-var Fr = "Mismatching TimeZones";
-var br = "Forbidden ICU TimeZone";
-var wr = "Out-of-bounds offset";
-var Br = "Out-of-bounds TimeZone gap";
-var kr = "Invalid TimeZone offset";
-var Yr = "Ambiguous offset";
-var Cr = "Out-of-bounds date";
-var Zr = "Out-of-bounds duration";
-var Rr = "Cannot mix duration signs";
-var zr = "Missing relativeTo";
-var qr = "Cannot use large units";
-var Ur = "Required smallestUnit or largestUnit";
-var Ar = "smallestUnit > largestUnit";
+var so = "Mismatching month/monthCode";
+var co = "Missing month/monthCode";
+var uo = "Invalid leap month";
+var fo = "Invalid protocol results";
+var c = /* @__PURE__ */ __name((e3) => invalidEntity("Calendar", e3), "c");
+var lo = "Mismatching Calendars";
+var F = /* @__PURE__ */ __name((e3) => invalidEntity("TimeZone", e3), "F");
+var mo = "Mismatching TimeZones";
+var po = "Forbidden ICU TimeZone";
+var ho = "Out-of-bounds offset";
+var go = "Out-of-bounds TimeZone gap";
+var Do = "Invalid TimeZone offset";
+var To = "Ambiguous offset";
+var Io = "Out-of-bounds date";
+var Mo = "Out-of-bounds duration";
+var No = "Cannot mix duration signs";
+var yo = "Missing relativeTo";
+var vo = "Cannot use large units";
+var Po = "Required smallestUnit or largestUnit";
+var Eo = "smallestUnit > largestUnit";
 var failedParse = /* @__PURE__ */ __name((e3) => `Cannot parse: ${e3}`, "failedParse");
 var invalidSubstring = /* @__PURE__ */ __name((e3) => `Invalid substring: ${e3}`, "invalidSubstring");
-var Ln = /* @__PURE__ */ __name((e3) => `Cannot format ${e3}`, "Ln");
-var kn = "Mismatching types for formatting";
-var Lr = "Cannot specify TimeZone";
-var Wr = /* @__PURE__ */ E(b, (e3, n3) => n3);
-var jr = /* @__PURE__ */ E(b, (e3, n3, t3) => t3);
-var xr = /* @__PURE__ */ E(padNumber, 2);
-var $r = {
+var rn = /* @__PURE__ */ __name((e3) => `Cannot format ${e3}`, "rn");
+var ln = "Mismatching types for formatting";
+var So = "Cannot specify TimeZone";
+var Fo = /* @__PURE__ */ Pt(g, (e3, n3) => n3);
+var wo = /* @__PURE__ */ Pt(g, (e3, n3, t3) => t3);
+var bo = /* @__PURE__ */ Pt(padNumber, 2);
+var Oo = {
   nanosecond: 0,
   microsecond: 1,
   millisecond: 2,
@@ -73533,65 +74125,62 @@ var $r = {
   month: 8,
   year: 9
 };
-var Et = /* @__PURE__ */ Object.keys($r);
-var Gr = 864e5;
-var Hr = 1e3;
-var Vr = 1e3;
-var be = 1e6;
-var _r = 1e9;
-var Jr = 6e10;
-var Kr = 36e11;
-var Qr = 864e11;
-var Xr = [1, Vr, be, _r, Jr, Kr, Qr];
-var w = /* @__PURE__ */ Et.slice(0, 6);
-var ei = /* @__PURE__ */ sortStrings(w);
-var ni = ["offset"];
-var ti = ["timeZone"];
-var oi = /* @__PURE__ */ w.concat(ni);
-var ri = /* @__PURE__ */ oi.concat(ti);
-var ii = ["era", "eraYear"];
-var ai = /* @__PURE__ */ ii.concat(["year"]);
-var si = ["year"];
-var ci = ["monthCode"];
-var ui = /* @__PURE__ */ ["month"].concat(ci);
-var li = ["day"];
-var fi = /* @__PURE__ */ ui.concat(si);
-var di = /* @__PURE__ */ ci.concat(si);
-var en = /* @__PURE__ */ li.concat(fi);
-var mi = /* @__PURE__ */ li.concat(ui);
-var pi = /* @__PURE__ */ li.concat(ci);
-var hi = /* @__PURE__ */ jr(w, 0);
-var X = "iso8601";
-var gi = "gregory";
-var Ti = "japanese";
-var Di = {
-  [gi]: {
-    bce: -1,
-    ce: 0
+var Bo = /* @__PURE__ */ Object.keys(Oo);
+var ko = 864e5;
+var Co = 1e3;
+var Yo = 1e3;
+var Qe = 1e6;
+var Ro = 1e9;
+var Zo = 6e10;
+var zo = 36e11;
+var Uo = 864e11;
+var Ao = [1, Yo, Qe, Ro, Zo, zo, Uo];
+var O = /* @__PURE__ */ Bo.slice(0, 6);
+var qo = /* @__PURE__ */ sortStrings(O);
+var Wo = ["offset"];
+var jo = ["timeZone"];
+var Lo = /* @__PURE__ */ O.concat(Wo);
+var xo = /* @__PURE__ */ Lo.concat(jo);
+var $o = ["era", "eraYear"];
+var Ho = /* @__PURE__ */ $o.concat(["year"]);
+var Go = ["year"];
+var Vo = ["monthCode"];
+var _o = /* @__PURE__ */ ["month"].concat(Vo);
+var Jo = ["day"];
+var Ko = /* @__PURE__ */ _o.concat(Go);
+var Qo = /* @__PURE__ */ Vo.concat(Go);
+var Xo = /* @__PURE__ */ Jo.concat(Ko);
+var er = /* @__PURE__ */ Jo.concat(_o);
+var nr = /* @__PURE__ */ Jo.concat(Vo);
+var tr = /* @__PURE__ */ wo(O, 0);
+var l = "iso8601";
+var or = "gregory";
+var rr = "japanese";
+var ir = {
+  [or]: {
+    "gregory-inverse": -1,
+    gregory: 0
   },
-  [Ti]: {
-    bce: -1,
-    ce: 0,
+  [rr]: {
+    "japanese-inverse": -1,
+    japanese: 0,
     meiji: 1867,
     taisho: 1911,
     showa: 1925,
     heisei: 1988,
     reiwa: 2018
   },
-  ethioaa: {
-    era0: 0
-  },
   ethiopic: {
-    era0: 0,
-    era1: 5500
+    ethioaa: 0,
+    ethiopic: 5500
   },
   coptic: {
-    era0: -1,
-    era1: 0
+    "coptic-inverse": -1,
+    coptic: 0
   },
   roc: {
-    beforeroc: -1,
-    minguo: 0
+    "roc-inverse": -1,
+    roc: 0
   },
   buddhist: {
     be: 0
@@ -73606,83 +74195,105 @@ var Di = {
     ap: 0
   }
 };
-var Ii = {
+var ar = {
+  [or]: {
+    bce: "gregory-inverse",
+    ce: "gregory"
+  },
+  [rr]: {
+    bce: "japanese-inverse",
+    ce: "japanese"
+  },
+  ethiopic: {
+    era0: "ethioaa",
+    era1: "ethiopic"
+  },
+  coptic: {
+    era0: "coptic-inverse",
+    era1: "coptic"
+  },
+  roc: {
+    broc: "roc-inverse",
+    minguo: "roc"
+  }
+};
+var sr = {
   chinese: 13,
   dangi: 13,
   hebrew: -6
 };
-var m = /* @__PURE__ */ E(requireType, "string");
-var f = /* @__PURE__ */ E(requireType, "boolean");
-var Mi = /* @__PURE__ */ E(requireType, "number");
-var $ = /* @__PURE__ */ E(requireType, "function");
-var F = /* @__PURE__ */ Et.map((e3) => e3 + "s");
-var Ni = /* @__PURE__ */ sortStrings(F);
-var yi = /* @__PURE__ */ F.slice(0, 6);
-var Pi = /* @__PURE__ */ F.slice(6);
-var vi = /* @__PURE__ */ Pi.slice(1);
-var Ei = /* @__PURE__ */ Wr(F);
-var Si = /* @__PURE__ */ jr(F, 0);
-var Fi = /* @__PURE__ */ jr(yi, 0);
-var bi = /* @__PURE__ */ E(zeroOutProps, F);
-var j = ["isoNanosecond", "isoMicrosecond", "isoMillisecond", "isoSecond", "isoMinute", "isoHour"];
-var Oi = ["isoDay", "isoMonth", "isoYear"];
-var wi = /* @__PURE__ */ j.concat(Oi);
-var Bi = /* @__PURE__ */ sortStrings(Oi);
-var ki = /* @__PURE__ */ sortStrings(j);
-var Yi = /* @__PURE__ */ sortStrings(wi);
-var Dt = /* @__PURE__ */ jr(ki, 0);
-var Ci = /* @__PURE__ */ E(zeroOutProps, wi);
-var En = Intl.DateTimeFormat;
-var Zi = "en-GB";
-var Ri = 1e8;
-var zi = Ri * Gr;
-var qi = [Ri, 0];
-var Ui = [-Ri, 0];
-var Ai = 275760;
-var Li = -271821;
-var Wi = 1970;
-var ji = 1972;
-var xi = 12;
-var $i = /* @__PURE__ */ isoArgsToEpochMilli(1868, 9, 8);
-var Gi = /* @__PURE__ */ Jn(computeJapaneseEraParts, WeakMap);
-var Hi = "smallestUnit";
-var Vi = "unit";
-var _i = "roundingIncrement";
-var Ji = "fractionalSecondDigits";
-var Ki = "relativeTo";
-var Qi = {
+var m = /* @__PURE__ */ Pt(requireType, "string");
+var D = /* @__PURE__ */ Pt(requireType, "boolean");
+var cr = /* @__PURE__ */ Pt(requireType, "number");
+var p = /* @__PURE__ */ Bo.map((e3) => e3 + "s");
+var ur = /* @__PURE__ */ sortStrings(p);
+var fr = /* @__PURE__ */ p.slice(0, 6);
+var lr = /* @__PURE__ */ p.slice(6);
+var dr = /* @__PURE__ */ lr.slice(1);
+var mr = /* @__PURE__ */ Fo(p);
+var pr = /* @__PURE__ */ wo(p, 0);
+var hr = /* @__PURE__ */ wo(fr, 0);
+var gr = /* @__PURE__ */ Pt(zeroOutProps, p);
+var w = ["isoNanosecond", "isoMicrosecond", "isoMillisecond", "isoSecond", "isoMinute", "isoHour"];
+var Dr = ["isoDay", "isoMonth", "isoYear"];
+var Tr = /* @__PURE__ */ w.concat(Dr);
+var Ir = /* @__PURE__ */ sortStrings(Dr);
+var Mr = /* @__PURE__ */ sortStrings(w);
+var Nr = /* @__PURE__ */ sortStrings(Tr);
+var Nt = /* @__PURE__ */ wo(Mr, 0);
+var yr = /* @__PURE__ */ Pt(zeroOutProps, Tr);
+var vr = 1e8;
+var Pr = vr * ko;
+var Er = [vr, 0];
+var Sr = [-vr, 0];
+var Fr = 275760;
+var wr = -271821;
+var en = Intl.DateTimeFormat;
+var br = "en-GB";
+var Or = 1970;
+var Br = 1972;
+var kr = 12;
+var Cr = /* @__PURE__ */ isoArgsToEpochMilli(1868, 9, 8);
+var Yr = /* @__PURE__ */ on(computeJapaneseEraParts, WeakMap);
+var Rr = "smallestUnit";
+var Zr = "unit";
+var zr = "roundingIncrement";
+var Ur = "fractionalSecondDigits";
+var Ar = "relativeTo";
+var qr = "direction";
+var Wr = {
   constrain: 0,
   reject: 1
 };
-var Xi = /* @__PURE__ */ Object.keys(Qi);
-var ea = {
+var jr = /* @__PURE__ */ Object.keys(Wr);
+var Lr = {
   compatible: 0,
   reject: 1,
   earlier: 2,
   later: 3
 };
-var na = {
+var xr = {
   reject: 0,
   use: 1,
   prefer: 2,
   ignore: 3
 };
-var ta = {
+var $r = {
   auto: 0,
   never: 1,
   critical: 2,
   always: 3
 };
-var oa = {
+var Hr = {
   auto: 0,
   never: 1,
   critical: 2
 };
-var ra = {
+var Gr = {
   auto: 0,
   never: 1
 };
-var ia = {
+var Vr = {
   floor: 0,
   halfFloor: 1,
   ceil: 2,
@@ -73693,33 +74304,37 @@ var ia = {
   halfExpand: 7,
   halfEven: 8
 };
-var aa = /* @__PURE__ */ E(refineUnitOption, Hi);
-var sa = /* @__PURE__ */ E(refineUnitOption, "largestUnit");
-var ca = /* @__PURE__ */ E(refineUnitOption, Vi);
-var ua = /* @__PURE__ */ E(refineChoiceOption, "overflow", Qi);
-var la = /* @__PURE__ */ E(refineChoiceOption, "disambiguation", ea);
-var fa = /* @__PURE__ */ E(refineChoiceOption, "offset", na);
-var da = /* @__PURE__ */ E(refineChoiceOption, "calendarName", ta);
-var ma = /* @__PURE__ */ E(refineChoiceOption, "timeZoneName", oa);
-var pa = /* @__PURE__ */ E(refineChoiceOption, "offset", ra);
-var ha = /* @__PURE__ */ E(refineChoiceOption, "roundingMode", ia);
-var L = "PlainYearMonth";
-var q = "PlainMonthDay";
-var J = "PlainDate";
-var We = "PlainDateTime";
-var xe = "PlainTime";
-var Te = "ZonedDateTime";
-var Oe = "Instant";
-var qt = "Duration";
-var ga = [Math.floor, (e3) => hasHalf(e3) ? Math.floor(e3) : Math.round(e3), Math.ceil, (e3) => hasHalf(e3) ? Math.ceil(e3) : Math.round(e3), Math.trunc, (e3) => hasHalf(e3) ? Math.trunc(e3) || 0 : Math.round(e3), (e3) => e3 < 0 ? Math.floor(e3) : Math.ceil(e3), (e3) => Math.sign(e3) * Math.round(Math.abs(e3)) || 0, (e3) => hasHalf(e3) ? (e3 = Math.trunc(e3) || 0) + e3 % 2 : Math.round(e3)];
-var Ta = "UTC";
-var Da = 5184e3;
-var Ia = /* @__PURE__ */ isoArgsToEpochSec(1847);
-var Ma = /* @__PURE__ */ isoArgsToEpochSec(/* @__PURE__ */ (/* @__PURE__ */ new Date()).getUTCFullYear() + 10);
-var Na = /0+$/;
-var fn = /* @__PURE__ */ Jn(_zonedEpochSlotsToIso, WeakMap);
-var ya = 2 ** 32 - 1;
-var ie = /* @__PURE__ */ Jn((e3) => {
+var _r = {
+  previous: -1,
+  next: 1
+};
+var Jr = /* @__PURE__ */ Pt(refineUnitOption, Rr);
+var Kr = /* @__PURE__ */ Pt(refineUnitOption, "largestUnit");
+var Qr = /* @__PURE__ */ Pt(refineUnitOption, Zr);
+var Xr = /* @__PURE__ */ Pt(refineChoiceOption, "overflow", Wr);
+var ei = /* @__PURE__ */ Pt(refineChoiceOption, "disambiguation", Lr);
+var ni = /* @__PURE__ */ Pt(refineChoiceOption, "offset", xr);
+var ti = /* @__PURE__ */ Pt(refineChoiceOption, "calendarName", $r);
+var oi = /* @__PURE__ */ Pt(refineChoiceOption, "timeZoneName", Hr);
+var ri = /* @__PURE__ */ Pt(refineChoiceOption, "offset", Gr);
+var ii = /* @__PURE__ */ Pt(refineChoiceOption, "roundingMode", Vr);
+var Ut = "PlainYearMonth";
+var qt = "PlainMonthDay";
+var G = "PlainDate";
+var x = "PlainDateTime";
+var ft = "PlainTime";
+var z = "ZonedDateTime";
+var Re = "Instant";
+var N = "Duration";
+var ai = [Math.floor, (e3) => hasHalf(e3) ? Math.floor(e3) : Math.round(e3), Math.ceil, (e3) => hasHalf(e3) ? Math.ceil(e3) : Math.round(e3), Math.trunc, (e3) => hasHalf(e3) ? Math.trunc(e3) || 0 : Math.round(e3), (e3) => e3 < 0 ? Math.floor(e3) : Math.ceil(e3), (e3) => Math.sign(e3) * Math.round(Math.abs(e3)) || 0, (e3) => hasHalf(e3) ? (e3 = Math.trunc(e3) || 0) + e3 % 2 : Math.round(e3)];
+var si = "UTC";
+var ci = 5184e3;
+var ui = /* @__PURE__ */ isoArgsToEpochSec(1847);
+var fi = /* @__PURE__ */ isoArgsToEpochSec(/* @__PURE__ */ (/* @__PURE__ */ new Date()).getUTCFullYear() + 10);
+var li = /0+$/;
+var he = /* @__PURE__ */ on(_zonedEpochSlotsToIso, WeakMap);
+var di = 2 ** 32 - 1;
+var L = /* @__PURE__ */ on((e3) => {
   const n3 = getTimeZoneEssence(e3);
   return "object" == typeof n3 ? new IntlTimeZone(n3) : new FixedTimeZone(n3 || 0);
 });
@@ -73728,15 +74343,23 @@ var FixedTimeZone = class {
     __name(this, "FixedTimeZone");
   }
   constructor(e3) {
-    this.v = e3;
+    this.$ = e3;
   }
-  getOffsetNanosecondsFor() {
-    return this.v;
+  R() {
+    return this.$;
   }
-  getPossibleInstantsFor(e3) {
-    return [isoToEpochNanoWithOffset(e3, this.v)];
+  I(e3) {
+    return ((e4) => {
+      const n3 = isoToEpochNano({
+        ...e4,
+        ...Nt
+      });
+      if (!n3 || Math.abs(n3[0]) > 1e8) {
+        throw new RangeError(Io);
+      }
+    })(e3), [isoToEpochNanoWithOffset(e3, this.$)];
   }
-  l() {
+  O() {
   }
 };
 var IntlTimeZone = class {
@@ -73744,7 +74367,7 @@ var IntlTimeZone = class {
     __name(this, "IntlTimeZone");
   }
   constructor(e3) {
-    this.$ = ((e4) => {
+    this.nn = ((e4) => {
       function getOffsetSec(e5) {
         const i3 = clampNumber(e5, o3, r3), [a3, s3] = computePeriod(i3), c3 = n3(a3), u3 = n3(s3);
         return c3 === u3 ? c3 : pinch(t3(a3, s3), c3, u3, e5);
@@ -73759,10 +74382,10 @@ var IntlTimeZone = class {
         return i3;
       }
       __name(pinch, "pinch");
-      const n3 = Jn(e4), t3 = Jn(createSplitTuple);
-      let o3 = Ia, r3 = Ma;
+      const n3 = on(e4), t3 = on(createSplitTuple);
+      let o3 = ui, r3 = fi;
       return {
-        G(e5) {
+        tn(e5) {
           const n4 = getOffsetSec(e5 - 86400), t4 = getOffsetSec(e5 + 86400), o4 = e5 - n4, r4 = e5 - t4;
           if (n4 === t4) {
             return [o4];
@@ -73770,12 +74393,12 @@ var IntlTimeZone = class {
           const i3 = getOffsetSec(o4);
           return i3 === getOffsetSec(r4) ? [e5 - i3] : n4 > t4 ? [o4, r4] : [];
         },
-        V: getOffsetSec,
-        l(e5, i3) {
+        rn: getOffsetSec,
+        O(e5, i3) {
           const a3 = clampNumber(e5, o3, r3);
           let [s3, c3] = computePeriod(a3);
-          const u3 = Da * i3, l3 = i3 < 0 ? () => c3 > o3 || (o3 = a3, 0) : () => s3 < r3 || (r3 = a3, 0);
-          for (; l3(); ) {
+          const u3 = ci * i3, f3 = i3 < 0 ? () => c3 > o3 || (o3 = a3, 0) : () => s3 < r3 || (r3 = a3, 0);
+          for (; f3(); ) {
             const o4 = n3(s3), r4 = n3(c3);
             if (o4 !== r4) {
               const n4 = t3(s3, c3);
@@ -73790,41 +74413,41 @@ var IntlTimeZone = class {
         }
       };
     })(/* @__PURE__ */ ((e4) => (n3) => {
-      const t3 = hashIntlFormatParts(e4, n3 * Hr);
+      const t3 = hashIntlFormatParts(e4, n3 * Co);
       return isoArgsToEpochSec(parseIntlPartsYear(t3), parseInt(t3.month), parseInt(t3.day), parseInt(t3.hour), parseInt(t3.minute), parseInt(t3.second)) - n3;
     })(e3));
   }
-  getOffsetNanosecondsFor(e3) {
-    return this.$.V(epochNanoToSec(e3)) * _r;
+  R(e3) {
+    return this.nn.rn(((e4) => epochNanoToSecMod(e4)[0])(e3)) * Ro;
   }
-  getPossibleInstantsFor(e3) {
-    const [n3, t3] = [isoArgsToEpochSec((o3 = e3).isoYear, o3.isoMonth, o3.isoDay, o3.isoHour, o3.isoMinute, o3.isoSecond), o3.isoMillisecond * be + o3.isoMicrosecond * Vr + o3.isoNanosecond];
+  I(e3) {
+    const [n3, t3] = [isoArgsToEpochSec((o3 = e3).isoYear, o3.isoMonth, o3.isoDay, o3.isoHour, o3.isoMinute, o3.isoSecond), o3.isoMillisecond * Qe + o3.isoMicrosecond * Yo + o3.isoNanosecond];
     var o3;
-    return this.$.G(n3).map((e4) => checkEpochNanoInBounds(moveBigNano(he(e4, _r), t3)));
+    return this.nn.tn(n3).map((e4) => checkEpochNanoInBounds(moveBigNano(Ge(e4, Ro), t3)));
   }
-  l(e3, n3) {
-    const [t3, o3] = epochNanoToSecMod(e3), r3 = this.$.l(t3 + (n3 > 0 || o3 ? 1 : 0), n3);
+  O(e3, n3) {
+    const [t3, o3] = epochNanoToSecMod(e3), r3 = this.nn.O(t3 + (n3 > 0 || o3 ? 1 : 0), n3);
     if (void 0 !== r3) {
-      return he(r3, _r);
+      return Ge(r3, Ro);
     }
   }
 };
-var Pa = "([+\u2212-])";
-var va = "(?:[.,](\\d{1,9}))?";
-var Ea = `(?:(?:${Pa}(\\d{6}))|(\\d{4}))-?(\\d{2})`;
-var Sa = "(\\d{2})(?::?(\\d{2})(?::?(\\d{2})" + va + ")?)?";
-var Fa = Pa + Sa;
-var ba = Ea + "-?(\\d{2})(?:[T ]" + Sa + "(Z|" + Fa + ")?)?";
-var Oa = "\\[(!?)([^\\]]*)\\]";
-var wa = `((?:${Oa}){0,9})`;
-var Ba = /* @__PURE__ */ createRegExp(Ea + wa);
-var ka = /* @__PURE__ */ createRegExp("(?:--)?(\\d{2})-?(\\d{2})" + wa);
-var Ya = /* @__PURE__ */ createRegExp(ba + wa);
-var Ca = /* @__PURE__ */ createRegExp("T?" + Sa + "(?:" + Fa + ")?" + wa);
-var Za = /* @__PURE__ */ createRegExp(Fa);
-var Ra = /* @__PURE__ */ new RegExp(Oa, "g");
-var za = /* @__PURE__ */ createRegExp(`${Pa}?P(\\d+Y)?(\\d+M)?(\\d+W)?(\\d+D)?(?:T(?:(\\d+)${va}H)?(?:(\\d+)${va}M)?(?:(\\d+)${va}S)?)?`);
-var qa = /* @__PURE__ */ Jn((e3) => new En(Zi, {
+var mi = "([+-])";
+var pi = "(?:[.,](\\d{1,9}))?";
+var hi = `(?:(?:${mi}(\\d{6}))|(\\d{4}))-?(\\d{2})`;
+var gi = "(\\d{2})(?::?(\\d{2})(?::?(\\d{2})" + pi + ")?)?";
+var Di = mi + gi;
+var Ti = hi + "-?(\\d{2})(?:[T ]" + gi + "(Z|" + Di + ")?)?";
+var Ii = "\\[(!?)([^\\]]*)\\]";
+var Mi = `((?:${Ii}){0,9})`;
+var Ni = /* @__PURE__ */ createRegExp(hi + Mi);
+var yi = /* @__PURE__ */ createRegExp("(?:--)?(\\d{2})-?(\\d{2})" + Mi);
+var vi = /* @__PURE__ */ createRegExp(Ti + Mi);
+var Pi = /* @__PURE__ */ createRegExp("T?" + gi + "(?:" + Di + ")?" + Mi);
+var Ei = /* @__PURE__ */ createRegExp(Di);
+var Si = /* @__PURE__ */ new RegExp(Ii, "g");
+var Fi = /* @__PURE__ */ createRegExp(`${mi}?P(\\d+Y)?(\\d+M)?(\\d+W)?(\\d+D)?(?:T(?:(\\d+)${pi}H)?(?:(\\d+)${pi}M)?(?:(\\d+)${pi}S)?)?`);
+var wi = /* @__PURE__ */ on((e3) => new en(br, {
   timeZone: e3,
   era: "short",
   year: "numeric",
@@ -73834,43 +74457,30 @@ var qa = /* @__PURE__ */ Jn((e3) => new En(Zi, {
   minute: "numeric",
   second: "numeric"
 }));
-var Ua = /^(AC|AE|AG|AR|AS|BE|BS|CA|CN|CS|CT|EA|EC|IE|IS|JS|MI|NE|NS|PL|PN|PR|PS|SS|VS)T$/;
-var Aa = /* @__PURE__ */ Jn(createIntlCalendar);
-var La = /* @__PURE__ */ Jn((e3) => new En(Zi, {
+var bi = /^(AC|AE|AG|AR|AS|BE|BS|CA|CN|CS|CT|EA|EC|IE|IS|JS|MI|NE|NS|PL|PN|PR|PS|SS|VS)T$/;
+var Oi = /[^\w\/:+-]+/;
+var Bi = /^M(\d{2})(L?)$/;
+var ki = /* @__PURE__ */ on(createIntlCalendar);
+var Ci = /* @__PURE__ */ on((e3) => new en(br, {
   calendar: e3,
-  timeZone: Ta,
+  timeZone: si,
   era: "short",
   year: "numeric",
   month: "short",
   day: "numeric"
 }));
-var Wa = /^M(\d{2})(L?)$/;
-var ja = {
-  era: toStringViaPrimitive,
-  eraYear: toInteger,
-  year: toInteger,
-  month: toPositiveInteger,
-  monthCode: toStringViaPrimitive,
-  day: toPositiveInteger
-};
-var xa = /* @__PURE__ */ jr(w, toInteger);
-var $a = /* @__PURE__ */ jr(F, toStrictInteger);
-var Ga = /* @__PURE__ */ Object.assign({}, ja, xa, $a, {
-  offset: toStringViaPrimitive
-});
-var Ha = /* @__PURE__ */ E(remapProps, w, j);
-var Va = {
-  dateAdd(e3, n3, t3) {
-    const o3 = H(t3);
+var Yi = {
+  P(e3, n3, t3) {
+    const o3 = mt(t3);
     let r3, { years: i3, months: a3, weeks: s3, days: c3 } = n3;
     if (c3 += durationFieldsToBigNano(n3, 5)[0], i3 || a3) {
       r3 = ((e4, n4, t4, o4, r4) => {
-        let [i4, a4, s4] = e4.h(n4);
+        let [i4, a4, s4] = e4.v(n4);
         if (t4) {
-          const [n5, o5] = e4.I(i4, a4);
-          i4 += t4, a4 = monthCodeNumberToMonth(n5, o5, e4.U(i4)), a4 = clampEntity("month", a4, 1, e4.L(i4), r4);
+          const [n5, o5] = e4.q(i4, a4);
+          i4 += t4, a4 = monthCodeNumberToMonth(n5, o5, e4.L(i4)), a4 = clampEntity("month", a4, 1, e4.B(i4), r4);
         }
-        return o4 && ([i4, a4] = e4._(i4, a4, o4)), s4 = clampEntity("day", s4, 1, e4.j(i4, a4), r4), e4.q(i4, a4, s4);
+        return o4 && ([i4, a4] = e4.un(i4, a4, o4)), s4 = clampEntity("day", s4, 1, e4.U(i4, a4), r4), e4.p(i4, a4, s4);
       })(this, e3, i3, a3, o3);
     } else {
       if (!s3 && !c3) {
@@ -73878,180 +74488,185 @@ var Va = {
       }
       r3 = isoToEpochMilli(e3);
     }
-    return r3 += (7 * s3 + c3) * Gr, checkIsoDateInBounds(epochMilliToIso(r3));
+    if (void 0 === r3) {
+      throw new RangeError(Io);
+    }
+    return r3 += (7 * s3 + c3) * ko, checkIsoDateInBounds(epochMilliToIso(r3));
   },
-  dateUntil(e3, n3, t3) {
+  N(e3, n3, t3) {
     if (t3 <= 7) {
       let o4 = 0, r4 = diffDays({
         ...e3,
-        ...Dt
+        ...Nt
       }, {
         ...n3,
-        ...Dt
+        ...Nt
       });
       return 7 === t3 && ([o4, r4] = divModTrunc(r4, 7)), {
-        ...Si,
+        ...pr,
         weeks: o4,
         days: r4
       };
     }
-    const o3 = this.h(e3), r3 = this.h(n3);
+    const o3 = this.v(e3), r3 = this.v(n3);
     let [i3, a3, s3] = ((e4, n4, t4, o4, r4, i4, a4) => {
       let s4 = r4 - n4, c3 = i4 - t4, u3 = a4 - o4;
       if (s4 || c3) {
-        const l3 = Math.sign(s4 || c3);
-        let f3 = e4.j(r4, i4), d3 = 0;
-        if (Math.sign(u3) === -l3) {
-          const o5 = f3;
-          [r4, i4] = e4._(r4, i4, -l3), s4 = r4 - n4, c3 = i4 - t4, f3 = e4.j(r4, i4), d3 = l3 < 0 ? -o5 : f3;
+        const f3 = Math.sign(s4 || c3);
+        let l3 = e4.U(r4, i4), d3 = 0;
+        if (Math.sign(u3) === -f3) {
+          const o5 = l3;
+          [r4, i4] = e4.un(r4, i4, -f3), s4 = r4 - n4, c3 = i4 - t4, l3 = e4.U(r4, i4), d3 = f3 < 0 ? -o5 : l3;
         }
-        if (u3 = a4 - Math.min(o4, f3) + d3, s4) {
-          const [o5, a5] = e4.I(n4, t4), [u4, f4] = e4.I(r4, i4);
-          if (c3 = u4 - o5 || Number(f4) - Number(a5), Math.sign(c3) === -l3) {
-            const t5 = l3 < 0 && -e4.L(r4);
-            s4 = (r4 -= l3) - n4, c3 = i4 - monthCodeNumberToMonth(o5, a5, e4.U(r4)) + (t5 || e4.L(r4));
+        if (u3 = a4 - Math.min(o4, l3) + d3, s4) {
+          const [o5, a5] = e4.q(n4, t4), [u4, l4] = e4.q(r4, i4);
+          if (c3 = u4 - o5 || Number(l4) - Number(a5), Math.sign(c3) === -f3) {
+            const t5 = f3 < 0 && -e4.B(r4);
+            s4 = (r4 -= f3) - n4, c3 = i4 - monthCodeNumberToMonth(o5, a5, e4.L(r4)) + (t5 || e4.B(r4));
           }
         }
       }
       return [s4, c3, u3];
     })(this, ...o3, ...r3);
-    return 8 === t3 && (a3 += this.J(i3, o3[0]), i3 = 0), {
-      ...Si,
+    return 8 === t3 && (a3 += this.cn(i3, o3[0]), i3 = 0), {
+      ...pr,
       years: i3,
       months: a3,
       days: s3
     };
   },
-  dateFromFields(e3, n3) {
-    const t3 = H(n3), o3 = refineYear(this, e3), r3 = refineMonth(this, e3, o3, t3), i3 = refineDay(this, e3, r3, o3, t3);
-    return v(checkIsoDateInBounds(this.P(o3, r3, i3)), this.id || X);
+  F(e3, n3) {
+    const t3 = mt(n3), o3 = refineYear(this, e3), r3 = refineMonth(this, e3, o3, t3), i3 = refineDay(this, e3, r3, o3, t3);
+    return W(checkIsoDateInBounds(this.V(o3, r3, i3)), this.id || l);
   },
-  yearMonthFromFields(e3, n3) {
-    const t3 = H(n3), o3 = refineYear(this, e3), r3 = refineMonth(this, e3, o3, t3);
-    return createPlainYearMonthSlots(checkIsoYearMonthInBounds(this.P(o3, r3, 1)), this.id || X);
+  K(e3, n3) {
+    const t3 = mt(n3), o3 = refineYear(this, e3), r3 = refineMonth(this, e3, o3, t3);
+    return createPlainYearMonthSlots(checkIsoYearMonthInBounds(this.V(o3, r3, 1)), this.id || l);
   },
-  monthDayFromFields(e3, n3) {
-    const t3 = H(n3), o3 = !this.id, { monthCode: r3, year: i3, month: a3 } = e3;
-    let s3, c3, u3, l3, f3;
-    if (void 0 !== r3) {
-      [s3, c3] = parseMonthCode(r3), f3 = getDefinedProp(e3, "day");
-      const n4 = this.N(s3, c3, f3);
-      if (!n4) {
-        throw new RangeError(yr);
-      }
-      if ([u3, l3] = n4, void 0 !== a3 && a3 !== l3) {
-        throw new RangeError(Mr);
-      }
-      o3 && (l3 = clampEntity("month", l3, 1, xi, 1), f3 = clampEntity("day", f3, 1, computeIsoDaysInMonth(void 0 !== i3 ? i3 : u3, l3), t3));
+  _(e3, n3) {
+    const t3 = mt(n3);
+    let o3, r3, i3, a3 = void 0 !== e3.eraYear || void 0 !== e3.year ? refineYear(this, e3) : void 0;
+    const s3 = !this.id;
+    if (void 0 === a3 && s3 && (a3 = Br), void 0 !== a3) {
+      const n4 = refineMonth(this, e3, a3, t3);
+      o3 = refineDay(this, e3, n4, a3, t3);
+      const s4 = this.L(a3);
+      r3 = monthToMonthCodeNumber(n4, s4), i3 = n4 === s4;
     } else {
-      u3 = void 0 === i3 && o3 ? ji : refineYear(this, e3), l3 = refineMonth(this, e3, u3, t3), f3 = refineDay(this, e3, l3, u3, t3);
-      const n4 = this.U(u3);
-      c3 = l3 === n4, s3 = monthToMonthCodeNumber(l3, n4);
-      const r4 = this.N(s3, c3, f3);
-      if (!r4) {
-        throw new RangeError(yr);
+      if (void 0 === e3.monthCode) {
+        throw new TypeError(co);
       }
-      [u3, l3] = r4;
+      if ([r3, i3] = parseMonthCode(e3.monthCode), this.id && this.id !== or && this.id !== rr) {
+        if (this.id && "coptic" === computeCalendarIdBase(this.id) && 0 === t3) {
+          const n4 = i3 || 13 !== r3 ? 30 : 6;
+          o3 = e3.day, o3 = clampNumber(o3, 1, n4);
+        } else if (this.id && "chinese" === computeCalendarIdBase(this.id) && 0 === t3) {
+          const n4 = !i3 || 1 !== r3 && 9 !== r3 && 10 !== r3 && 11 !== r3 && 12 !== r3 ? 30 : 29;
+          o3 = e3.day, o3 = clampNumber(o3, 1, n4);
+        } else {
+          o3 = e3.day;
+        }
+      } else {
+        o3 = refineDay(this, e3, refineMonth(this, e3, Br, t3), Br, t3);
+      }
     }
-    return createPlainMonthDaySlots(checkIsoDateInBounds(this.P(u3, l3, f3)), this.id || X);
+    const c3 = this.G(r3, i3, o3);
+    if (!c3) {
+      throw new RangeError("Cannot guess year");
+    }
+    const [u3, f3] = c3;
+    return createPlainMonthDaySlots(checkIsoDateInBounds(this.V(u3, f3, o3)), this.id || l);
   },
   fields(e3) {
-    return getCalendarEraOrigins(this) && e3.includes("year") ? [...e3, ...ii] : e3;
+    return getCalendarEraOrigins(this) && e3.includes("year") ? [...e3, ...$o] : e3;
   },
-  mergeFields(e3, n3) {
+  k(e3, n3) {
     const t3 = Object.assign(/* @__PURE__ */ Object.create(null), e3);
-    return spliceFields(t3, n3, ui), getCalendarEraOrigins(this) && (spliceFields(t3, n3, ai), this.id === Ti && spliceFields(t3, n3, mi, ii)), t3;
+    return spliceFields(t3, n3, _o), getCalendarEraOrigins(this) && (spliceFields(t3, n3, Ho), this.id === rr && spliceFields(t3, n3, er, $o)), t3;
   },
   inLeapYear(e3) {
-    const [n3] = this.h(e3);
-    return this.K(n3);
+    const [n3] = this.v(e3);
+    return this.sn(n3);
   },
   monthsInYear(e3) {
-    const [n3] = this.h(e3);
-    return this.L(n3);
+    const [n3] = this.v(e3);
+    return this.B(n3);
   },
   daysInMonth(e3) {
-    const [n3, t3] = this.h(e3);
-    return this.j(n3, t3);
+    const [n3, t3] = this.v(e3);
+    return this.U(n3, t3);
   },
   daysInYear(e3) {
-    const [n3] = this.h(e3);
-    return this.X(n3);
+    const [n3] = this.v(e3);
+    return this.fn(n3);
   },
   dayOfYear: computeNativeDayOfYear,
   era(e3) {
-    return this.ee(e3)[0];
+    return this.hn(e3)[0];
   },
   eraYear(e3) {
-    return this.ee(e3)[1];
+    return this.hn(e3)[1];
   },
   monthCode(e3) {
-    const [n3, t3] = this.h(e3), [o3, r3] = this.I(n3, t3);
-    return ((e4, n4) => "M" + xr(e4) + (n4 ? "L" : ""))(o3, r3);
+    const [n3, t3] = this.v(e3), [o3, r3] = this.q(n3, t3);
+    return formatMonthCode(o3, r3);
   },
   dayOfWeek: computeIsoDayOfWeek,
   daysInWeek() {
     return 7;
   }
 };
-var _a = {
-  dayOfYear: computeNativeDayOfYear,
-  h: computeIsoDateParts,
-  q: isoArgsToEpochMilli
+var Ri = {
+  v: computeIsoDateParts,
+  hn: computeIsoEraParts,
+  q: computeIsoMonthCodeParts
 };
-var Ja = /* @__PURE__ */ Object.assign({}, _a, {
+var Zi = {
+  dayOfYear: computeNativeDayOfYear,
+  v: computeIsoDateParts,
+  p: isoArgsToEpochMilli
+};
+var zi = /* @__PURE__ */ Object.assign({}, Zi, {
   weekOfYear: computeNativeWeekOfYear,
   yearOfWeek: computeNativeYearOfWeek,
-  R(e3) {
+  m(e3) {
     function computeWeekShift(e4) {
       return (7 - e4 < n3 ? 7 : 0) - e4;
     }
     __name(computeWeekShift, "computeWeekShift");
     function computeWeeksInYear(e4) {
-      const n4 = computeIsoDaysInYear(l3 + e4), t4 = e4 || 1, o4 = computeWeekShift(modFloor(a3 + n4 * t4, 7));
+      const n4 = computeIsoDaysInYear(f3 + e4), t4 = e4 || 1, o4 = computeWeekShift(modFloor(a3 + n4 * t4, 7));
       return c3 = (n4 + (o4 - s3) * t4) / 7;
     }
     __name(computeWeeksInYear, "computeWeeksInYear");
     const n3 = this.id ? 1 : 4, t3 = computeIsoDayOfWeek(e3), o3 = this.dayOfYear(e3), r3 = modFloor(t3 - 1, 7), i3 = o3 - 1, a3 = modFloor(r3 - i3, 7), s3 = computeWeekShift(a3);
-    let c3, u3 = Math.floor((i3 - s3) / 7) + 1, l3 = e3.isoYear;
-    return u3 ? u3 > computeWeeksInYear(0) && (u3 = 1, l3++) : (u3 = computeWeeksInYear(-1), l3--), [u3, l3, c3];
+    let c3, u3 = Math.floor((i3 - s3) / 7) + 1, f3 = e3.isoYear;
+    return u3 ? u3 > computeWeeksInYear(0) && (u3 = 1, f3++) : (u3 = computeWeeksInYear(-1), f3--), [u3, f3, c3];
   }
 });
-var Ka = {
-  dayOfYear: computeNativeDayOfYear,
-  h: computeIntlDateParts,
-  q: computeIntlEpochMilli,
-  weekOfYear: computeNativeWeekOfYear,
-  yearOfWeek: computeNativeYearOfWeek,
-  R() {
-    return [];
-  }
-};
-var Y = /* @__PURE__ */ createNativeOpsCreator(/* @__PURE__ */ Object.assign({}, Va, Ja, {
-  h: computeIsoDateParts,
-  ee(e3) {
-    return this.id === gi ? computeGregoryEraParts(e3) : this.id === Ti ? Gi(e3) : [];
-  },
-  I: /* @__PURE__ */ __name((e3, n3) => [n3, 0], "I"),
-  N(e3, n3) {
+var Ui = /* @__PURE__ */ Object.assign({}, Yi, zi, {
+  v: computeIsoDateParts,
+  hn: computeIsoEraParts,
+  q: computeIsoMonthCodeParts,
+  G(e3, n3) {
     if (!n3) {
-      return [ji, e3];
+      return [Br, e3];
     }
   },
-  K: computeIsoInLeapYear,
-  U() {
+  sn: computeIsoInLeapYear,
+  L() {
   },
-  L: computeIsoMonthsInYear,
-  J: /* @__PURE__ */ __name((e3) => e3 * xi, "J"),
-  j: computeIsoDaysInMonth,
-  X: computeIsoDaysInYear,
-  P: /* @__PURE__ */ __name((e3, n3, t3) => ({
+  B: computeIsoMonthsInYear,
+  cn: /* @__PURE__ */ __name((e3) => e3 * kr, "cn"),
+  U: computeIsoDaysInMonth,
+  fn: computeIsoDaysInYear,
+  V: /* @__PURE__ */ __name((e3, n3, t3) => ({
     isoYear: e3,
     isoMonth: n3,
     isoDay: t3
-  }), "P"),
-  q: isoArgsToEpochMilli,
-  _: /* @__PURE__ */ __name((e3, n3, t3) => (e3 += divTrunc(t3, xi), (n3 += modTrunc(t3, xi)) < 1 ? (e3--, n3 += xi) : n3 > xi && (e3++, n3 -= xi), [e3, n3]), "_"),
+  }), "V"),
+  p: isoArgsToEpochMilli,
+  un: /* @__PURE__ */ __name((e3, n3, t3) => (e3 += divTrunc(t3, kr), (n3 += modTrunc(t3, kr)) < 1 ? (e3--, n3 += kr) : n3 > kr && (e3++, n3 -= kr), [e3, n3]), "un"),
   year(e3) {
     return e3.isoYear;
   },
@@ -74059,38 +74674,79 @@ var Y = /* @__PURE__ */ createNativeOpsCreator(/* @__PURE__ */ Object.assign({},
     return e3.isoMonth;
   },
   day: /* @__PURE__ */ __name((e3) => e3.isoDay, "day")
-}), /* @__PURE__ */ Object.assign({}, Va, Ka, {
-  h: computeIntlDateParts,
-  ee(e3) {
-    const n3 = this.O(e3);
-    return [n3.era, n3.eraYear];
-  },
-  I(e3, n3) {
-    const t3 = computeIntlLeapMonth.call(this, e3);
-    return [monthToMonthCodeNumber(n3, t3), t3 === n3];
-  },
-  N(e3, n3, t3) {
-    let [o3, r3, i3] = computeIntlDateParts.call(this, {
-      isoYear: ji,
-      isoMonth: xi,
+});
+var Ai = {
+  v: computeIntlDateParts,
+  hn: computeIntlEraParts,
+  q: computeIntlMonthCodeParts
+};
+var qi = {
+  dayOfYear: computeNativeDayOfYear,
+  v: computeIntlDateParts,
+  p: computeIntlEpochMilli,
+  weekOfYear: computeNativeWeekOfYear,
+  yearOfWeek: computeNativeYearOfWeek,
+  m() {
+    return [];
+  }
+};
+var Wi = /* @__PURE__ */ Object.assign({}, Yi, qi, {
+  v: computeIntlDateParts,
+  hn: computeIntlEraParts,
+  q: computeIntlMonthCodeParts,
+  G(e3, n3, t3) {
+    const o3 = this.id && "chinese" === computeCalendarIdBase(this.id) ? ((e4, n4, t4) => {
+      if (n4) {
+        switch (e4) {
+          case 1:
+            return 1651;
+          case 2:
+            return t4 < 30 ? 1947 : 1765;
+          case 3:
+            return t4 < 30 ? 1966 : 1955;
+          case 4:
+            return t4 < 30 ? 1963 : 1944;
+          case 5:
+            return t4 < 30 ? 1971 : 1952;
+          case 6:
+            return t4 < 30 ? 1960 : 1941;
+          case 7:
+            return t4 < 30 ? 1968 : 1938;
+          case 8:
+            return t4 < 30 ? 1957 : 1718;
+          case 9:
+            return 1832;
+          case 10:
+            return 1870;
+          case 11:
+            return 1814;
+          case 12:
+            return 1890;
+        }
+      }
+      return 1972;
+    })(e3, n3, t3) : Br;
+    let [r3, i3, a3] = computeIntlDateParts.call(this, {
+      isoYear: o3,
+      isoMonth: kr,
       isoDay: 31
     });
-    const a3 = computeIntlLeapMonth.call(this, o3), s3 = r3 === a3;
-    1 === (compareNumbers(e3, monthToMonthCodeNumber(r3, a3)) || compareNumbers(Number(n3), Number(s3)) || compareNumbers(t3, i3)) && o3--;
-    for (let r4 = 0; r4 < 100; r4++) {
-      const i4 = o3 - r4, a4 = computeIntlLeapMonth.call(this, i4), s4 = monthCodeNumberToMonth(e3, n3, a4);
+    const s3 = computeIntlLeapMonth.call(this, r3), c3 = i3 === s3;
+    1 === (compareNumbers(e3, monthToMonthCodeNumber(i3, s3)) || compareNumbers(Number(n3), Number(c3)) || compareNumbers(t3, a3)) && r3--;
+    for (let o4 = 0; o4 < 100; o4++) {
+      const i4 = r3 - o4, a4 = computeIntlLeapMonth.call(this, i4), s4 = monthCodeNumberToMonth(e3, n3, a4);
       if (n3 === (s4 === a4) && t3 <= computeIntlDaysInMonth.call(this, i4, s4)) {
         return [i4, s4];
       }
     }
   },
-  K(e3) {
+  sn(e3) {
     const n3 = computeIntlDaysInYear.call(this, e3);
     return n3 > computeIntlDaysInYear.call(this, e3 - 1) && n3 > computeIntlDaysInYear.call(this, e3 + 1);
   },
-  U: computeIntlLeapMonth,
-  L: computeIntlMonthsInYear,
-  J(e3, n3) {
+  L: computeIntlLeapMonth,
+  B: computeIntlMonthsInYear,
+  cn(e3, n3) {
     const t3 = n3 + e3, o3 = Math.sign(e3), r3 = o3 < 0 ? -1 : 0;
     let i3 = 0;
     for (let e4 = n3; e4 !== t3; e4 += o3) {
@@ -74098,16 +74754,16 @@ var Y = /* @__PURE__ */ createNativeOpsCreator(/* @__PURE__ */ Object.assign({},
     }
     return i3;
   },
-  j: computeIntlDaysInMonth,
-  X: computeIntlDaysInYear,
-  P(e3, n3, t3) {
+  U: computeIntlDaysInMonth,
+  fn: computeIntlDaysInYear,
+  V(e3, n3, t3) {
     return epochMilliToIso(computeIntlEpochMilli.call(this, e3, n3, t3));
   },
-  q: computeIntlEpochMilli,
-  _(e3, n3, t3) {
+  p: computeIntlEpochMilli,
+  un(e3, n3, t3) {
     if (t3) {
       if (n3 += t3, !Number.isSafeInteger(n3)) {
-        throw new RangeError(Cr);
+        throw new RangeError(Io);
       }
       if (t3 < 0) {
         for (; n3 < 1; ) {
@@ -74123,915 +74779,717 @@ var Y = /* @__PURE__ */ createNativeOpsCreator(/* @__PURE__ */ Object.assign({},
     return [e3, n3];
   },
   year(e3) {
-    return this.O(e3).year;
+    return this.h(e3).year;
   },
   month(e3) {
-    const { year: n3, F: t3 } = this.O(e3), { C: o3 } = this.B(n3);
+    const { year: n3, o: t3 } = this.h(e3), { u: o3 } = this.l(n3);
     return o3[t3] + 1;
   },
   day(e3) {
-    return this.O(e3).day;
+    return this.h(e3).day;
   }
-}));
-var Qa = "numeric";
-var Xa = ["timeZoneName"];
-var es = {
-  month: Qa,
-  day: Qa
-};
-var ns = {
-  year: Qa,
-  month: Qa
-};
-var ts = /* @__PURE__ */ Object.assign({}, ns, {
-  day: Qa
 });
-var os2 = {
-  hour: Qa,
-  minute: Qa,
-  second: Qa
+var ji = /* @__PURE__ */ createNativeOpsCreator(Ri, Ai);
+var C = /* @__PURE__ */ createNativeOpsCreator(Ui, Wi);
+var Li = {
+  ...{
+    era: toStringViaPrimitive,
+    eraYear: toInteger,
+    year: toInteger,
+    month: toPositiveInteger,
+    monthCode(e3) {
+      const n3 = toStringViaPrimitive(e3);
+      return parseMonthCode(n3), n3;
+    },
+    day: toPositiveInteger
+  },
+  .../* @__PURE__ */ wo(O, toInteger),
+  .../* @__PURE__ */ wo(p, toStrictInteger),
+  offset(e3) {
+    const n3 = toStringViaPrimitive(e3);
+    return parseOffsetNano(n3), n3;
+  }
 };
-var rs = /* @__PURE__ */ Object.assign({}, ts, os2);
-var is = /* @__PURE__ */ Object.assign({}, rs, {
+var xi = /* @__PURE__ */ Pt(remapProps, O, w);
+var $i = /* @__PURE__ */ Pt(remapProps, w, O);
+var Hi = "numeric";
+var Gi = ["timeZoneName"];
+var Vi = {
+  month: Hi,
+  day: Hi
+};
+var _i = {
+  year: Hi,
+  month: Hi
+};
+var Ji = /* @__PURE__ */ Object.assign({}, _i, {
+  day: Hi
+});
+var Ki = {
+  hour: Hi,
+  minute: Hi,
+  second: Hi
+};
+var Qi = /* @__PURE__ */ Object.assign({}, Ji, Ki);
+var Xi = /* @__PURE__ */ Object.assign({}, Qi, {
   timeZoneName: "short"
 });
-var as = /* @__PURE__ */ Object.keys(ns);
-var ss = /* @__PURE__ */ Object.keys(es);
-var cs = /* @__PURE__ */ Object.keys(ts);
-var us = /* @__PURE__ */ Object.keys(os2);
-var ls = ["dateStyle"];
-var fs = /* @__PURE__ */ as.concat(ls);
-var ds = /* @__PURE__ */ ss.concat(ls);
-var ms = /* @__PURE__ */ cs.concat(ls, ["weekday"]);
-var ps = /* @__PURE__ */ us.concat(["dayPeriod", "timeStyle"]);
-var hs = /* @__PURE__ */ ms.concat(ps);
-var gs = /* @__PURE__ */ hs.concat(Xa);
-var Ts = /* @__PURE__ */ Xa.concat(ps);
-var Ds = /* @__PURE__ */ Xa.concat(ms);
-var Is = /* @__PURE__ */ Xa.concat(["day", "weekday"], ps);
-var Ms = /* @__PURE__ */ Xa.concat(["year", "weekday"], ps);
-var Ns = {};
-var t = [/* @__PURE__ */ createOptionsTransformer(hs, rs), y];
-var s = [/* @__PURE__ */ createOptionsTransformer(gs, is), y, 0, (e3, n3) => {
-  const t3 = I(e3.timeZone);
-  if (n3 && I(n3.timeZone) !== t3) {
-    throw new RangeError(Fr);
+var ea = /* @__PURE__ */ Object.keys(_i);
+var na = /* @__PURE__ */ Object.keys(Vi);
+var ta = /* @__PURE__ */ Object.keys(Ji);
+var oa = /* @__PURE__ */ Object.keys(Ki);
+var ra = ["dateStyle"];
+var ia = /* @__PURE__ */ ea.concat(ra);
+var aa = /* @__PURE__ */ na.concat(ra);
+var sa = /* @__PURE__ */ ta.concat(ra, ["weekday"]);
+var ca = /* @__PURE__ */ oa.concat(["dayPeriod", "timeStyle", "fractionalSecondDigits"]);
+var ua = /* @__PURE__ */ sa.concat(ca);
+var fa = /* @__PURE__ */ Gi.concat(ca);
+var la = /* @__PURE__ */ Gi.concat(sa);
+var da = /* @__PURE__ */ Gi.concat(["day", "weekday"], ca);
+var ma = /* @__PURE__ */ Gi.concat(["year", "weekday"], ca);
+var pa = /* @__PURE__ */ createOptionsTransformer(ua, Qi);
+var ha = /* @__PURE__ */ createOptionsTransformer(ua, Xi);
+var ga = /* @__PURE__ */ createOptionsTransformer(ua, Qi, Gi);
+var Da = /* @__PURE__ */ createOptionsTransformer(sa, Ji, fa);
+var Ta = /* @__PURE__ */ createOptionsTransformer(ca, Ki, la);
+var Ia = /* @__PURE__ */ createOptionsTransformer(ia, _i, da);
+var Ma = /* @__PURE__ */ createOptionsTransformer(aa, Vi, ma);
+var Na = {};
+var ya = new en(void 0, {
+  calendar: l
+}).resolvedOptions().calendar === l;
+var U = [pa, I];
+var ot = [ha, I, 0, (e3, n3) => {
+  const t3 = e3.timeZone;
+  if (n3 && n3.timeZone !== t3) {
+    throw new RangeError(mo);
   }
   return t3;
 }];
-var n = [/* @__PURE__ */ createOptionsTransformer(hs, rs, Xa), isoToEpochMilli];
-var o = [/* @__PURE__ */ createOptionsTransformer(ms, ts, Ts), isoToEpochMilli];
-var r = [/* @__PURE__ */ createOptionsTransformer(ps, os2, Ds), (e3) => isoTimeFieldsToNano(e3) / be];
-var a = [/* @__PURE__ */ createOptionsTransformer(fs, ns, Is), isoToEpochMilli, 1];
-var i = [/* @__PURE__ */ createOptionsTransformer(ds, es, Ms), isoToEpochMilli, 1];
-var ys;
+var X = [ga, isoToEpochMilli];
+var _ = [Da, isoToEpochMilli];
+var tt = [Ta, (e3) => isoTimeFieldsToNano(e3) / Qe];
+var et = [Ia, isoToEpochMilli, ya];
+var nt = [Ma, isoToEpochMilli, ya];
+var va;
 
 // node_modules/temporal-polyfill/chunks/classApi.js
-function createSlotClass(e3, t3, n3, o3, r3) {
-  function Class(...e4) {
+function createSlotClass(i3, l3, s3, c3, u3) {
+  function Class(...t3) {
     if (!(this instanceof Class)) {
-      throw new TypeError(P);
+      throw new TypeError(a);
     }
-    oo(this, t3(...e4));
+    un(this, l3(...t3));
   }
   __name(Class, "Class");
-  function bindMethod(e4, t4) {
-    return Object.defineProperties(function(...t5) {
-      return e4.call(this, getSpecificSlots(this), ...t5);
-    }, D(t4));
+  function bindMethod(t3, e3) {
+    return Object.defineProperties(function(...e4) {
+      return t3.call(this, getSpecificSlots(this), ...e4);
+    }, r(e3));
   }
   __name(bindMethod, "bindMethod");
-  function getSpecificSlots(t4) {
-    const n4 = no(t4);
-    if (!n4 || n4.branding !== e3) {
-      throw new TypeError(P);
+  function getSpecificSlots(t3) {
+    const e3 = cn(t3);
+    if (!e3 || e3.branding !== i3) {
+      throw new TypeError(a);
     }
-    return n4;
+    return e3;
   }
   __name(getSpecificSlots, "getSpecificSlots");
   return Object.defineProperties(Class.prototype, {
-    ...O(T(bindMethod, n3)),
-    ...p(T(bindMethod, o3)),
-    ...h("Temporal." + e3)
+    ...t(e(bindMethod, s3)),
+    ...n(e(bindMethod, c3)),
+    ...o("Temporal." + i3)
   }), Object.defineProperties(Class, {
-    ...p(r3),
-    ...D(e3)
-  }), [Class, (e4) => {
-    const t4 = Object.create(Class.prototype);
-    return oo(t4, e4), t4;
+    ...n(u3),
+    ...r(i3)
+  }), [Class, (t3) => {
+    const e3 = Object.create(Class.prototype);
+    return un(e3, t3), e3;
   }, getSpecificSlots];
 }
 __name(createSlotClass, "createSlotClass");
-function createProtocolValidator(e3) {
-  return e3 = e3.concat("id").sort(), (t3) => {
-    if (!C(t3, e3)) {
-      throw new TypeError(g);
-    }
-    return t3;
-  };
-}
-__name(createProtocolValidator, "createProtocolValidator");
-function rejectInvalidBag(e3) {
-  if (no(e3) || void 0 !== e3.calendar || void 0 !== e3.timeZone) {
-    throw new TypeError(Z);
-  }
-  return e3;
-}
-__name(rejectInvalidBag, "rejectInvalidBag");
-function createCalendarFieldMethods(e3, t3) {
-  const n3 = {};
-  for (const o3 in e3) {
-    n3[o3] = ({ o: e4 }, n4) => {
-      const r3 = no(n4) || {}, { branding: a3 } = r3, i3 = a3 === J || t3.includes(a3) ? r3 : toPlainDateSlots(n4);
-      return e4[o3](i3);
-    };
-  }
-  return n3;
-}
-__name(createCalendarFieldMethods, "createCalendarFieldMethods");
-function createCalendarGetters(e3) {
-  const t3 = {};
-  for (const n3 in e3) {
-    t3[n3] = (e4) => {
-      const { calendar: t4 } = e4;
-      return (o3 = t4, "string" == typeof o3 ? Y(o3) : (r3 = o3, Object.assign(Object.create(co), {
-        i: r3
-      })))[n3](e4);
-      var o3, r3;
-    };
+function rejectInvalidBag(t3) {
+  if (cn(t3) || void 0 !== t3.calendar || void 0 !== t3.timeZone) {
+    throw new TypeError(i);
   }
   return t3;
 }
+__name(rejectInvalidBag, "rejectInvalidBag");
+function getCalendarIdFromBag(t3) {
+  return extractCalendarIdFromBag(t3) || l;
+}
+__name(getCalendarIdFromBag, "getCalendarIdFromBag");
+function extractCalendarIdFromBag(t3) {
+  const { calendar: e3 } = t3;
+  if (void 0 !== e3) {
+    return refineCalendarArg(e3);
+  }
+}
+__name(extractCalendarIdFromBag, "extractCalendarIdFromBag");
+function refineCalendarArg(t3) {
+  if (s(t3)) {
+    const { calendar: e3 } = cn(t3) || {};
+    if (!e3) {
+      throw new TypeError(c(t3));
+    }
+    return e3;
+  }
+  return ((t4) => u(f(m(t4))))(t3);
+}
+__name(refineCalendarArg, "refineCalendarArg");
+function createCalendarGetters(t3) {
+  const e3 = {};
+  for (const n3 in t3) {
+    e3[n3] = (t4) => {
+      const { calendar: e4 } = t4;
+      return C(e4)[n3](t4);
+    };
+  }
+  return e3;
+}
 __name(createCalendarGetters, "createCalendarGetters");
 function neverValueOf() {
-  throw new TypeError(A);
+  throw new TypeError(b);
 }
 __name(neverValueOf, "neverValueOf");
-function createCalendarFromSlots({ calendar: e3 }) {
-  return "string" == typeof e3 ? new lr(e3) : e3;
-}
-__name(createCalendarFromSlots, "createCalendarFromSlots");
-function toPlainMonthDaySlots(e3, t3) {
-  if (t3 = U(t3), z(e3)) {
-    const n4 = no(e3);
-    if (n4 && n4.branding === q) {
-      return H(t3), n4;
+function refineTimeZoneArg(t3) {
+  if (s(t3)) {
+    const { timeZone: e3 } = cn(t3) || {};
+    if (!e3) {
+      throw new TypeError(F(t3));
     }
-    const o3 = extractCalendarSlotFromBag(e3);
-    return K(Qo(o3 || X), !o3, e3, t3);
+    return e3;
   }
-  const n3 = Q(Y, e3);
-  return H(t3), n3;
+  return ((t4) => M(Z(m(t4))))(t3);
 }
-__name(toPlainMonthDaySlots, "toPlainMonthDaySlots");
-function getOffsetNanosecondsForAdapter(e3, t3, n3) {
-  return o3 = t3.call(e3, Co(_(n3))), ae(u(o3));
-  var o3;
-}
-__name(getOffsetNanosecondsForAdapter, "getOffsetNanosecondsForAdapter");
-function createAdapterOps(e3, t3 = ho) {
-  const n3 = Object.keys(t3).sort(), o3 = {};
-  for (const r3 of n3) {
-    o3[r3] = E(t3[r3], e3, $(e3[r3]));
+__name(refineTimeZoneArg, "refineTimeZoneArg");
+function toDurationSlots(t3) {
+  if (s(t3)) {
+    const e3 = cn(t3);
+    return e3 && e3.branding === N ? e3 : q(t3);
   }
-  return o3;
-}
-__name(createAdapterOps, "createAdapterOps");
-function createTimeZoneOps(e3, t3) {
-  return "string" == typeof e3 ? ie(e3) : createAdapterOps(e3, t3);
-}
-__name(createTimeZoneOps, "createTimeZoneOps");
-function createTimeZoneOffsetOps(e3) {
-  return createTimeZoneOps(e3, Do);
-}
-__name(createTimeZoneOffsetOps, "createTimeZoneOffsetOps");
-function toInstantSlots(e3) {
-  if (z(e3)) {
-    const t3 = no(e3);
-    if (t3) {
-      switch (t3.branding) {
-        case Oe:
-          return t3;
-        case Te:
-          return _(t3.epochNanoseconds);
-      }
-    }
-  }
-  return pe(e3);
-}
-__name(toInstantSlots, "toInstantSlots");
-function toTemporalInstant() {
-  return Co(_(he(this.valueOf(), be)));
-}
-__name(toTemporalInstant, "toTemporalInstant");
-function getImplTransition(e3, t3, n3) {
-  const o3 = t3.l(toInstantSlots(n3).epochNanoseconds, e3);
-  return o3 ? Co(_(o3)) : null;
-}
-__name(getImplTransition, "getImplTransition");
-function refineTimeZoneSlot(e3) {
-  return z(e3) ? (no(e3) || {}).timeZone || Fo(e3) : ((e4) => ye(Ne(m(e4))))(e3);
-}
-__name(refineTimeZoneSlot, "refineTimeZoneSlot");
-function toPlainTimeSlots(e3, t3) {
-  if (z(e3)) {
-    const n3 = no(e3) || {};
-    switch (n3.branding) {
-      case xe:
-        return H(t3), n3;
-      case We:
-        return H(t3), Ge(n3);
-      case Te:
-        return H(t3), Re(createTimeZoneOffsetOps, n3);
-    }
-    return Ue(e3, t3);
-  }
-  return H(t3), ze(e3);
-}
-__name(toPlainTimeSlots, "toPlainTimeSlots");
-function optionalToPlainTimeFields(e3) {
-  return void 0 === e3 ? void 0 : toPlainTimeSlots(e3);
-}
-__name(optionalToPlainTimeFields, "optionalToPlainTimeFields");
-function toPlainYearMonthSlots(e3, t3) {
-  if (t3 = U(t3), z(e3)) {
-    const n4 = no(e3);
-    return n4 && n4.branding === L ? (H(t3), n4) : nt(Ho(getCalendarSlotFromBag(e3)), e3, t3);
-  }
-  const n3 = ot(Y, e3);
-  return H(t3), n3;
-}
-__name(toPlainYearMonthSlots, "toPlainYearMonthSlots");
-function toPlainDateTimeSlots(e3, t3) {
-  if (t3 = U(t3), z(e3)) {
-    const n4 = no(e3) || {};
-    switch (n4.branding) {
-      case We:
-        return H(t3), n4;
-      case J:
-        return H(t3), ee({
-          ...n4,
-          ...Dt
-        });
-      case Te:
-        return H(t3), ht(createTimeZoneOffsetOps, n4);
-    }
-    return Pt(Ko(getCalendarSlotFromBag(e3)), e3, t3);
-  }
-  const n3 = Ct(e3);
-  return H(t3), n3;
-}
-__name(toPlainDateTimeSlots, "toPlainDateTimeSlots");
-function toPlainDateSlots(e3, t3) {
-  if (t3 = U(t3), z(e3)) {
-    const n4 = no(e3) || {};
-    switch (n4.branding) {
-      case J:
-        return H(t3), n4;
-      case We:
-        return H(t3), v(n4);
-      case Te:
-        return H(t3), Bt(createTimeZoneOffsetOps, n4);
-    }
-    return Yt(Ko(getCalendarSlotFromBag(e3)), e3, t3);
-  }
-  const n3 = At(e3);
-  return H(t3), n3;
-}
-__name(toPlainDateSlots, "toPlainDateSlots");
-function dayAdapter(e3, t3, n3) {
-  return d(t3.call(e3, Yo(v(n3, e3))));
-}
-__name(dayAdapter, "dayAdapter");
-function createCompoundOpsCreator(e3) {
-  return (t3) => "string" == typeof t3 ? Y(t3) : ((e4, t4) => {
-    const n3 = Object.keys(t4).sort(), o3 = {};
-    for (const r3 of n3) {
-      o3[r3] = E(t4[r3], e4, e4[r3]);
-    }
-    return o3;
-  })(t3, e3);
-}
-__name(createCompoundOpsCreator, "createCompoundOpsCreator");
-function toDurationSlots(e3) {
-  if (z(e3)) {
-    const t3 = no(e3);
-    return t3 && t3.branding === qt ? t3 : Ht(e3);
-  }
-  return Kt(e3);
+  return R(t3);
 }
 __name(toDurationSlots, "toDurationSlots");
-function refinePublicRelativeTo(e3) {
-  if (void 0 !== e3) {
-    if (z(e3)) {
-      const t3 = no(e3) || {};
-      switch (t3.branding) {
-        case Te:
-        case J:
-          return t3;
-        case We:
-          return v(t3);
+function refinePublicRelativeTo(t3) {
+  if (void 0 !== t3) {
+    if (s(t3)) {
+      const e3 = cn(t3) || {};
+      switch (e3.branding) {
+        case z:
+        case G:
+          return e3;
+        case x:
+          return W(e3);
       }
-      const n3 = getCalendarSlotFromBag(e3);
+      const n3 = getCalendarIdFromBag(t3);
       return {
-        ...Qt(refineTimeZoneSlot, createTimeZoneOps, Ko(n3), e3),
+        ...$(refineTimeZoneArg, L, C(n3), t3),
         calendar: n3
       };
     }
-    return Xt(e3);
+    return H(t3);
   }
 }
 __name(refinePublicRelativeTo, "refinePublicRelativeTo");
-function getCalendarSlotFromBag(e3) {
-  return extractCalendarSlotFromBag(e3) || X;
-}
-__name(getCalendarSlotFromBag, "getCalendarSlotFromBag");
-function extractCalendarSlotFromBag(e3) {
-  const { calendar: t3 } = e3;
-  if (void 0 !== t3) {
-    return refineCalendarSlot(t3);
-  }
-}
-__name(extractCalendarSlotFromBag, "extractCalendarSlotFromBag");
-function refineCalendarSlot(e3) {
-  return z(e3) ? (no(e3) || {}).calendar || cr(e3) : ((e4) => an(sn(m(e4))))(e3);
-}
-__name(refineCalendarSlot, "refineCalendarSlot");
-function toZonedDateTimeSlots(e3, t3) {
-  if (t3 = U(t3), z(e3)) {
-    const n3 = no(e3);
-    if (n3 && n3.branding === Te) {
-      return wn(t3), n3;
+function toPlainTimeSlots(t3, e3) {
+  if (s(t3)) {
+    const n4 = cn(t3) || {};
+    switch (n4.branding) {
+      case ft:
+        return mt(e3), n4;
+      case x:
+        return mt(e3), St(n4);
+      case z:
+        return mt(e3), dt(L, n4);
     }
-    const o3 = getCalendarSlotFromBag(e3);
-    return jn(refineTimeZoneSlot, createTimeZoneOps, Ko(o3), o3, e3, t3);
+    return Tt(t3, e3);
   }
-  return Mn(e3, t3);
+  const n3 = ht(t3);
+  return mt(e3), n3;
+}
+__name(toPlainTimeSlots, "toPlainTimeSlots");
+function optionalToPlainTimeFields(t3) {
+  return void 0 === t3 ? void 0 : toPlainTimeSlots(t3);
+}
+__name(optionalToPlainTimeFields, "optionalToPlainTimeFields");
+function toPlainDateTimeSlots(t3, e3) {
+  if (s(t3)) {
+    const n4 = cn(t3) || {};
+    switch (n4.branding) {
+      case x:
+        return mt(e3), n4;
+      case G:
+        return mt(e3), jt({
+          ...n4,
+          ...Nt
+        });
+      case z:
+        return mt(e3), yt(L, n4);
+    }
+    return At(C(getCalendarIdFromBag(t3)), t3, e3);
+  }
+  const n3 = Bt(t3);
+  return mt(e3), n3;
+}
+__name(toPlainDateTimeSlots, "toPlainDateTimeSlots");
+function toPlainMonthDaySlots(t3, e3) {
+  if (s(t3)) {
+    const n4 = cn(t3);
+    if (n4 && n4.branding === qt) {
+      return mt(e3), n4;
+    }
+    const o3 = extractCalendarIdFromBag(t3);
+    return Rt(C(o3 || l), !o3, t3, e3);
+  }
+  const n3 = xt(C, t3);
+  return mt(e3), n3;
+}
+__name(toPlainMonthDaySlots, "toPlainMonthDaySlots");
+function toPlainYearMonthSlots(t3, e3) {
+  if (s(t3)) {
+    const n4 = cn(t3);
+    return n4 && n4.branding === Ut ? (mt(e3), n4) : Xt(C(getCalendarIdFromBag(t3)), t3, e3);
+  }
+  const n3 = _t(C, t3);
+  return mt(e3), n3;
+}
+__name(toPlainYearMonthSlots, "toPlainYearMonthSlots");
+function toPlainDateSlots(t3, e3) {
+  if (s(t3)) {
+    const n4 = cn(t3) || {};
+    switch (n4.branding) {
+      case G:
+        return mt(e3), n4;
+      case x:
+        return mt(e3), W(n4);
+      case z:
+        return mt(e3), fe(L, n4);
+    }
+    return me(C(getCalendarIdFromBag(t3)), t3, e3);
+  }
+  const n3 = de(t3);
+  return mt(e3), n3;
+}
+__name(toPlainDateSlots, "toPlainDateSlots");
+function toZonedDateTimeSlots(t3, e3) {
+  if (s(t3)) {
+    const n3 = cn(t3);
+    if (n3 && n3.branding === z) {
+      return je(e3), n3;
+    }
+    const o3 = getCalendarIdFromBag(t3);
+    return Ne(refineTimeZoneArg, L, C(o3), o3, t3, e3);
+  }
+  return Ae(t3, e3);
 }
 __name(toZonedDateTimeSlots, "toZonedDateTimeSlots");
-function adaptDateMethods(e3) {
-  return T((e4) => (t3) => e4(slotsToIso(t3)), e3);
+function adaptDateMethods(t3) {
+  return e((t4) => (e3) => t4(slotsToIso(e3)), t3);
 }
 __name(adaptDateMethods, "adaptDateMethods");
-function slotsToIso(e3) {
-  return fn(e3, createTimeZoneOffsetOps);
+function slotsToIso(t3) {
+  return he(t3, L);
 }
 __name(slotsToIso, "slotsToIso");
-function createDateTimeFormatClass() {
-  const e3 = En.prototype, t3 = Object.getOwnPropertyDescriptors(e3), n3 = Object.getOwnPropertyDescriptors(En), DateTimeFormat = /* @__PURE__ */ __name(function(e4, t4 = {}) {
-    if (!(this instanceof DateTimeFormat)) {
-      return new DateTimeFormat(e4, t4);
+function toInstantSlots(t3) {
+  if (s(t3)) {
+    const e3 = cn(t3);
+    if (e3) {
+      switch (e3.branding) {
+        case Re:
+          return e3;
+        case z:
+          return xe(e3.epochNanoseconds);
+      }
     }
-    Or.set(this, ((e5, t5 = {}) => {
-      const n4 = new En(e5, t5), o3 = n4.resolvedOptions(), r3 = o3.locale, a3 = Vn(Object.keys(t5), o3), i3 = Jn(createFormatPrepperForBranding), prepFormat = /* @__PURE__ */ __name((...e6) => {
-        let t6;
-        const o4 = e6.map((e7, n5) => {
-          const o5 = no(e7), r4 = (o5 || {}).branding;
-          if (n5 && t6 && t6 !== r4) {
-            throw new TypeError(kn);
-          }
-          return t6 = r4, o5;
-        });
-        return t6 ? i3(t6)(r3, a3, ...o4) : [n4, ...e6];
-      }, "prepFormat");
-      return prepFormat.u = n4, prepFormat;
-    })(e4, t4));
-  }, "DateTimeFormat");
-  for (const e4 in t3) {
-    const n4 = t3[e4], o3 = e4.startsWith("format") && createFormatMethod(e4);
-    "function" == typeof n4.value ? n4.value = "constructor" === e4 ? DateTimeFormat : o3 || createProxiedMethod(e4) : o3 && (n4.get = function() {
-      return o3.bind(this);
-    });
   }
-  return n3.prototype.value = Object.create(e3, t3), Object.defineProperties(DateTimeFormat, n3), DateTimeFormat;
+  return We(t3);
+}
+__name(toInstantSlots, "toInstantSlots");
+function toTemporalInstant() {
+  const t3 = Date.prototype.valueOf.call(this);
+  return Kn(xe(Ge(ze(t3), Qe)));
+}
+__name(toTemporalInstant, "toTemporalInstant");
+function createDateTimeFormatClass() {
+  function DateTimeFormatFunc(t4, e4) {
+    return new DateTimeFormatNew(t4, e4);
+  }
+  __name(DateTimeFormatFunc, "DateTimeFormatFunc");
+  function DateTimeFormatNew(t4, e4 = /* @__PURE__ */ Object.create(null)) {
+    to.set(this, ((t5, e5) => {
+      const n4 = new en(t5, e5), o3 = n4.resolvedOptions(), r3 = o3.locale, a3 = nn(Object.keys(e5), o3), i3 = on(createFormatPrepperForBranding), prepFormat = /* @__PURE__ */ __name((t6, ...e6) => {
+        if (t6) {
+          if (2 !== e6.length) {
+            throw new TypeError(ln);
+          }
+          for (const t7 of e6) {
+            if (void 0 === t7) {
+              throw new TypeError(ln);
+            }
+          }
+        }
+        t6 || void 0 !== e6[0] || (e6 = []);
+        const o4 = e6.map((t7) => cn(t7) || Number(t7));
+        let l3, s3 = 0;
+        for (const t7 of o4) {
+          const e7 = "object" == typeof t7 ? t7.branding : void 0;
+          if (s3++ && e7 !== l3) {
+            throw new TypeError(ln);
+          }
+          l3 = e7;
+        }
+        return l3 ? i3(l3)(r3, a3, ...o4) : [n4, ...o4];
+      }, "prepFormat");
+      return prepFormat.X = n4, prepFormat;
+    })(t4, e4));
+  }
+  __name(DateTimeFormatNew, "DateTimeFormatNew");
+  const t3 = en.prototype, e3 = Object.getOwnPropertyDescriptors(t3), n3 = Object.getOwnPropertyDescriptors(en);
+  for (const t4 in e3) {
+    const n4 = e3[t4], o3 = t4.startsWith("format") && createFormatMethod(t4);
+    "function" == typeof n4.value ? n4.value = "constructor" === t4 ? DateTimeFormatFunc : o3 || createProxiedMethod(t4) : o3 && (n4.get = function() {
+      if (!to.has(this)) {
+        throw new TypeError(a);
+      }
+      return (...t5) => o3.apply(this, t5);
+    }, Object.defineProperties(n4.get, r(`get ${t4}`)));
+  }
+  return n3.prototype.value = DateTimeFormatNew.prototype = Object.create({}, e3), Object.defineProperties(DateTimeFormatFunc, n3), DateTimeFormatFunc;
 }
 __name(createDateTimeFormatClass, "createDateTimeFormatClass");
-function createFormatMethod(e3) {
-  return function(...t3) {
-    const n3 = Or.get(this), [o3, ...r3] = n3(...t3);
-    return o3[e3](...r3);
-  };
+function createFormatMethod(t3) {
+  return Object.defineProperties(function(...e3) {
+    const n3 = to.get(this), [o3, ...r3] = n3(t3.includes("Range"), ...e3);
+    return o3[t3](...r3);
+  }, r(t3));
 }
 __name(createFormatMethod, "createFormatMethod");
-function createProxiedMethod(e3) {
-  return function(...t3) {
-    return Or.get(this).u[e3](...t3);
-  };
+function createProxiedMethod(t3) {
+  return Object.defineProperties(function(...e3) {
+    return to.get(this).X[t3](...e3);
+  }, r(t3));
 }
 __name(createProxiedMethod, "createProxiedMethod");
 function createFormatPrepperForBranding(t3) {
-  const n3 = xn[t3];
-  if (!n3) {
-    throw new TypeError(Ln(t3));
+  const e3 = Cn[t3];
+  if (!e3) {
+    throw new TypeError(rn(t3));
   }
-  return e(n3, Jn(qn));
+  return Q(e3, on(an), 1);
 }
 __name(createFormatPrepperForBranding, "createFormatPrepperForBranding");
-var xn = {
-  Instant: t,
-  PlainDateTime: n,
-  PlainDate: o,
-  PlainTime: r,
-  PlainYearMonth: a,
-  PlainMonthDay: i
+var sn = /* @__PURE__ */ new WeakMap();
+var cn = /* @__PURE__ */ sn.get.bind(sn);
+var un = /* @__PURE__ */ sn.set.bind(sn);
+var fn = {
+  era: d,
+  eraYear: S,
+  year: T,
+  month: h,
+  daysInMonth: h,
+  daysInYear: h,
+  inLeapYear: D,
+  monthsInYear: h
 };
-var Rn = /* @__PURE__ */ e(t);
-var Wn = /* @__PURE__ */ e(s);
-var Gn = /* @__PURE__ */ e(n);
-var Un = /* @__PURE__ */ e(o);
-var zn = /* @__PURE__ */ e(r);
-var Hn = /* @__PURE__ */ e(a);
-var Kn = /* @__PURE__ */ e(i);
-var Qn = {
-  era: l,
-  eraYear: c,
-  year: u,
-  month: d,
-  daysInMonth: d,
-  daysInYear: d,
-  inLeapYear: f,
-  monthsInYear: d
-};
-var Xn = {
+var mn = {
   monthCode: m
 };
-var $n = {
-  day: d
+var dn = {
+  day: h
 };
-var _n = {
-  dayOfWeek: d,
-  dayOfYear: d,
-  weekOfYear: S,
-  yearOfWeek: c,
-  daysInWeek: d
+var Sn = {
+  dayOfWeek: h,
+  dayOfYear: h,
+  weekOfYear: P,
+  yearOfWeek: S,
+  daysInWeek: h
 };
-var eo = /* @__PURE__ */ Object.assign({}, Qn, Xn, $n, _n);
+var Tn = /* @__PURE__ */ createCalendarGetters(/* @__PURE__ */ Object.assign({}, fn, mn, dn, Sn));
+var hn = /* @__PURE__ */ createCalendarGetters({
+  ...fn,
+  ...mn
+});
+var Dn = /* @__PURE__ */ createCalendarGetters({
+  ...mn,
+  ...dn
+});
+var Pn = {
+  calendarId: /* @__PURE__ */ __name((t3) => t3.calendar, "calendarId")
+};
+var gn = /* @__PURE__ */ g((t3) => (e3) => e3[t3], p.concat("sign"));
+var pn = /* @__PURE__ */ g((t3, e3) => (t4) => t4[w[e3]], O);
+var On = {
+  epochMilliseconds: I,
+  epochNanoseconds: v
+};
+var [wn, In, vn] = createSlotClass(N, j, {
+  ...gn,
+  blank: y
+}, {
+  with: /* @__PURE__ */ __name((t3, e3) => In(A(t3, e3)), "with"),
+  negated: /* @__PURE__ */ __name((t3) => In(B(t3)), "negated"),
+  abs: /* @__PURE__ */ __name((t3) => In(Y(t3)), "abs"),
+  add: /* @__PURE__ */ __name((t3, e3, n3) => In(E(refinePublicRelativeTo, C, L, 0, t3, toDurationSlots(e3), n3)), "add"),
+  subtract: /* @__PURE__ */ __name((t3, e3, n3) => In(E(refinePublicRelativeTo, C, L, 1, t3, toDurationSlots(e3), n3)), "subtract"),
+  round: /* @__PURE__ */ __name((t3, e3) => In(V(refinePublicRelativeTo, C, L, t3, e3)), "round"),
+  total: /* @__PURE__ */ __name((t3, e3) => J(refinePublicRelativeTo, C, L, t3, e3), "total"),
+  toLocaleString(t3, e3, n3) {
+    return Intl.DurationFormat ? new Intl.DurationFormat(e3, n3).format(this) : k(t3);
+  },
+  toString: k,
+  toJSON: /* @__PURE__ */ __name((t3) => k(t3), "toJSON"),
+  valueOf: neverValueOf
+}, {
+  from: /* @__PURE__ */ __name((t3) => In(toDurationSlots(t3)), "from"),
+  compare: /* @__PURE__ */ __name((t3, e3, n3) => K(refinePublicRelativeTo, C, L, toDurationSlots(t3), toDurationSlots(e3), n3), "compare")
+});
+var Cn = {
+  Instant: U,
+  PlainDateTime: X,
+  PlainDate: _,
+  PlainTime: tt,
+  PlainYearMonth: et,
+  PlainMonthDay: nt
+};
+var bn = /* @__PURE__ */ Q(U);
+var Fn = /* @__PURE__ */ Q(ot);
+var Mn = /* @__PURE__ */ Q(X);
+var Zn = /* @__PURE__ */ Q(_);
+var yn = /* @__PURE__ */ Q(tt);
+var jn = /* @__PURE__ */ Q(et);
+var Nn = /* @__PURE__ */ Q(nt);
+var [An, Bn] = createSlotClass(ft, ut, pn, {
+  with(t3, e3, n3) {
+    return Bn(rt(this, rejectInvalidBag(e3), n3));
+  },
+  add: /* @__PURE__ */ __name((t3, e3) => Bn(at(0, t3, toDurationSlots(e3))), "add"),
+  subtract: /* @__PURE__ */ __name((t3, e3) => Bn(at(1, t3, toDurationSlots(e3))), "subtract"),
+  until: /* @__PURE__ */ __name((t3, e3, n3) => In(it(0, t3, toPlainTimeSlots(e3), n3)), "until"),
+  since: /* @__PURE__ */ __name((t3, e3, n3) => In(it(1, t3, toPlainTimeSlots(e3), n3)), "since"),
+  round: /* @__PURE__ */ __name((t3, e3) => Bn(lt(t3, e3)), "round"),
+  equals: /* @__PURE__ */ __name((t3, e3) => st(t3, toPlainTimeSlots(e3)), "equals"),
+  toLocaleString(t3, e3, n3) {
+    const [o3, r3] = yn(e3, n3, t3);
+    return o3.format(r3);
+  },
+  toString: ct,
+  toJSON: /* @__PURE__ */ __name((t3) => ct(t3), "toJSON"),
+  valueOf: neverValueOf
+}, {
+  from: /* @__PURE__ */ __name((t3, e3) => Bn(toPlainTimeSlots(t3, e3)), "from"),
+  compare: /* @__PURE__ */ __name((t3, e3) => Dt(toPlainTimeSlots(t3), toPlainTimeSlots(e3)), "compare")
+});
+var [Yn, En] = createSlotClass(x, Pt(Zt, Mt), {
+  ...Pn,
+  ...Tn,
+  ...pn
+}, {
+  with: /* @__PURE__ */ __name((t3, e3, n3) => En(gt(C, t3, rejectInvalidBag(e3), n3)), "with"),
+  withCalendar: /* @__PURE__ */ __name((t3, e3) => En(pt(t3, refineCalendarArg(e3))), "withCalendar"),
+  withPlainTime: /* @__PURE__ */ __name((t3, e3) => En(Ot(t3, optionalToPlainTimeFields(e3))), "withPlainTime"),
+  add: /* @__PURE__ */ __name((t3, e3, n3) => En(wt(C, 0, t3, toDurationSlots(e3), n3)), "add"),
+  subtract: /* @__PURE__ */ __name((t3, e3, n3) => En(wt(C, 1, t3, toDurationSlots(e3), n3)), "subtract"),
+  until: /* @__PURE__ */ __name((t3, e3, n3) => In(It(C, 0, t3, toPlainDateTimeSlots(e3), n3)), "until"),
+  since: /* @__PURE__ */ __name((t3, e3, n3) => In(It(C, 1, t3, toPlainDateTimeSlots(e3), n3)), "since"),
+  round: /* @__PURE__ */ __name((t3, e3) => En(vt(t3, e3)), "round"),
+  equals: /* @__PURE__ */ __name((t3, e3) => Ct(t3, toPlainDateTimeSlots(e3)), "equals"),
+  toZonedDateTime: /* @__PURE__ */ __name((t3, e3, n3) => $n(bt(L, t3, refineTimeZoneArg(e3), n3)), "toZonedDateTime"),
+  toPlainDate: /* @__PURE__ */ __name((t3) => Wn(W(t3)), "toPlainDate"),
+  toPlainTime: /* @__PURE__ */ __name((t3) => Bn(St(t3)), "toPlainTime"),
+  toLocaleString(t3, e3, n3) {
+    const [o3, r3] = Mn(e3, n3, t3);
+    return o3.format(r3);
+  },
+  toString: Ft,
+  toJSON: /* @__PURE__ */ __name((t3) => Ft(t3), "toJSON"),
+  valueOf: neverValueOf
+}, {
+  from: /* @__PURE__ */ __name((t3, e3) => En(toPlainDateTimeSlots(t3, e3)), "from"),
+  compare: /* @__PURE__ */ __name((t3, e3) => Yt(toPlainDateTimeSlots(t3), toPlainDateTimeSlots(e3)), "compare")
+});
+var [Ln, Vn, Jn] = createSlotClass(qt, Pt(kt, Mt), {
+  ...Pn,
+  ...Dn
+}, {
+  with: /* @__PURE__ */ __name((t3, e3, n3) => Vn(Et(C, t3, rejectInvalidBag(e3), n3)), "with"),
+  equals: /* @__PURE__ */ __name((t3, e3) => Lt(t3, toPlainMonthDaySlots(e3)), "equals"),
+  toPlainDate(t3, e3) {
+    return Wn(Vt(C, t3, this, e3));
+  },
+  toLocaleString(t3, e3, n3) {
+    const [o3, r3] = Nn(e3, n3, t3);
+    return o3.format(r3);
+  },
+  toString: Jt,
+  toJSON: /* @__PURE__ */ __name((t3) => Jt(t3), "toJSON"),
+  valueOf: neverValueOf
+}, {
+  from: /* @__PURE__ */ __name((t3, e3) => Vn(toPlainMonthDaySlots(t3, e3)), "from")
+});
+var [kn, qn, Rn] = createSlotClass(Ut, Pt(Qt, Mt), {
+  ...Pn,
+  ...hn
+}, {
+  with: /* @__PURE__ */ __name((t3, e3, n3) => qn(Wt(C, t3, rejectInvalidBag(e3), n3)), "with"),
+  add: /* @__PURE__ */ __name((t3, e3, n3) => qn(Gt(C, 0, t3, toDurationSlots(e3), n3)), "add"),
+  subtract: /* @__PURE__ */ __name((t3, e3, n3) => qn(Gt(C, 1, t3, toDurationSlots(e3), n3)), "subtract"),
+  until: /* @__PURE__ */ __name((t3, e3, n3) => In(zt(C, 0, t3, toPlainYearMonthSlots(e3), n3)), "until"),
+  since: /* @__PURE__ */ __name((t3, e3, n3) => In(zt(C, 1, t3, toPlainYearMonthSlots(e3), n3)), "since"),
+  equals: /* @__PURE__ */ __name((t3, e3) => $t(t3, toPlainYearMonthSlots(e3)), "equals"),
+  toPlainDate(t3, e3) {
+    return Wn(Ht(C, t3, this, e3));
+  },
+  toLocaleString(t3, e3, n3) {
+    const [o3, r3] = jn(e3, n3, t3);
+    return o3.format(r3);
+  },
+  toString: Kt,
+  toJSON: /* @__PURE__ */ __name((t3) => Kt(t3), "toJSON"),
+  valueOf: neverValueOf
+}, {
+  from: /* @__PURE__ */ __name((t3, e3) => qn(toPlainYearMonthSlots(t3, e3)), "from"),
+  compare: /* @__PURE__ */ __name((t3, e3) => te(toPlainYearMonthSlots(t3), toPlainYearMonthSlots(e3)), "compare")
+});
+var [xn, Wn, Gn] = createSlotClass(G, Pt(ue, Mt), {
+  ...Pn,
+  ...Tn
+}, {
+  with: /* @__PURE__ */ __name((t3, e3, n3) => Wn(ee(C, t3, rejectInvalidBag(e3), n3)), "with"),
+  withCalendar: /* @__PURE__ */ __name((t3, e3) => Wn(pt(t3, refineCalendarArg(e3))), "withCalendar"),
+  add: /* @__PURE__ */ __name((t3, e3, n3) => Wn(ne(C, 0, t3, toDurationSlots(e3), n3)), "add"),
+  subtract: /* @__PURE__ */ __name((t3, e3, n3) => Wn(ne(C, 1, t3, toDurationSlots(e3), n3)), "subtract"),
+  until: /* @__PURE__ */ __name((t3, e3, n3) => In(oe(C, 0, t3, toPlainDateSlots(e3), n3)), "until"),
+  since: /* @__PURE__ */ __name((t3, e3, n3) => In(oe(C, 1, t3, toPlainDateSlots(e3), n3)), "since"),
+  equals: /* @__PURE__ */ __name((t3, e3) => re(t3, toPlainDateSlots(e3)), "equals"),
+  toZonedDateTime(t3, e3) {
+    const n3 = s(e3) ? e3 : {
+      timeZone: e3
+    };
+    return $n(ae(refineTimeZoneArg, toPlainTimeSlots, L, t3, n3));
+  },
+  toPlainDateTime: /* @__PURE__ */ __name((t3, e3) => En(ie(t3, optionalToPlainTimeFields(e3))), "toPlainDateTime"),
+  toPlainYearMonth(t3) {
+    return qn(le(C, t3, this));
+  },
+  toPlainMonthDay(t3) {
+    return Vn(se(C, t3, this));
+  },
+  toLocaleString(t3, e3, n3) {
+    const [o3, r3] = Zn(e3, n3, t3);
+    return o3.format(r3);
+  },
+  toString: ce,
+  toJSON: /* @__PURE__ */ __name((t3) => ce(t3), "toJSON"),
+  valueOf: neverValueOf
+}, {
+  from: /* @__PURE__ */ __name((t3, e3) => Wn(toPlainDateSlots(t3, e3)), "from"),
+  compare: /* @__PURE__ */ __name((t3, e3) => te(toPlainDateSlots(t3), toPlainDateSlots(e3)), "compare")
+});
+var [zn, $n] = createSlotClass(z, Pt(ye, Mt, Ze), {
+  ...On,
+  ...Pn,
+  ...adaptDateMethods(Tn),
+  ...adaptDateMethods(pn),
+  offset: /* @__PURE__ */ __name((t3) => Se(slotsToIso(t3).offsetNanoseconds), "offset"),
+  offsetNanoseconds: /* @__PURE__ */ __name((t3) => slotsToIso(t3).offsetNanoseconds, "offsetNanoseconds"),
+  timeZoneId: /* @__PURE__ */ __name((t3) => t3.timeZone, "timeZoneId"),
+  hoursInDay: /* @__PURE__ */ __name((t3) => Te(L, t3), "hoursInDay")
+}, {
+  with: /* @__PURE__ */ __name((t3, e3, n3) => $n(De(C, L, t3, rejectInvalidBag(e3), n3)), "with"),
+  withCalendar: /* @__PURE__ */ __name((t3, e3) => $n(pt(t3, refineCalendarArg(e3))), "withCalendar"),
+  withTimeZone: /* @__PURE__ */ __name((t3, e3) => $n(Pe(t3, refineTimeZoneArg(e3))), "withTimeZone"),
+  withPlainTime: /* @__PURE__ */ __name((t3, e3) => $n(ge(L, t3, optionalToPlainTimeFields(e3))), "withPlainTime"),
+  add: /* @__PURE__ */ __name((t3, e3, n3) => $n(pe(C, L, 0, t3, toDurationSlots(e3), n3)), "add"),
+  subtract: /* @__PURE__ */ __name((t3, e3, n3) => $n(pe(C, L, 1, t3, toDurationSlots(e3), n3)), "subtract"),
+  until: /* @__PURE__ */ __name((t3, e3, n3) => In(Oe(we(C, L, 0, t3, toZonedDateTimeSlots(e3), n3))), "until"),
+  since: /* @__PURE__ */ __name((t3, e3, n3) => In(Oe(we(C, L, 1, t3, toZonedDateTimeSlots(e3), n3))), "since"),
+  round: /* @__PURE__ */ __name((t3, e3) => $n(Ie(L, t3, e3)), "round"),
+  startOfDay: /* @__PURE__ */ __name((t3) => $n(ve(L, t3)), "startOfDay"),
+  equals: /* @__PURE__ */ __name((t3, e3) => Ce(t3, toZonedDateTimeSlots(e3)), "equals"),
+  toInstant: /* @__PURE__ */ __name((t3) => Kn(be(t3)), "toInstant"),
+  toPlainDateTime: /* @__PURE__ */ __name((t3) => En(yt(L, t3)), "toPlainDateTime"),
+  toPlainDate: /* @__PURE__ */ __name((t3) => Wn(fe(L, t3)), "toPlainDate"),
+  toPlainTime: /* @__PURE__ */ __name((t3) => Bn(dt(L, t3)), "toPlainTime"),
+  toLocaleString(t3, e3, n3 = {}) {
+    const [o3, r3] = Fn(e3, n3, t3);
+    return o3.format(r3);
+  },
+  toString: /* @__PURE__ */ __name((t3, e3) => Fe(L, t3, e3), "toString"),
+  toJSON: /* @__PURE__ */ __name((t3) => Fe(L, t3), "toJSON"),
+  valueOf: neverValueOf,
+  getTimeZoneTransition(t3, e3) {
+    const { timeZone: n3, epochNanoseconds: o3 } = t3, r3 = Me(e3), a3 = L(n3).O(o3, r3);
+    return a3 ? $n({
+      ...t3,
+      epochNanoseconds: a3
+    }) : null;
+  }
+}, {
+  from: /* @__PURE__ */ __name((t3, e3) => $n(toZonedDateTimeSlots(t3, e3)), "from"),
+  compare: /* @__PURE__ */ __name((t3, e3) => Be(toZonedDateTimeSlots(t3), toZonedDateTimeSlots(e3)), "compare")
+});
+var [Hn, Kn, Qn] = createSlotClass(Re, qe, On, {
+  add: /* @__PURE__ */ __name((t3, e3) => Kn(Ye(0, t3, toDurationSlots(e3))), "add"),
+  subtract: /* @__PURE__ */ __name((t3, e3) => Kn(Ye(1, t3, toDurationSlots(e3))), "subtract"),
+  until: /* @__PURE__ */ __name((t3, e3, n3) => In(Ee(0, t3, toInstantSlots(e3), n3)), "until"),
+  since: /* @__PURE__ */ __name((t3, e3, n3) => In(Ee(1, t3, toInstantSlots(e3), n3)), "since"),
+  round: /* @__PURE__ */ __name((t3, e3) => Kn(Le(t3, e3)), "round"),
+  equals: /* @__PURE__ */ __name((t3, e3) => Ve(t3, toInstantSlots(e3)), "equals"),
+  toZonedDateTimeISO: /* @__PURE__ */ __name((t3, e3) => $n(Je(t3, refineTimeZoneArg(e3))), "toZonedDateTimeISO"),
+  toLocaleString(t3, e3, n3) {
+    const [o3, r3] = bn(e3, n3, t3);
+    return o3.format(r3);
+  },
+  toString: /* @__PURE__ */ __name((t3, e3) => ke(refineTimeZoneArg, L, t3, e3), "toString"),
+  toJSON: /* @__PURE__ */ __name((t3) => ke(refineTimeZoneArg, L, t3), "toJSON"),
+  valueOf: neverValueOf
+}, {
+  from: /* @__PURE__ */ __name((t3) => Kn(toInstantSlots(t3)), "from"),
+  fromEpochMilliseconds: /* @__PURE__ */ __name((t3) => Kn($e(t3)), "fromEpochMilliseconds"),
+  fromEpochNanoseconds: /* @__PURE__ */ __name((t3) => Kn(He(t3)), "fromEpochNanoseconds"),
+  compare: /* @__PURE__ */ __name((t3, e3) => Ke(toInstantSlots(t3), toInstantSlots(e3)), "compare")
+});
+var Un = /* @__PURE__ */ Object.defineProperties({}, {
+  ...o("Temporal.Now"),
+  ...n({
+    timeZoneId: /* @__PURE__ */ __name(() => Ue(), "timeZoneId"),
+    instant: /* @__PURE__ */ __name(() => Kn(xe(Xe())), "instant"),
+    zonedDateTimeISO: /* @__PURE__ */ __name((t3 = Ue()) => $n(_e(Xe(), refineTimeZoneArg(t3), l)), "zonedDateTimeISO"),
+    plainDateTimeISO: /* @__PURE__ */ __name((t3 = Ue()) => En(jt(tn(L(refineTimeZoneArg(t3))), l)), "plainDateTimeISO"),
+    plainDateISO: /* @__PURE__ */ __name((t3 = Ue()) => Wn(W(tn(L(refineTimeZoneArg(t3))), l)), "plainDateISO"),
+    plainTimeISO: /* @__PURE__ */ __name((t3 = Ue()) => Bn(St(tn(L(refineTimeZoneArg(t3))))), "plainTimeISO")
+  })
+});
+var Xn = /* @__PURE__ */ Object.defineProperties({}, {
+  ...o("Temporal"),
+  ...n({
+    PlainYearMonth: kn,
+    PlainMonthDay: Ln,
+    PlainDate: xn,
+    PlainTime: An,
+    PlainDateTime: Yn,
+    ZonedDateTime: zn,
+    Instant: Hn,
+    Duration: wn,
+    Now: Un
+  })
+});
+var _n = /* @__PURE__ */ createDateTimeFormatClass();
 var to = /* @__PURE__ */ new WeakMap();
-var no = /* @__PURE__ */ to.get.bind(to);
-var oo = /* @__PURE__ */ to.set.bind(to);
-var ro = {
-  ...createCalendarFieldMethods(Qn, [L]),
-  ...createCalendarFieldMethods(_n, []),
-  ...createCalendarFieldMethods(Xn, [L, q]),
-  ...createCalendarFieldMethods($n, [q])
-};
-var ao = /* @__PURE__ */ createCalendarGetters(eo);
-var io = /* @__PURE__ */ createCalendarGetters({
-  ...Qn,
-  ...Xn
-});
-var so = /* @__PURE__ */ createCalendarGetters({
-  ...Xn,
-  ...$n
-});
-var lo = {
-  calendarId: /* @__PURE__ */ __name((e3) => I(e3.calendar), "calendarId")
-};
-var co = /* @__PURE__ */ T((e3, t3) => function(n3) {
-  const { i: o3 } = this;
-  return e3(o3[t3](Yo(v(n3, o3))));
-}, eo);
-var uo = /* @__PURE__ */ b((e3) => (t3) => t3[e3], F.concat("sign"));
-var fo = /* @__PURE__ */ b((e3, t3) => (e4) => e4[j[t3]], w);
-var mo = {
-  epochSeconds: M,
-  epochMilliseconds: y,
-  epochMicroseconds: N,
-  epochNanoseconds: B
-};
-var So = /* @__PURE__ */ E(V, /* @__PURE__ */ new Set(["branding"]));
-var [Oo, To, po] = createSlotClass(q, E(G, refineCalendarSlot), {
-  ...lo,
-  ...so
-}, {
-  getISOFields: So,
-  getCalendar: createCalendarFromSlots,
-  with(e3, t3, n3) {
-    return To(k(_o, e3, this, rejectInvalidBag(t3), n3));
-  },
-  equals: /* @__PURE__ */ __name((e3, t3) => x(e3, toPlainMonthDaySlots(t3)), "equals"),
-  toPlainDate(e3, t3) {
-    return Yo(R($o, e3, this, t3));
-  },
-  toLocaleString(e3, t3, n3) {
-    const [o3, r3] = Kn(t3, n3, e3);
-    return o3.format(r3);
-  },
-  toString: W,
-  toJSON: /* @__PURE__ */ __name((e3) => W(e3), "toJSON"),
-  valueOf: neverValueOf
-}, {
-  from: /* @__PURE__ */ __name((e3, t3) => To(toPlainMonthDaySlots(e3, t3)), "from")
-});
-var ho = {
-  getOffsetNanosecondsFor: getOffsetNanosecondsForAdapter,
-  getPossibleInstantsFor(e3, t3, n3) {
-    const o3 = [...t3.call(e3, No(ee(n3, X)))].map((e4) => go(e4).epochNanoseconds), r3 = o3.length;
-    return r3 > 1 && (o3.sort(te), ne(oe(re(o3[0], o3[r3 - 1])))), o3;
-  }
-};
-var Do = {
-  getOffsetNanosecondsFor: getOffsetNanosecondsForAdapter
-};
-var [Po, Co, go] = createSlotClass(Oe, Se, mo, {
-  add: /* @__PURE__ */ __name((e3, t3) => Co(se(0, e3, toDurationSlots(t3))), "add"),
-  subtract: /* @__PURE__ */ __name((e3, t3) => Co(se(1, e3, toDurationSlots(t3))), "subtract"),
-  until: /* @__PURE__ */ __name((e3, t3, n3) => ar(le(0, e3, toInstantSlots(t3), n3)), "until"),
-  since: /* @__PURE__ */ __name((e3, t3, n3) => ar(le(1, e3, toInstantSlots(t3), n3)), "since"),
-  round: /* @__PURE__ */ __name((e3, t3) => Co(ce(e3, t3)), "round"),
-  equals: /* @__PURE__ */ __name((e3, t3) => ue(e3, toInstantSlots(t3)), "equals"),
-  toZonedDateTime(e3, t3) {
-    const n3 = de(t3);
-    return dr(fe(e3, refineTimeZoneSlot(n3.timeZone), refineCalendarSlot(n3.calendar)));
-  },
-  toZonedDateTimeISO: /* @__PURE__ */ __name((e3, t3) => dr(fe(e3, refineTimeZoneSlot(t3))), "toZonedDateTimeISO"),
-  toLocaleString(e3, t3, n3) {
-    const [o3, r3] = Rn(t3, n3, e3);
-    return o3.format(r3);
-  },
-  toString: /* @__PURE__ */ __name((e3, t3) => me(refineTimeZoneSlot, createTimeZoneOffsetOps, e3, t3), "toString"),
-  toJSON: /* @__PURE__ */ __name((e3) => me(refineTimeZoneSlot, createTimeZoneOffsetOps, e3), "toJSON"),
-  valueOf: neverValueOf
-}, {
-  from: /* @__PURE__ */ __name((e3) => Co(toInstantSlots(e3)), "from"),
-  fromEpochSeconds: /* @__PURE__ */ __name((e3) => Co(De(e3)), "fromEpochSeconds"),
-  fromEpochMilliseconds: /* @__PURE__ */ __name((e3) => Co(Pe(e3)), "fromEpochMilliseconds"),
-  fromEpochMicroseconds: /* @__PURE__ */ __name((e3) => Co(Ce(e3)), "fromEpochMicroseconds"),
-  fromEpochNanoseconds: /* @__PURE__ */ __name((e3) => Co(ge(e3)), "fromEpochNanoseconds"),
-  compare: /* @__PURE__ */ __name((e3, t3) => Ze(toInstantSlots(e3), toInstantSlots(t3)), "compare")
-});
-var [Zo, bo] = createSlotClass("TimeZone", (e3) => {
-  const t3 = Me(e3);
-  return {
-    branding: "TimeZone",
-    id: t3,
-    o: ie(t3)
-  };
-}, {
-  id: /* @__PURE__ */ __name((e3) => e3.id, "id")
-}, {
-  getPossibleInstantsFor: /* @__PURE__ */ __name(({ o: e3 }, t3) => e3.getPossibleInstantsFor(toPlainDateTimeSlots(t3)).map((e4) => Co(_(e4))), "getPossibleInstantsFor"),
-  getOffsetNanosecondsFor: /* @__PURE__ */ __name(({ o: e3 }, t3) => e3.getOffsetNanosecondsFor(toInstantSlots(t3).epochNanoseconds), "getOffsetNanosecondsFor"),
-  getOffsetStringFor(e3, t3) {
-    const n3 = toInstantSlots(t3).epochNanoseconds, o3 = createAdapterOps(this, Do).getOffsetNanosecondsFor(n3);
-    return Fe(o3);
-  },
-  getPlainDateTimeFor(e3, t3, n3 = X) {
-    const o3 = toInstantSlots(t3).epochNanoseconds, r3 = createAdapterOps(this, Do).getOffsetNanosecondsFor(o3);
-    return No(ee(Ie(o3, r3), refineCalendarSlot(n3)));
-  },
-  getInstantFor(e3, t3, n3) {
-    const o3 = toPlainDateTimeSlots(t3), r3 = ve(n3), a3 = createAdapterOps(this);
-    return Co(_(we(a3, o3, r3)));
-  },
-  getNextTransition: /* @__PURE__ */ __name(({ o: e3 }, t3) => getImplTransition(1, e3, t3), "getNextTransition"),
-  getPreviousTransition: /* @__PURE__ */ __name(({ o: e3 }, t3) => getImplTransition(-1, e3, t3), "getPreviousTransition"),
-  equals(e3, t3) {
-    return !!je(this, refineTimeZoneSlot(t3));
-  },
-  toString: /* @__PURE__ */ __name((e3) => e3.id, "toString"),
-  toJSON: /* @__PURE__ */ __name((e3) => e3.id, "toJSON")
-}, {
-  from(e3) {
-    const t3 = refineTimeZoneSlot(e3);
-    return "string" == typeof t3 ? new Zo(t3) : t3;
-  }
-});
-var Fo = /* @__PURE__ */ createProtocolValidator(Object.keys(ho));
-var [Io, vo] = createSlotClass(xe, ke, fo, {
-  getISOFields: So,
-  with(e3, t3, n3) {
-    return vo(Be(this, rejectInvalidBag(t3), n3));
-  },
-  add: /* @__PURE__ */ __name((e3, t3) => vo(Ye(0, e3, toDurationSlots(t3))), "add"),
-  subtract: /* @__PURE__ */ __name((e3, t3) => vo(Ye(1, e3, toDurationSlots(t3))), "subtract"),
-  until: /* @__PURE__ */ __name((e3, t3, n3) => ar(Ae(0, e3, toPlainTimeSlots(t3), n3)), "until"),
-  since: /* @__PURE__ */ __name((e3, t3, n3) => ar(Ae(1, e3, toPlainTimeSlots(t3), n3)), "since"),
-  round: /* @__PURE__ */ __name((e3, t3) => vo(Ee(e3, t3)), "round"),
-  equals: /* @__PURE__ */ __name((e3, t3) => Ve(e3, toPlainTimeSlots(t3)), "equals"),
-  toZonedDateTime: /* @__PURE__ */ __name((e3, t3) => dr(Je(refineTimeZoneSlot, toPlainDateSlots, createTimeZoneOps, e3, t3)), "toZonedDateTime"),
-  toPlainDateTime: /* @__PURE__ */ __name((e3, t3) => No(Le(e3, toPlainDateSlots(t3))), "toPlainDateTime"),
-  toLocaleString(e3, t3, n3) {
-    const [o3, r3] = zn(t3, n3, e3);
-    return o3.format(r3);
-  },
-  toString: qe,
-  toJSON: /* @__PURE__ */ __name((e3) => qe(e3), "toJSON"),
-  valueOf: neverValueOf
-}, {
-  from: /* @__PURE__ */ __name((e3, t3) => vo(toPlainTimeSlots(e3, t3)), "from"),
-  compare: /* @__PURE__ */ __name((e3, t3) => He(toPlainTimeSlots(e3), toPlainTimeSlots(t3)), "compare")
-});
-var [wo, jo, Mo] = createSlotClass(L, E(tt, refineCalendarSlot), {
-  ...lo,
-  ...io
-}, {
-  getISOFields: So,
-  getCalendar: createCalendarFromSlots,
-  with(e3, t3, n3) {
-    return jo(Ke(Xo, e3, this, rejectInvalidBag(t3), n3));
-  },
-  add: /* @__PURE__ */ __name((e3, t3, n3) => jo(Qe(nr, 0, e3, toDurationSlots(t3), n3)), "add"),
-  subtract: /* @__PURE__ */ __name((e3, t3, n3) => jo(Qe(nr, 1, e3, toDurationSlots(t3), n3)), "subtract"),
-  until: /* @__PURE__ */ __name((e3, t3, n3) => ar(Xe(or, 0, e3, toPlainYearMonthSlots(t3), n3)), "until"),
-  since: /* @__PURE__ */ __name((e3, t3, n3) => ar(Xe(or, 1, e3, toPlainYearMonthSlots(t3), n3)), "since"),
-  equals: /* @__PURE__ */ __name((e3, t3) => $e(e3, toPlainYearMonthSlots(t3)), "equals"),
-  toPlainDate(e3, t3) {
-    return Yo(_e($o, e3, this, t3));
-  },
-  toLocaleString(e3, t3, n3) {
-    const [o3, r3] = Hn(t3, n3, e3);
-    return o3.format(r3);
-  },
-  toString: et,
-  toJSON: /* @__PURE__ */ __name((e3) => et(e3), "toJSON"),
-  valueOf: neverValueOf
-}, {
-  from: /* @__PURE__ */ __name((e3, t3) => jo(toPlainYearMonthSlots(e3, t3)), "from"),
-  compare: /* @__PURE__ */ __name((e3, t3) => rt(toPlainYearMonthSlots(e3), toPlainYearMonthSlots(t3)), "compare")
-});
-var [yo, No] = createSlotClass(We, E(pt, refineCalendarSlot), {
-  ...lo,
-  ...ao,
-  ...fo
-}, {
-  getISOFields: So,
-  getCalendar: createCalendarFromSlots,
-  with(e3, t3, n3) {
-    return No(at($o, e3, this, rejectInvalidBag(t3), n3));
-  },
-  withCalendar: /* @__PURE__ */ __name((e3, t3) => No(it(e3, refineCalendarSlot(t3))), "withCalendar"),
-  withPlainDate: /* @__PURE__ */ __name((e3, t3) => No(st(e3, toPlainDateSlots(t3))), "withPlainDate"),
-  withPlainTime: /* @__PURE__ */ __name((e3, t3) => No(lt(e3, optionalToPlainTimeFields(t3))), "withPlainTime"),
-  add: /* @__PURE__ */ __name((e3, t3, n3) => No(ct(er, 0, e3, toDurationSlots(t3), n3)), "add"),
-  subtract: /* @__PURE__ */ __name((e3, t3, n3) => No(ct(er, 1, e3, toDurationSlots(t3), n3)), "subtract"),
-  until: /* @__PURE__ */ __name((e3, t3, n3) => ar(ut(tr, 0, e3, toPlainDateTimeSlots(t3), n3)), "until"),
-  since: /* @__PURE__ */ __name((e3, t3, n3) => ar(ut(tr, 1, e3, toPlainDateTimeSlots(t3), n3)), "since"),
-  round: /* @__PURE__ */ __name((e3, t3) => No(dt(e3, t3)), "round"),
-  equals: /* @__PURE__ */ __name((e3, t3) => ft(e3, toPlainDateTimeSlots(t3)), "equals"),
-  toZonedDateTime: /* @__PURE__ */ __name((e3, t3, n3) => dr(mt(createTimeZoneOps, e3, refineTimeZoneSlot(t3), n3)), "toZonedDateTime"),
-  toPlainDate: /* @__PURE__ */ __name((e3) => Yo(v(e3)), "toPlainDate"),
-  toPlainTime: /* @__PURE__ */ __name((e3) => vo(Ge(e3)), "toPlainTime"),
-  toPlainYearMonth(e3) {
-    return jo(St(Ho, e3, this));
-  },
-  toPlainMonthDay(e3) {
-    return To(Ot(Qo, e3, this));
-  },
-  toLocaleString(e3, t3, n3) {
-    const [o3, r3] = Gn(t3, n3, e3);
-    return o3.format(r3);
-  },
-  toString: Tt,
-  toJSON: /* @__PURE__ */ __name((e3) => Tt(e3), "toJSON"),
-  valueOf: neverValueOf
-}, {
-  from: /* @__PURE__ */ __name((e3, t3) => No(toPlainDateTimeSlots(e3, t3)), "from"),
-  compare: /* @__PURE__ */ __name((e3, t3) => gt(toPlainDateTimeSlots(e3), toPlainDateTimeSlots(t3)), "compare")
-});
-var [Bo, Yo, Ao] = createSlotClass(J, E(Nt, refineCalendarSlot), {
-  ...lo,
-  ...ao
-}, {
-  getISOFields: So,
-  getCalendar: createCalendarFromSlots,
-  with(e3, t3, n3) {
-    return Yo(Zt($o, e3, this, rejectInvalidBag(t3), n3));
-  },
-  withCalendar: /* @__PURE__ */ __name((e3, t3) => Yo(it(e3, refineCalendarSlot(t3))), "withCalendar"),
-  add: /* @__PURE__ */ __name((e3, t3, n3) => Yo(bt(er, 0, e3, toDurationSlots(t3), n3)), "add"),
-  subtract: /* @__PURE__ */ __name((e3, t3, n3) => Yo(bt(er, 1, e3, toDurationSlots(t3), n3)), "subtract"),
-  until: /* @__PURE__ */ __name((e3, t3, n3) => ar(Ft(tr, 0, e3, toPlainDateSlots(t3), n3)), "until"),
-  since: /* @__PURE__ */ __name((e3, t3, n3) => ar(Ft(tr, 1, e3, toPlainDateSlots(t3), n3)), "since"),
-  equals: /* @__PURE__ */ __name((e3, t3) => It(e3, toPlainDateSlots(t3)), "equals"),
-  toZonedDateTime(e3, t3) {
-    const n3 = !z(t3) || t3 instanceof Zo ? {
-      timeZone: t3
-    } : t3;
-    return dr(vt(refineTimeZoneSlot, toPlainTimeSlots, createTimeZoneOps, e3, n3));
-  },
-  toPlainDateTime: /* @__PURE__ */ __name((e3, t3) => No(wt(e3, optionalToPlainTimeFields(t3))), "toPlainDateTime"),
-  toPlainYearMonth(e3) {
-    return jo(jt(Ho, e3, this));
-  },
-  toPlainMonthDay(e3) {
-    return To(Mt(Qo, e3, this));
-  },
-  toLocaleString(e3, t3, n3) {
-    const [o3, r3] = Un(t3, n3, e3);
-    return o3.format(r3);
-  },
-  toString: yt,
-  toJSON: /* @__PURE__ */ __name((e3) => yt(e3), "toJSON"),
-  valueOf: neverValueOf
-}, {
-  from: /* @__PURE__ */ __name((e3, t3) => Yo(toPlainDateSlots(e3, t3)), "from"),
-  compare: /* @__PURE__ */ __name((e3, t3) => rt(toPlainDateSlots(e3), toPlainDateSlots(t3)), "compare")
-});
-var Eo = {
-  fields(e3, t3, n3) {
-    return [...t3.call(e3, n3)];
-  }
-};
-var Vo = /* @__PURE__ */ Object.assign({
-  dateFromFields(e3, t3, n3, o3) {
-    return Ao(t3.call(e3, Object.assign(/* @__PURE__ */ Object.create(null), n3), o3));
-  }
-}, Eo);
-var Jo = /* @__PURE__ */ Object.assign({
-  yearMonthFromFields(e3, t3, n3, o3) {
-    return Mo(t3.call(e3, Object.assign(/* @__PURE__ */ Object.create(null), n3), o3));
-  }
-}, Eo);
-var Lo = /* @__PURE__ */ Object.assign({
-  monthDayFromFields(e3, t3, n3, o3) {
-    return po(t3.call(e3, Object.assign(/* @__PURE__ */ Object.create(null), n3), o3));
-  }
-}, Eo);
-var qo = {
-  mergeFields(e3, t3, n3, o3) {
-    return de(t3.call(e3, Object.assign(/* @__PURE__ */ Object.create(null), n3), Object.assign(/* @__PURE__ */ Object.create(null), o3)));
-  }
-};
-var ko = /* @__PURE__ */ Object.assign({}, Vo, qo);
-var xo = /* @__PURE__ */ Object.assign({}, Jo, qo);
-var Ro = /* @__PURE__ */ Object.assign({}, Lo, qo);
-var Wo = {
-  dateAdd(e3, t3, n3, o3, r3) {
-    return Ao(t3.call(e3, Yo(v(n3, e3)), ar(Vt(o3)), r3));
-  }
-};
-var Go = /* @__PURE__ */ Object.assign({}, Wo, {
-  dateUntil(e3, t3, n3, o3, r3, a3) {
-    return ir(t3.call(e3, Yo(v(n3, e3)), Yo(v(o3, e3)), Object.assign(/* @__PURE__ */ Object.create(null), a3, {
-      largestUnit: Et[r3]
-    })));
-  }
-});
-var Uo = /* @__PURE__ */ Object.assign({}, Wo, {
-  day: dayAdapter
-});
-var zo = /* @__PURE__ */ Object.assign({}, Go, {
-  day: dayAdapter
-});
-var Ho = /* @__PURE__ */ createCompoundOpsCreator(Jo);
-var Ko = /* @__PURE__ */ createCompoundOpsCreator(Vo);
-var Qo = /* @__PURE__ */ createCompoundOpsCreator(Lo);
-var Xo = /* @__PURE__ */ createCompoundOpsCreator(xo);
-var $o = /* @__PURE__ */ createCompoundOpsCreator(ko);
-var _o = /* @__PURE__ */ createCompoundOpsCreator(Ro);
-var er = /* @__PURE__ */ createCompoundOpsCreator(Wo);
-var tr = /* @__PURE__ */ createCompoundOpsCreator(Go);
-var nr = /* @__PURE__ */ createCompoundOpsCreator(Uo);
-var or = /* @__PURE__ */ createCompoundOpsCreator(zo);
-var [rr, ar, ir] = createSlotClass(qt, Lt, {
-  ...uo,
-  blank: Jt
-}, {
-  with: /* @__PURE__ */ __name((e3, t3) => ar(kt(e3, t3)), "with"),
-  negated: /* @__PURE__ */ __name((e3) => ar(xt(e3)), "negated"),
-  abs: /* @__PURE__ */ __name((e3) => ar(Rt(e3)), "abs"),
-  add: /* @__PURE__ */ __name((e3, t3, n3) => ar(Wt(refinePublicRelativeTo, tr, createTimeZoneOps, 0, e3, toDurationSlots(t3), n3)), "add"),
-  subtract: /* @__PURE__ */ __name((e3, t3, n3) => ar(Wt(refinePublicRelativeTo, tr, createTimeZoneOps, 1, e3, toDurationSlots(t3), n3)), "subtract"),
-  round: /* @__PURE__ */ __name((e3, t3) => ar(Gt(refinePublicRelativeTo, tr, createTimeZoneOps, e3, t3)), "round"),
-  total: /* @__PURE__ */ __name((e3, t3) => Ut(refinePublicRelativeTo, tr, createTimeZoneOps, e3, t3), "total"),
-  toLocaleString(e3, t3, n3) {
-    return Intl.DurationFormat ? new Intl.DurationFormat(t3, n3).format(this) : zt(e3);
-  },
-  toString: zt,
-  toJSON: /* @__PURE__ */ __name((e3) => zt(e3), "toJSON"),
-  valueOf: neverValueOf
-}, {
-  from: /* @__PURE__ */ __name((e3) => ar(toDurationSlots(e3)), "from"),
-  compare: /* @__PURE__ */ __name((e3, t3, n3) => $t(refinePublicRelativeTo, er, createTimeZoneOps, toDurationSlots(e3), toDurationSlots(t3), n3), "compare")
-});
-var sr = {
-  toString: /* @__PURE__ */ __name((e3) => e3.id, "toString"),
-  toJSON: /* @__PURE__ */ __name((e3) => e3.id, "toJSON"),
-  ...ro,
-  dateAdd: /* @__PURE__ */ __name(({ id: e3, o: t3 }, n3, o3, r3) => Yo(v(t3.dateAdd(toPlainDateSlots(n3), toDurationSlots(o3), r3), e3)), "dateAdd"),
-  dateUntil: /* @__PURE__ */ __name(({ o: e3 }, t3, n3, o3) => ar(Vt(e3.dateUntil(toPlainDateSlots(t3), toPlainDateSlots(n3), _t(o3)))), "dateUntil"),
-  dateFromFields: /* @__PURE__ */ __name(({ id: e3, o: t3 }, n3, o3) => Yo(Yt(t3, n3, o3, ln(e3))), "dateFromFields"),
-  yearMonthFromFields: /* @__PURE__ */ __name(({ id: e3, o: t3 }, n3, o3) => jo(nt(t3, n3, o3, un(e3))), "yearMonthFromFields"),
-  monthDayFromFields: /* @__PURE__ */ __name(({ id: e3, o: t3 }, n3, o3) => To(K(t3, 0, n3, o3, cn(e3))), "monthDayFromFields"),
-  fields({ o: e3 }, t3) {
-    const n3 = new Set(en), o3 = [];
-    for (const e4 of t3) {
-      if (m(e4), !n3.has(e4)) {
-        throw new RangeError(tn(e4));
-      }
-      n3.delete(e4), o3.push(e4);
-    }
-    return e3.fields(o3);
-  },
-  mergeFields: /* @__PURE__ */ __name(({ o: e3 }, t3, n3) => e3.mergeFields(nn(on(t3)), nn(on(n3))), "mergeFields")
-};
-var [lr] = createSlotClass("Calendar", (e3) => {
-  const t3 = rn(e3);
-  return {
-    branding: "Calendar",
-    id: t3,
-    o: Y(t3)
-  };
-}, {
-  id: /* @__PURE__ */ __name((e3) => e3.id, "id")
-}, sr, {
-  from(e3) {
-    const t3 = refineCalendarSlot(e3);
-    return "string" == typeof t3 ? new lr(t3) : t3;
-  }
-});
-var cr = /* @__PURE__ */ createProtocolValidator(Object.keys(sr).slice(4));
-var [ur, dr] = createSlotClass(Te, E(vn, refineCalendarSlot, refineTimeZoneSlot), {
-  ...mo,
-  ...lo,
-  ...adaptDateMethods(ao),
-  ...adaptDateMethods(fo),
-  offset: /* @__PURE__ */ __name((e3) => Fe(slotsToIso(e3).offsetNanoseconds), "offset"),
-  offsetNanoseconds: /* @__PURE__ */ __name((e3) => slotsToIso(e3).offsetNanoseconds, "offsetNanoseconds"),
-  timeZoneId: /* @__PURE__ */ __name((e3) => I(e3.timeZone), "timeZoneId"),
-  hoursInDay: /* @__PURE__ */ __name((e3) => dn(createTimeZoneOps, e3), "hoursInDay")
-}, {
-  getISOFields: /* @__PURE__ */ __name((e3) => mn(createTimeZoneOffsetOps, e3), "getISOFields"),
-  getCalendar: createCalendarFromSlots,
-  getTimeZone: /* @__PURE__ */ __name(({ timeZone: e3 }) => "string" == typeof e3 ? new Zo(e3) : e3, "getTimeZone"),
-  with(e3, t3, n3) {
-    return dr(Sn($o, createTimeZoneOps, e3, this, rejectInvalidBag(t3), n3));
-  },
-  withCalendar: /* @__PURE__ */ __name((e3, t3) => dr(it(e3, refineCalendarSlot(t3))), "withCalendar"),
-  withTimeZone: /* @__PURE__ */ __name((e3, t3) => dr(On(e3, refineTimeZoneSlot(t3))), "withTimeZone"),
-  withPlainDate: /* @__PURE__ */ __name((e3, t3) => dr(Tn(createTimeZoneOps, e3, toPlainDateSlots(t3))), "withPlainDate"),
-  withPlainTime: /* @__PURE__ */ __name((e3, t3) => dr(pn(createTimeZoneOps, e3, optionalToPlainTimeFields(t3))), "withPlainTime"),
-  add: /* @__PURE__ */ __name((e3, t3, n3) => dr(hn(er, createTimeZoneOps, 0, e3, toDurationSlots(t3), n3)), "add"),
-  subtract: /* @__PURE__ */ __name((e3, t3, n3) => dr(hn(er, createTimeZoneOps, 1, e3, toDurationSlots(t3), n3)), "subtract"),
-  until: /* @__PURE__ */ __name((e3, t3, n3) => ar(Vt(Dn(tr, createTimeZoneOps, 0, e3, toZonedDateTimeSlots(t3), n3))), "until"),
-  since: /* @__PURE__ */ __name((e3, t3, n3) => ar(Vt(Dn(tr, createTimeZoneOps, 1, e3, toZonedDateTimeSlots(t3), n3))), "since"),
-  round: /* @__PURE__ */ __name((e3, t3) => dr(Pn(createTimeZoneOps, e3, t3)), "round"),
-  startOfDay: /* @__PURE__ */ __name((e3) => dr(Cn(createTimeZoneOps, e3)), "startOfDay"),
-  equals: /* @__PURE__ */ __name((e3, t3) => gn(e3, toZonedDateTimeSlots(t3)), "equals"),
-  toInstant: /* @__PURE__ */ __name((e3) => Co(Zn(e3)), "toInstant"),
-  toPlainDateTime: /* @__PURE__ */ __name((e3) => No(ht(createTimeZoneOffsetOps, e3)), "toPlainDateTime"),
-  toPlainDate: /* @__PURE__ */ __name((e3) => Yo(Bt(createTimeZoneOffsetOps, e3)), "toPlainDate"),
-  toPlainTime: /* @__PURE__ */ __name((e3) => vo(Re(createTimeZoneOffsetOps, e3)), "toPlainTime"),
-  toPlainYearMonth(e3) {
-    return jo(bn(Ho, e3, this));
-  },
-  toPlainMonthDay(e3) {
-    return To(Fn(Qo, e3, this));
-  },
-  toLocaleString(e3, t3, n3 = {}) {
-    const [o3, r3] = Wn(t3, n3, e3);
-    return o3.format(r3);
-  },
-  toString: /* @__PURE__ */ __name((e3, t3) => In(createTimeZoneOffsetOps, e3, t3), "toString"),
-  toJSON: /* @__PURE__ */ __name((e3) => In(createTimeZoneOffsetOps, e3), "toJSON"),
-  valueOf: neverValueOf
-}, {
-  from: /* @__PURE__ */ __name((e3, t3) => dr(toZonedDateTimeSlots(e3, t3)), "from"),
-  compare: /* @__PURE__ */ __name((e3, t3) => yn(toZonedDateTimeSlots(e3), toZonedDateTimeSlots(t3)), "compare")
-});
-var fr = /* @__PURE__ */ Object.defineProperties({}, {
-  ...h("Temporal.Now"),
-  ...p({
-    timeZoneId: /* @__PURE__ */ __name(() => Nn(), "timeZoneId"),
-    instant: /* @__PURE__ */ __name(() => Co(_(Bn())), "instant"),
-    zonedDateTime: /* @__PURE__ */ __name((e3, t3 = Nn()) => dr(Yn(Bn(), refineTimeZoneSlot(t3), refineCalendarSlot(e3))), "zonedDateTime"),
-    zonedDateTimeISO: /* @__PURE__ */ __name((e3 = Nn()) => dr(Yn(Bn(), refineTimeZoneSlot(e3), X)), "zonedDateTimeISO"),
-    plainDateTime: /* @__PURE__ */ __name((e3, t3 = Nn()) => No(ee(An(createTimeZoneOffsetOps(refineTimeZoneSlot(t3))), refineCalendarSlot(e3))), "plainDateTime"),
-    plainDateTimeISO: /* @__PURE__ */ __name((e3 = Nn()) => No(ee(An(createTimeZoneOffsetOps(refineTimeZoneSlot(e3))), X)), "plainDateTimeISO"),
-    plainDate: /* @__PURE__ */ __name((e3, t3 = Nn()) => Yo(v(An(createTimeZoneOffsetOps(refineTimeZoneSlot(t3))), refineCalendarSlot(e3))), "plainDate"),
-    plainDateISO: /* @__PURE__ */ __name((e3 = Nn()) => Yo(v(An(createTimeZoneOffsetOps(refineTimeZoneSlot(e3))), X)), "plainDateISO"),
-    plainTimeISO: /* @__PURE__ */ __name((e3 = Nn()) => vo(Ge(An(createTimeZoneOffsetOps(refineTimeZoneSlot(e3))))), "plainTimeISO")
-  })
-});
-var mr = /* @__PURE__ */ Object.defineProperties({}, {
-  ...h("Temporal"),
-  ...p({
-    PlainYearMonth: wo,
-    PlainMonthDay: Oo,
-    PlainDate: Bo,
-    PlainTime: Io,
-    PlainDateTime: yo,
-    ZonedDateTime: ur,
-    Instant: Po,
-    Calendar: lr,
-    TimeZone: Zo,
-    Duration: rr,
-    Now: fr
-  })
-});
-var Sr = /* @__PURE__ */ createDateTimeFormatClass();
-var Or = /* @__PURE__ */ new WeakMap();
-var Tr = /* @__PURE__ */ Object.defineProperties(Object.create(Intl), p({
-  DateTimeFormat: Sr
+var eo = /* @__PURE__ */ Object.defineProperties(Object.create(Intl), n({
+  DateTimeFormat: _n
 }));
 
 // node_modules/temporal-polyfill/global.esm.js
-Object.defineProperties(globalThis, p({
-  Temporal: mr
-})), Object.defineProperties(Intl, p({
-  DateTimeFormat: Sr
-})), Object.defineProperties(Date.prototype, p({
+Object.defineProperties(globalThis, n({
+  Temporal: Xn
+})), Object.defineProperties(Intl, n({
+  DateTimeFormat: _n
+})), Object.defineProperties(Date.prototype, n({
   toTemporalInstant
 }));
 
@@ -75144,50 +75602,50 @@ var e2 = Symbol.for("@ts-pattern/isVariadic");
 var n2 = "@ts-pattern/anonymous-select-key";
 var r2 = /* @__PURE__ */ __name((t3) => Boolean(t3 && "object" == typeof t3), "r");
 var i2 = /* @__PURE__ */ __name((e3) => e3 && !!e3[t2], "i");
-var s2 = /* @__PURE__ */ __name((n3, o3, c3) => {
+var o2 = /* @__PURE__ */ __name((n3, s3, c3) => {
   if (i2(n3)) {
-    const e3 = n3[t2](), { matched: r3, selections: i3 } = e3.match(o3);
+    const e3 = n3[t2](), { matched: r3, selections: i3 } = e3.match(s3);
     return r3 && i3 && Object.keys(i3).forEach((t3) => c3(t3, i3[t3])), r3;
   }
   if (r2(n3)) {
-    if (!r2(o3)) return false;
+    if (!r2(s3)) return false;
     if (Array.isArray(n3)) {
-      if (!Array.isArray(o3)) return false;
+      if (!Array.isArray(s3)) return false;
       let t3 = [], r3 = [], a3 = [];
-      for (const s3 of n3.keys()) {
-        const o4 = n3[s3];
-        i2(o4) && o4[e2] ? a3.push(o4) : a3.length ? r3.push(o4) : t3.push(o4);
+      for (const o3 of n3.keys()) {
+        const s4 = n3[o3];
+        i2(s4) && s4[e2] ? a3.push(s4) : a3.length ? r3.push(s4) : t3.push(s4);
       }
       if (a3.length) {
         if (a3.length > 1) throw new Error("Pattern error: Using `...P.array(...)` several times in a single pattern is not allowed.");
-        if (o3.length < t3.length + r3.length) return false;
-        const e3 = o3.slice(0, t3.length), n4 = 0 === r3.length ? [] : o3.slice(-r3.length), i3 = o3.slice(t3.length, 0 === r3.length ? Infinity : -r3.length);
-        return t3.every((t4, n5) => s2(t4, e3[n5], c3)) && r3.every((t4, e4) => s2(t4, n4[e4], c3)) && (0 === a3.length || s2(a3[0], i3, c3));
+        if (s3.length < t3.length + r3.length) return false;
+        const e3 = s3.slice(0, t3.length), n4 = 0 === r3.length ? [] : s3.slice(-r3.length), i3 = s3.slice(t3.length, 0 === r3.length ? Infinity : -r3.length);
+        return t3.every((t4, n5) => o2(t4, e3[n5], c3)) && r3.every((t4, e4) => o2(t4, n4[e4], c3)) && (0 === a3.length || o2(a3[0], i3, c3));
       }
-      return n3.length === o3.length && n3.every((t4, e3) => s2(t4, o3[e3], c3));
+      return n3.length === s3.length && n3.every((t4, e3) => o2(t4, s3[e3], c3));
     }
     return Reflect.ownKeys(n3).every((e3) => {
       const r3 = n3[e3];
-      return (e3 in o3 || i2(a3 = r3) && "optional" === a3[t2]().matcherType) && s2(r3, o3[e3], c3);
+      return (e3 in s3 || i2(a3 = r3) && "optional" === a3[t2]().matcherType) && o2(r3, s3[e3], c3);
       var a3;
     });
   }
-  return Object.is(o3, n3);
-}, "s");
-var o2 = /* @__PURE__ */ __name((e3) => {
-  var n3, s3, a3;
-  return r2(e3) ? i2(e3) ? null != (n3 = null == (s3 = (a3 = e3[t2]()).getSelectionKeys) ? void 0 : s3.call(a3)) ? n3 : [] : Array.isArray(e3) ? c2(e3, o2) : c2(Object.values(e3), o2) : [];
+  return Object.is(s3, n3);
 }, "o");
+var s2 = /* @__PURE__ */ __name((e3) => {
+  var n3, o3, a3;
+  return r2(e3) ? i2(e3) ? null != (n3 = null == (o3 = (a3 = e3[t2]()).getSelectionKeys) ? void 0 : o3.call(a3)) ? n3 : [] : Array.isArray(e3) ? c2(e3, s2) : c2(Object.values(e3), s2) : [];
+}, "s");
 var c2 = /* @__PURE__ */ __name((t3, e3) => t3.reduce((t4, n3) => t4.concat(e3(n3)), []), "c");
 function a2(...t3) {
   if (1 === t3.length) {
     const [e3] = t3;
-    return (t4) => s2(e3, t4, () => {
+    return (t4) => o2(e3, t4, () => {
     });
   }
   if (2 === t3.length) {
     const [e3, n3] = t3;
-    return s2(e3, n3, () => {
+    return o2(e3, n3, () => {
     });
   }
   throw new Error(`isMatching wasn't given the right number of arguments: expected 1 or 2, received ${t3.length}.`);
@@ -75214,8 +75672,8 @@ function h2(e3) {
     const r3 = /* @__PURE__ */ __name((t4, e4) => {
       n3[t4] = e4;
     }, "r");
-    return void 0 === t3 ? (o2(e3).forEach((t4) => r3(t4, void 0)), { matched: true, selections: n3 }) : { matched: s2(e3, t3, r3), selections: n3 };
-  }, "match"), getSelectionKeys: /* @__PURE__ */ __name(() => o2(e3), "getSelectionKeys"), matcherType: "optional" }) });
+    return void 0 === t3 ? (s2(e3).forEach((t4) => r3(t4, void 0)), { matched: true, selections: n3 }) : { matched: o2(e3, t3, r3), selections: n3 };
+  }, "match"), getSelectionKeys: /* @__PURE__ */ __name(() => s2(e3), "getSelectionKeys"), matcherType: "optional" }) });
 }
 __name(h2, "h");
 var f2 = /* @__PURE__ */ __name((t3, e3) => {
@@ -75232,8 +75690,8 @@ function m2(...e3) {
     const r3 = /* @__PURE__ */ __name((t4, e4) => {
       n3[t4] = e4;
     }, "r");
-    return { matched: e3.every((e4) => s2(e4, t3, r3)), selections: n3 };
-  }, "match"), getSelectionKeys: /* @__PURE__ */ __name(() => c2(e3, o2), "getSelectionKeys"), matcherType: "and" }) });
+    return { matched: e3.every((e4) => o2(e4, t3, r3)), selections: n3 };
+  }, "match"), getSelectionKeys: /* @__PURE__ */ __name(() => c2(e3, s2), "getSelectionKeys"), matcherType: "and" }) });
 }
 __name(m2, "m");
 function d2(...e3) {
@@ -75242,8 +75700,8 @@ function d2(...e3) {
     const r3 = /* @__PURE__ */ __name((t4, e4) => {
       n3[t4] = e4;
     }, "r");
-    return c2(e3, o2).forEach((t4) => r3(t4, void 0)), { matched: e3.some((e4) => s2(e4, t3, r3)), selections: n3 };
-  }, "match"), getSelectionKeys: /* @__PURE__ */ __name(() => c2(e3, o2), "getSelectionKeys"), matcherType: "or" }) });
+    return c2(e3, s2).forEach((t4) => r3(t4, void 0)), { matched: e3.some((e4) => o2(e4, t3, r3)), selections: n3 };
+  }, "match"), getSelectionKeys: /* @__PURE__ */ __name(() => c2(e3, s2), "getSelectionKeys"), matcherType: "or" }) });
 }
 __name(d2, "d");
 function p2(e3) {
@@ -75254,10 +75712,10 @@ function y2(...e3) {
   const r3 = "string" == typeof e3[0] ? e3[0] : void 0, i3 = 2 === e3.length ? e3[1] : "string" == typeof e3[0] ? void 0 : e3[0];
   return u2({ [t2]: () => ({ match: /* @__PURE__ */ __name((t3) => {
     let e4 = { [null != r3 ? r3 : n2]: t3 };
-    return { matched: void 0 === i3 || s2(i3, t3, (t4, n3) => {
+    return { matched: void 0 === i3 || o2(i3, t3, (t4, n3) => {
       e4[t4] = n3;
     }), selections: e4 };
-  }, "match"), getSelectionKeys: /* @__PURE__ */ __name(() => [null != r3 ? r3 : n2].concat(void 0 === i3 ? [] : o2(i3)), "getSelectionKeys") }) });
+  }, "match"), getSelectionKeys: /* @__PURE__ */ __name(() => [null != r3 ? r3 : n2].concat(void 0 === i3 ? [] : s2(i3)), "getSelectionKeys") }) });
 }
 __name(y2, "y");
 function v2(t3) {
@@ -75312,14 +75770,14 @@ var N2 = { __proto__: null, matcher: t2, optional: h2, array: /* @__PURE__ */ __
     if (0 === e3.length) return { matched: true };
     const n3 = e3[0];
     let r3 = {};
-    if (0 === t3.length) return o2(n3).forEach((t4) => {
+    if (0 === t3.length) return s2(n3).forEach((t4) => {
       r3[t4] = [];
     }), { matched: true, selections: r3 };
     const i3 = /* @__PURE__ */ __name((t4, e4) => {
       r3[t4] = (r3[t4] || []).concat([e4]);
     }, "i");
-    return { matched: t3.every((t4) => s2(n3, t4, i3)), selections: r3 };
-  }, "match"), getSelectionKeys: /* @__PURE__ */ __name(() => 0 === e3.length ? [] : o2(e3[0]), "getSelectionKeys") }) });
+    return { matched: t3.every((t4) => o2(n3, t4, i3)), selections: r3 };
+  }, "match"), getSelectionKeys: /* @__PURE__ */ __name(() => 0 === e3.length ? [] : s2(e3[0]), "getSelectionKeys") }) });
 }, "array"), set: /* @__PURE__ */ __name(function(...e3) {
   return u2({ [t2]: () => ({ match: /* @__PURE__ */ __name((t3) => {
     if (!(t3 instanceof Set)) return { matched: false };
@@ -75329,8 +75787,8 @@ var N2 = { __proto__: null, matcher: t2, optional: h2, array: /* @__PURE__ */ __
     const r3 = /* @__PURE__ */ __name((t4, e4) => {
       n3[t4] = (n3[t4] || []).concat([e4]);
     }, "r"), i3 = e3[0];
-    return { matched: f2(t3, (t4) => s2(i3, t4, r3)), selections: n3 };
-  }, "match"), getSelectionKeys: /* @__PURE__ */ __name(() => 0 === e3.length ? [] : o2(e3[0]), "getSelectionKeys") }) });
+    return { matched: f2(t3, (t4) => o2(i3, t4, r3)), selections: n3 };
+  }, "match"), getSelectionKeys: /* @__PURE__ */ __name(() => 0 === e3.length ? [] : s2(e3[0]), "getSelectionKeys") }) });
 }, "set"), map: /* @__PURE__ */ __name(function(...e3) {
   return u2({ [t2]: () => ({ match: /* @__PURE__ */ __name((t3) => {
     if (!(t3 instanceof Map)) return { matched: false };
@@ -75342,14 +75800,14 @@ var N2 = { __proto__: null, matcher: t2, optional: h2, array: /* @__PURE__ */ __
     if (0 === e3.length) return { matched: true };
     var i3;
     if (1 === e3.length) throw new Error(`\`P.map\` wasn't given enough arguments. Expected (key, value), received ${null == (i3 = e3[0]) ? void 0 : i3.toString()}`);
-    const [o3, c3] = e3;
+    const [s3, c3] = e3;
     return { matched: g2(t3, (t4, e4) => {
-      const n4 = s2(o3, e4, r3), i4 = s2(c3, t4, r3);
+      const n4 = o2(s3, e4, r3), i4 = o2(c3, t4, r3);
       return n4 && i4;
     }), selections: n3 };
-  }, "match"), getSelectionKeys: /* @__PURE__ */ __name(() => 0 === e3.length ? [] : [...o2(e3[0]), ...o2(e3[1])], "getSelectionKeys") }) });
+  }, "match"), getSelectionKeys: /* @__PURE__ */ __name(() => 0 === e3.length ? [] : [...s2(e3[0]), ...s2(e3[1])], "getSelectionKeys") }) });
 }, "map"), intersection: m2, union: d2, not: /* @__PURE__ */ __name(function(e3) {
-  return u2({ [t2]: () => ({ match: /* @__PURE__ */ __name((t3) => ({ matched: !s2(e3, t3, () => {
+  return u2({ [t2]: () => ({ match: /* @__PURE__ */ __name((t3) => ({ matched: !o2(e3, t3, () => {
   }) }), "match"), getSelectionKeys: /* @__PURE__ */ __name(() => [], "getSelectionKeys"), matcherType: "not" }) });
 }, "not"), when: p2, select: y2, any: S2, _: O2, string: K2, number: E2, bigint: P2, boolean: T2, symbol: B2, nullish: _2, nonNullable: k2, instanceOf: /* @__PURE__ */ __name(function(t3) {
   return u2(p2(/* @__PURE__ */ function(t4) {
@@ -75389,10 +75847,10 @@ var I2 = class _I {
     const e3 = t3[t3.length - 1], r3 = [t3[0]];
     let i3;
     3 === t3.length && "function" == typeof t3[1] ? i3 = t3[1] : t3.length > 2 && r3.push(...t3.slice(1, t3.length - 1));
-    let o3 = false, c3 = {};
+    let s3 = false, c3 = {};
     const a3 = /* @__PURE__ */ __name((t4, e4) => {
-      o3 = true, c3[t4] = e4;
-    }, "a"), u3 = !r3.some((t4) => s2(t4, this.input, a3)) || i3 && !Boolean(i3(this.input)) ? $2 : { matched: true, value: e3(o3 ? n2 in c3 ? c3[n2] : c3 : this.input, this.input) };
+      s3 = true, c3[t4] = e4;
+    }, "a"), u3 = !r3.some((t4) => o2(t4, this.input, a3)) || i3 && !Boolean(i3(this.input)) ? $2 : { matched: true, value: e3(s3 ? n2 in c3 ? c3[n2] : c3 : this.input, this.input) };
     return new _I(this.input, u3);
   }
   when(t3, e3) {
@@ -75403,9 +75861,8 @@ var I2 = class _I {
   otherwise(t3) {
     return this.state.matched ? this.state.value : t3(this.input);
   }
-  exhaustive() {
-    if (this.state.matched) return this.state.value;
-    throw new W2(this.input);
+  exhaustive(t3 = L2) {
+    return this.state.matched ? this.state.value : t3(this.input);
   }
   run() {
     return this.exhaustive();
@@ -75414,6 +75871,10 @@ var I2 = class _I {
     return this;
   }
 };
+function L2(t3) {
+  throw new W2(t3);
+}
+__name(L2, "L");
 
 // packages/logger/src/symbols.ts
 var symbols_exports = {};
@@ -75770,16 +76231,15 @@ __export(mirrors_exports, {
 import { setTimeout as setTimeout2 } from "node:timers/promises";
 
 // packages/data/data/tlnet.json
-var ctan = {
-  master: "https://ctan.org/",
-  mirrors: "https://mirrors.ctan.org/",
-  default: "https://mirror.math.princeton.edu/pub/CTAN/",
-  path: "systems/texlive/tlnet/",
-  versionFile: "TEXLIVE_{version}"
-};
 var tlnet_default = {
   $schema: "../schemas/tlnet.schema.json",
-  ctan,
+  ctan: {
+    master: "https://ctan.org/",
+    mirrors: "https://mirrors.ctan.org/",
+    default: "https://mirror.math.princeton.edu/pub/CTAN/",
+    path: "systems/texlive/tlnet/",
+    versionFile: "TEXLIVE_{version}"
+  },
   tlcontrib: {
     mirrors: "https://mirrors.ctan.org/",
     path: "systems/texlive/tlcontrib/"
@@ -75811,7 +76271,7 @@ async function resolve(options) {
   var _stack = [];
   try {
     if (options?.master ?? false) {
-      return new URL(ctan.master);
+      return new URL(tlnet_default.ctan.master);
     }
     if (resolvedMirrorLocation !== void 0) {
       return new URL(resolvedMirrorLocation.href);
@@ -75822,10 +76282,10 @@ async function resolve(options) {
     }));
     for (let i3 = 0; i3 < MAX_TRIES; ++i3) {
       try {
-        const { message } = await http2.head(ctan.mirrors);
+        const { message } = await http2.head(tlnet_default.ctan.mirrors);
         const { headers, statusCode = Number.NaN } = message.destroy();
         if (!REDIRECT_CODES.has(statusCode)) {
-          throw createClientError(statusCode, ctan.mirrors);
+          throw createClientError(statusCode, tlnet_default.ctan.mirrors);
         }
         const mirror = new URL(headers.location);
         debug2(
@@ -76010,8 +76470,8 @@ var MetadataStorage = (
         });
       }
       var metadataFromAncestors = [];
-      for (var _i2 = 0, _a4 = this.getAncestors(target); _i2 < _a4.length; _i2++) {
-        var ancestor = _a4[_i2];
+      for (var _i2 = 0, _a3 = this.getAncestors(target); _i2 < _a3.length; _i2++) {
+        var ancestor = _a3[_i2];
         var ancestorMetadataMap = metadatas.get(ancestor);
         if (ancestorMetadataMap) {
           var metadataFromAncestor = Array.from(ancestorMetadataMap.values()).filter(function(meta) {
@@ -76030,8 +76490,8 @@ var MetadataStorage = (
           return metadataFromTarget;
         }
       }
-      for (var _i2 = 0, _a4 = this.getAncestors(target); _i2 < _a4.length; _i2++) {
-        var ancestor = _a4[_i2];
+      for (var _i2 = 0, _a3 = this.getAncestors(target); _i2 < _a3.length; _i2++) {
+        var ancestor = _a3[_i2];
         var ancestorMetadataMap = metadatas.get(ancestor);
         if (ancestorMetadataMap) {
           var ancestorResult = ancestorMetadataMap.get(propertyName);
@@ -76049,8 +76509,8 @@ var MetadataStorage = (
         metadataFromTarget = metadataFromTargetMap.get(propertyName);
       }
       var metadataFromAncestorsTarget = [];
-      for (var _i2 = 0, _a4 = this.getAncestors(target); _i2 < _a4.length; _i2++) {
-        var ancestor = _a4[_i2];
+      for (var _i2 = 0, _a3 = this.getAncestors(target); _i2 < _a3.length; _i2++) {
+        var ancestor = _a3[_i2];
         var ancestorMetadataMap = metadatas.get(ancestor);
         if (ancestorMetadataMap) {
           if (ancestorMetadataMap.has(propertyName)) {
@@ -76676,6 +77136,7 @@ var CASE = {
 function Case(letterCase) {
   function decorator(target, key) {
     const metadatas = defaultMetadataStorage.getExposedMetadatas(
+      // eslint-disable-next-line unicorn/no-instanceof-builtins
       target instanceof Function ? target : target.constructor
     );
     if (key !== void 0) {
@@ -76794,7 +77255,7 @@ __name(exec, "exec");
 // packages/utils/src/fs.ts
 var import_io = __toESM(require_io(), 1);
 var import_tool_cache = __toESM(require_tool_cache(), 1);
-import * as fs2 from "node:fs/promises";
+import * as fs from "node:fs/promises";
 import { tmpdir as osTmpdir } from "node:os";
 import * as path2 from "node:path";
 import { env as env3 } from "node:process";
@@ -76815,7 +77276,7 @@ async function extract(archive, kind) {
 }
 __name(extract, "extract");
 async function uniqueChild(parent) {
-  const [child, ...rest] = await fs2.readdir(parent);
+  const [child, ...rest] = await fs.readdir(parent);
   if (child === void 0) {
     throw new Error(`${parent} has no entries`);
   }
@@ -76831,7 +77292,7 @@ function tmpdir() {
 __name(tmpdir, "tmpdir");
 async function mkdtemp2() {
   return {
-    path: await fs2.mkdtemp(path2.join(tmpdir(), `${id_default["kebab-case"]}-`)),
+    path: await fs.mkdtemp(path2.join(tmpdir(), `${id_default["kebab-case"]}-`)),
     async [Symbol.asyncDispose]() {
       await (0, import_io.rmRF)(this.path);
     }
@@ -77002,7 +77463,7 @@ import { EOL as EOL3 } from "node:os";
 import * as path5 from "node:path";
 
 // packages/data/src/index.ts
-import * as os3 from "node:os";
+import * as os2 from "node:os";
 
 // packages/data/node_modules/minimatch/dist/esm/index.js
 var import_brace_expansion = __toESM(require_brace_expansion(), 1);
@@ -77842,12 +78303,12 @@ var Minimatch = class {
         const isUNC = s3[0] === "" && s3[1] === "" && (s3[2] === "?" || !globMagic.test(s3[2])) && !globMagic.test(s3[3]);
         const isDrive = /^[a-z]:/i.test(s3[0]);
         if (isUNC) {
-          return [...s3.slice(0, 4), ...s3.slice(4).map((ss2) => this.parse(ss2))];
+          return [...s3.slice(0, 4), ...s3.slice(4).map((ss) => this.parse(ss))];
         } else if (isDrive) {
-          return [s3[0], ...s3.slice(1).map((ss2) => this.parse(ss2))];
+          return [s3[0], ...s3.slice(1).map((ss) => this.parse(ss))];
         }
       }
-      return s3.map((ss2) => this.parse(ss2));
+      return s3.map((ss) => this.parse(ss));
     });
     this.debug(this.pattern, set2);
     this.set = set2.filter((s3) => s3.indexOf(false) === -1);
@@ -77890,14 +78351,14 @@ var Minimatch = class {
   // just get rid of adjascent ** portions
   adjascentGlobstarOptimize(globParts) {
     return globParts.map((parts) => {
-      let gs2 = -1;
-      while (-1 !== (gs2 = parts.indexOf("**", gs2 + 1))) {
-        let i3 = gs2;
+      let gs = -1;
+      while (-1 !== (gs = parts.indexOf("**", gs + 1))) {
+        let i3 = gs;
         while (parts[i3 + 1] === "**") {
           i3++;
         }
-        if (i3 !== gs2) {
-          parts.splice(gs2, i3 - gs2);
+        if (i3 !== gs) {
+          parts.splice(gs, i3 - gs);
         }
       }
       return parts;
@@ -77981,29 +78442,29 @@ var Minimatch = class {
     do {
       didSomething = false;
       for (let parts of globParts) {
-        let gs2 = -1;
-        while (-1 !== (gs2 = parts.indexOf("**", gs2 + 1))) {
-          let gss = gs2;
+        let gs = -1;
+        while (-1 !== (gs = parts.indexOf("**", gs + 1))) {
+          let gss = gs;
           while (parts[gss + 1] === "**") {
             gss++;
           }
-          if (gss > gs2) {
-            parts.splice(gs2 + 1, gss - gs2);
+          if (gss > gs) {
+            parts.splice(gs + 1, gss - gs);
           }
-          let next2 = parts[gs2 + 1];
-          const p3 = parts[gs2 + 2];
-          const p22 = parts[gs2 + 3];
-          if (next2 !== "..")
+          let next = parts[gs + 1];
+          const p3 = parts[gs + 2];
+          const p22 = parts[gs + 3];
+          if (next !== "..")
             continue;
           if (!p3 || p3 === "." || p3 === ".." || !p22 || p22 === "." || p22 === "..") {
             continue;
           }
           didSomething = true;
-          parts.splice(gs2, 1);
+          parts.splice(gs, 1);
           const other = parts.slice(0);
-          other[gs2] = "**";
+          other[gs] = "**";
           globParts.push(other);
-          gs2--;
+          gs--;
         }
         if (!this.preserveMultipleSlashes) {
           for (let i3 = 1; i3 < parts.length - 1; i3++) {
@@ -78056,7 +78517,7 @@ var Minimatch = class {
         }
       }
     }
-    return globParts.filter((gs2) => gs2.length);
+    return globParts.filter((gs) => gs.length);
   }
   partsMatch(a3, b3, emptyGSMatch = false) {
     let ai2 = 0;
@@ -78253,21 +78714,21 @@ var Minimatch = class {
         return typeof p3 === "string" ? regExpEscape2(p3) : p3 === GLOBSTAR ? GLOBSTAR : p3._src;
       });
       pp.forEach((p3, i3) => {
-        const next2 = pp[i3 + 1];
+        const next = pp[i3 + 1];
         const prev = pp[i3 - 1];
         if (p3 !== GLOBSTAR || prev === GLOBSTAR) {
           return;
         }
         if (prev === void 0) {
-          if (next2 !== void 0 && next2 !== GLOBSTAR) {
-            pp[i3 + 1] = "(?:\\/|" + twoStar + "\\/)?" + next2;
+          if (next !== void 0 && next !== GLOBSTAR) {
+            pp[i3 + 1] = "(?:\\/|" + twoStar + "\\/)?" + next;
           } else {
             pp[i3] = twoStar;
           }
-        } else if (next2 === void 0) {
+        } else if (next === void 0) {
           pp[i3 - 1] = prev + "(?:\\/|" + twoStar + ")?";
-        } else if (next2 !== GLOBSTAR) {
-          pp[i3 - 1] = prev + "(?:\\/|\\/" + twoStar + "\\/)" + next2;
+        } else if (next !== GLOBSTAR) {
+          pp[i3 - 1] = prev + "(?:\\/|\\/" + twoStar + "\\/)" + next;
           pp[i3 + 1] = GLOBSTAR;
         }
       });
@@ -78359,14 +78820,14 @@ function satisfies(target, options) {
   let result = true;
   if ("platform" in target) {
     result &&= minimatch(
-      options?.platform ?? os3.platform(),
+      options?.platform ?? os2.platform(),
       target.platform,
       minimatchOptions
     );
   }
   if ("arch" in target) {
     result &&= minimatch(
-      options?.arch ?? os3.arch(),
+      options?.arch ?? os2.arch(),
       target.arch,
       minimatchOptions
     );
@@ -78390,66 +78851,69 @@ function match2(patterns, options) {
     }
   }
   const error = new Error("None of the patterns matched");
-  const { platform: platform8 = os3.platform(), arch: arch5 = os3.arch(), version: version3 } = options ?? {};
-  Object.assign(error, { patterns, platform: platform8, arch: arch5, version: version3 });
+  const { platform: platform8 = os2.platform(), arch: arch6 = os2.arch(), version: version3 } = options ?? {};
+  Object.assign(error, { patterns, platform: platform8, arch: arch6, version: version3 });
   throw error;
 }
 __name(match2, "match");
 
 // packages/data/data/tlpkg-patches.json
-var patches = [
-  {
-    description: "Fixes a syntax error",
-    versions: ">=2009 <2011",
-    file: "tlpkg/TeXLive/TLWinGoo.pm",
-    changes: [
-      {
-        from: "foreach \\$p qw\\((.*)\\)",
-        to: "foreach $$p (qw($1))"
-      }
-    ]
-  },
-  {
-    description: "Defines Code Page 65001 as an alias for UTF-8",
-    platform: "win32",
-    versions: "2015",
-    file: "tlpkg/tlperl/lib/Encode/Alias.pm",
-    changes: [
-      {
-        from: "# utf8 is blessed :\\)",
-        to: `define_alias( qr/\\bcp65001$$/i => '"utf-8-strict"' );`
-      }
-    ]
-  },
-  {
-    description: "Makes it possible to use `\\` as a directory separator",
-    platform: "win32",
-    versions: "<2019",
-    file: "tlpkg/TeXLive/TLUtils.pm",
-    changes: [
-      {
-        from: "split \\(/\\\\//, \\$tree\\)",
-        to: "split (/[\\/\\\\]/, $$tree)"
-      }
-    ]
-  },
-  {
-    description: "Adds support for macOS 11 or later",
-    platform: "darwin",
-    versions: ">=2017 <2020",
-    file: "tlpkg/TeXLive/TLUtils.pm",
-    changes: [
-      {
-        from: "\\$os_major != 10",
-        to: "$$os_major < 10"
-      },
-      {
-        from: "\\$os_minor >= \\$mactex_darwin",
-        to: "$$os_major > 10 || $&"
-      }
-    ]
-  }
-];
+var tlpkg_patches_default = {
+  $schema: "../schemas/tlpkg-patches.schema.json",
+  patches: [
+    {
+      description: "Fixes a syntax error",
+      versions: ">=2009 <2011",
+      file: "tlpkg/TeXLive/TLWinGoo.pm",
+      changes: [
+        {
+          from: "foreach \\$p qw\\((.*)\\)",
+          to: "foreach $$p (qw($1))"
+        }
+      ]
+    },
+    {
+      description: "Defines Code Page 65001 as an alias for UTF-8",
+      platform: "win32",
+      versions: "2015",
+      file: "tlpkg/tlperl/lib/Encode/Alias.pm",
+      changes: [
+        {
+          from: "# utf8 is blessed :\\)",
+          to: `define_alias( qr/\\bcp65001$$/i => '"utf-8-strict"' );`
+        }
+      ]
+    },
+    {
+      description: "Makes it possible to use `\\` as a directory separator",
+      platform: "win32",
+      versions: "<2019",
+      file: "tlpkg/TeXLive/TLUtils.pm",
+      changes: [
+        {
+          from: "split \\(/\\\\//, \\$tree\\)",
+          to: "split (/[\\/\\\\]/, $$tree)"
+        }
+      ]
+    },
+    {
+      description: "Adds support for macOS 11 or later",
+      platform: "darwin",
+      versions: ">=2017 <2020",
+      file: "tlpkg/TeXLive/TLUtils.pm",
+      changes: [
+        {
+          from: "\\$os_major != 10",
+          to: "$$os_major < 10"
+        },
+        {
+          from: "\\$os_minor >= \\$mactex_darwin",
+          to: "$$os_major > 10 || $&"
+        }
+      ]
+    }
+  ]
+};
 
 // packages/texlive/src/version.ts
 var import_semver = __toESM(require_semver2(), 1);
@@ -78482,10 +78946,10 @@ var Version;
 
 // packages/texlive/src/tlpkg/patch.ts
 async function patch(options) {
-  const ps2 = patches.filter((p3) => satisfies(p3, options));
-  if (ps2.length > 0) {
+  const ps = tlpkg_patches_default.patches.filter((p3) => satisfies(p3, options));
+  if (ps.length > 0) {
     info2("Applying patches");
-    const lines = await Promise.all(ps2.map((p3) => apply(p3, options.directory)));
+    const lines = await Promise.all(ps.map((p3) => apply(p3, options.directory)));
     info2({ linePrefix: styles_default.blue`|` + " " }, lines.flat().join(EOL3));
   }
 }
@@ -78804,8 +79268,8 @@ var nearestCommonProto = /* @__PURE__ */ __name((...objs) => {
   return commonProto;
 }, "nearestCommonProto");
 var hardMixProtos = /* @__PURE__ */ __name((ingredients, constructor, exclude = []) => {
-  var _a4;
-  const base = (_a4 = nearestCommonProto(...ingredients)) !== null && _a4 !== void 0 ? _a4 : Object.prototype;
+  var _a3;
+  const base = (_a3 = nearestCommonProto(...ingredients)) !== null && _a3 !== void 0 ? _a3 : Object.prototype;
   const mixedProto = Object.create(base);
   const visitedProtos = protoChain(base);
   for (let prototype of ingredients) {
@@ -78885,37 +79349,37 @@ var mixins = /* @__PURE__ */ new WeakMap();
 var getMixinsForClass = /* @__PURE__ */ __name((clazz) => mixins.get(clazz), "getMixinsForClass");
 var registerMixins = /* @__PURE__ */ __name((mixedClass, constituents) => mixins.set(mixedClass, constituents), "registerMixins");
 var mergeObjectsOfDecorators = /* @__PURE__ */ __name((o1, o22) => {
-  var _a4, _b2;
+  var _a3, _b2;
   const allKeys = unique([...Object.getOwnPropertyNames(o1), ...Object.getOwnPropertyNames(o22)]);
   const mergedObject = {};
   for (let key of allKeys)
-    mergedObject[key] = unique([...(_a4 = o1 === null || o1 === void 0 ? void 0 : o1[key]) !== null && _a4 !== void 0 ? _a4 : [], ...(_b2 = o22 === null || o22 === void 0 ? void 0 : o22[key]) !== null && _b2 !== void 0 ? _b2 : []]);
+    mergedObject[key] = unique([...(_a3 = o1 === null || o1 === void 0 ? void 0 : o1[key]) !== null && _a3 !== void 0 ? _a3 : [], ...(_b2 = o22 === null || o22 === void 0 ? void 0 : o22[key]) !== null && _b2 !== void 0 ? _b2 : []]);
   return mergedObject;
 }, "mergeObjectsOfDecorators");
 var mergePropertyAndMethodDecorators = /* @__PURE__ */ __name((d1, d22) => {
-  var _a4, _b2, _c2, _d2;
+  var _a3, _b2, _c2, _d2;
   return {
-    property: mergeObjectsOfDecorators((_a4 = d1 === null || d1 === void 0 ? void 0 : d1.property) !== null && _a4 !== void 0 ? _a4 : {}, (_b2 = d22 === null || d22 === void 0 ? void 0 : d22.property) !== null && _b2 !== void 0 ? _b2 : {}),
+    property: mergeObjectsOfDecorators((_a3 = d1 === null || d1 === void 0 ? void 0 : d1.property) !== null && _a3 !== void 0 ? _a3 : {}, (_b2 = d22 === null || d22 === void 0 ? void 0 : d22.property) !== null && _b2 !== void 0 ? _b2 : {}),
     method: mergeObjectsOfDecorators((_c2 = d1 === null || d1 === void 0 ? void 0 : d1.method) !== null && _c2 !== void 0 ? _c2 : {}, (_d2 = d22 === null || d22 === void 0 ? void 0 : d22.method) !== null && _d2 !== void 0 ? _d2 : {})
   };
 }, "mergePropertyAndMethodDecorators");
 var mergeDecorators = /* @__PURE__ */ __name((d1, d22) => {
-  var _a4, _b2, _c2, _d2, _e2, _f;
+  var _a3, _b2, _c2, _d2, _e2, _f;
   return {
-    class: unique([...(_a4 = d1 === null || d1 === void 0 ? void 0 : d1.class) !== null && _a4 !== void 0 ? _a4 : [], ...(_b2 = d22 === null || d22 === void 0 ? void 0 : d22.class) !== null && _b2 !== void 0 ? _b2 : []]),
+    class: unique([...(_a3 = d1 === null || d1 === void 0 ? void 0 : d1.class) !== null && _a3 !== void 0 ? _a3 : [], ...(_b2 = d22 === null || d22 === void 0 ? void 0 : d22.class) !== null && _b2 !== void 0 ? _b2 : []]),
     static: mergePropertyAndMethodDecorators((_c2 = d1 === null || d1 === void 0 ? void 0 : d1.static) !== null && _c2 !== void 0 ? _c2 : {}, (_d2 = d22 === null || d22 === void 0 ? void 0 : d22.static) !== null && _d2 !== void 0 ? _d2 : {}),
     instance: mergePropertyAndMethodDecorators((_e2 = d1 === null || d1 === void 0 ? void 0 : d1.instance) !== null && _e2 !== void 0 ? _e2 : {}, (_f = d22 === null || d22 === void 0 ? void 0 : d22.instance) !== null && _f !== void 0 ? _f : {})
   };
 }, "mergeDecorators");
 var decorators = /* @__PURE__ */ new Map();
 var findAllConstituentClasses = /* @__PURE__ */ __name((...classes) => {
-  var _a4;
+  var _a3;
   const allClasses = /* @__PURE__ */ new Set();
   const frontier = /* @__PURE__ */ new Set([...classes]);
   while (frontier.size > 0) {
     for (let clazz of frontier) {
       const protoChainClasses = protoChain(clazz.prototype).map((proto) => proto.constructor);
-      const mixinClasses = (_a4 = getMixinsForClass(clazz)) !== null && _a4 !== void 0 ? _a4 : [];
+      const mixinClasses = (_a3 = getMixinsForClass(clazz)) !== null && _a3 !== void 0 ? _a3 : [];
       const potentiallyNewClasses = [...protoChainClasses, ...mixinClasses];
       const newClasses = potentiallyNewClasses.filter((c3) => !allClasses.has(c3));
       for (let newClass of newClasses)
@@ -78961,12 +79425,12 @@ var decorateClass = /* @__PURE__ */ __name((decorator) => (clazz) => {
   return decorator(clazz);
 }, "decorateClass");
 var decorateMember = /* @__PURE__ */ __name((decorator) => (object, key, ...otherArgs) => {
-  var _a4, _b2, _c2;
+  var _a3, _b2, _c2;
   const decoratorTargetType = typeof object === "function" ? "static" : "instance";
   const decoratorType = typeof object[key] === "function" ? "method" : "property";
   const clazz = decoratorTargetType === "static" ? object : object.constructor;
   const decoratorsForClass = getDecoratorsForClass(clazz);
-  const decoratorsForTargetType = (_a4 = decoratorsForClass === null || decoratorsForClass === void 0 ? void 0 : decoratorsForClass[decoratorTargetType]) !== null && _a4 !== void 0 ? _a4 : {};
+  const decoratorsForTargetType = (_a3 = decoratorsForClass === null || decoratorsForClass === void 0 ? void 0 : decoratorsForClass[decoratorTargetType]) !== null && _a3 !== void 0 ? _a3 : {};
   decoratorsForClass[decoratorTargetType] = decoratorsForTargetType;
   let decoratorsForType = (_b2 = decoratorsForTargetType === null || decoratorsForTargetType === void 0 ? void 0 : decoratorsForTargetType[decoratorType]) !== null && _b2 !== void 0 ? _b2 : {};
   decoratorsForTargetType[decoratorType] = decoratorsForType;
@@ -78981,7 +79445,7 @@ var decorate2 = /* @__PURE__ */ __name((decorator) => (...args) => {
   return decorateMember(decorator)(...args);
 }, "decorate");
 function Mixin(...constructors) {
-  var _a4, _b2, _c2;
+  var _a3, _b2, _c2;
   const prototypes = constructors.map((constructor) => constructor.prototype);
   const initFunctionName = settings.initFunction;
   if (initFunctionName !== null) {
@@ -79005,7 +79469,7 @@ function Mixin(...constructors) {
   let DecoratedMixedClass = MixedClass;
   if (settings.decoratorInheritance !== "none") {
     const classDecorators = settings.decoratorInheritance === "deep" ? deepDecoratorSearch(...constructors) : directDecoratorSearch(...constructors);
-    for (let decorator of (_a4 = classDecorators === null || classDecorators === void 0 ? void 0 : classDecorators.class) !== null && _a4 !== void 0 ? _a4 : []) {
+    for (let decorator of (_a3 = classDecorators === null || classDecorators === void 0 ? void 0 : classDecorators.class) !== null && _a3 !== void 0 ? _a3 : []) {
       const result = decorator(DecoratedMixedClass);
       if (result) {
         DecoratedMixedClass = result;
@@ -79190,7 +79654,7 @@ var Profile = class extends Mixin(SystemTrees, UserTrees) {
     const options = this.version < "2017" ? { option: { ...instopt, ...tlpdbopt } } : { instopt, tlpdbopt };
     for (const [prefix2, values] of Object.entries(options)) {
       for (const [key, value] of Object.entries(values ?? {})) {
-        plain[`${prefix2}_${key}`] = value;
+        plain[`${prefix2}_${snakeCase(key)}`] = value;
       }
     }
     if (binary !== void 0) {
@@ -79212,7 +79676,7 @@ __decorateClass([
   Expose()
 ], Profile.prototype, "tlpdbopt", 2);
 __decorateClass([
-  Expose({ until: 2017, groups: ["darwin"] })
+  Expose()
 ], Profile.prototype, "binary", 2);
 Profile = __decorateClass([
   Exclude()
@@ -79297,13 +79761,20 @@ TlpdbOpt = __decorateClass([
 ], TlpdbOpt);
 
 // packages/data/data/texlive-versions.json
-var current = {
-  version: "2025",
-  releaseDate: "2025-03-15T00:00:00Z"
-};
-var next = {
-  version: "2026",
-  releaseDate: "2026-03-07"
+var texlive_versions_default = {
+  $schema: "../schemas/texlive-versions.schema.json",
+  previous: {
+    version: "2024",
+    releaseDate: "2024-03-13T17:37:00Z"
+  },
+  current: {
+    version: "2025",
+    releaseDate: "2025-03-15T00:00:00Z"
+  },
+  next: {
+    version: "2026",
+    releaseDate: "2026-03-07"
+  }
 };
 
 // packages/texlive/src/releases.ts
@@ -79412,13 +79883,13 @@ var tlnet_exports = {};
 __export(tlnet_exports, {
   checkVersionFile: () => checkVersionFile,
   contrib: () => contrib,
-  ctan: () => ctan2,
+  ctan: () => ctan,
   historic: () => historic
 });
-async function ctan2(options) {
+async function ctan(options) {
   return new URL(tlnet_default.ctan.path, await mirrors_exports.resolve(options));
 }
-__name(ctan2, "ctan");
+__name(ctan, "ctan");
 async function contrib(options) {
   return new URL(tlnet_default.tlcontrib.path, await mirrors_exports.resolve(options));
 }
@@ -79454,7 +79925,7 @@ var ReleaseData;
       await latest.checkVersion();
     }
     function newVersionReleased() {
-      return current.version < latest.version;
+      return texlive_versions_default.current.version < latest.version;
     }
     __name(newVersionReleased, "newVersionReleased");
     const latestVersionNumber = Number.parseInt(latest.version, 10);
@@ -79475,7 +79946,7 @@ var Latest = class {
     __name(this, "Latest");
   }
   releaseDate;
-  #version = current.version;
+  #version = texlive_versions_default.current.version;
   get version() {
     return this.#version;
   }
@@ -79515,10 +79986,12 @@ var Latest = class {
     if (this.releaseDate !== void 0) {
       return this.releaseDate;
     }
-    if (this.version === current.version) {
-      return this.releaseDate = ZonedDateTime.from(current.releaseDate);
+    if (this.version === texlive_versions_default.current.version) {
+      return this.releaseDate = ZonedDateTime.from(
+        texlive_versions_default.current.releaseDate
+      );
     }
-    const ctanMaster = await ctan2({ master: true });
+    const ctanMaster = await ctan({ master: true });
     const headers = await checkVersionFile(ctanMaster, this.version);
     if (headers === void 0) {
       const error = new Error("`TEXLIVE_YYYY` file not found");
@@ -79539,7 +80012,7 @@ var Latest = class {
   static needToCheck() {
     const now = Now.instant();
     const tzEarliest = "+14:00";
-    const nextReleaseDate = PlainDateTime.from(next.releaseDate).toZonedDateTime(tzEarliest).toInstant();
+    const nextReleaseDate = PlainDateTime.from(texlive_versions_default.next.releaseDate).toZonedDateTime(tzEarliest).toInstant();
     return Instant.compare(now, nextReleaseDate) >= 0;
   }
 };
@@ -79747,540 +80220,543 @@ __name(texmf, "texmf");
 import { setTimeout as setTimeout3 } from "node:timers/promises";
 
 // packages/data/data/package-names.json
-var toTL = {
-  a4: "ntgclass",
-  abbrevs: "frankenstein",
-  abstbook: "ltxmisc",
-  "abstyles-babel": "abstyles",
-  "abstyles-orig": "abstyles",
-  accenti: "bosisio",
-  achicago: "frankenstein",
-  "achicago-bst": "frankenstein",
-  afterpackage: "ncctools",
-  afterpage: "tools",
-  aliascnt: "oberdiek",
-  alltt: "latex",
-  alphanum: "jura",
-  altverse: "shipunov",
-  amsart: "amscls",
-  amsbook: "amscls",
-  amsbsy: "amsmath",
-  amscd: "amsmath",
-  amslatex: "amsmath",
-  "amslatexdoc-vietnamese": "amsldoc-vn",
-  amsmidx: "amscls",
-  amsopn: "amsmath",
-  amsppt: "amstex",
-  amsppt1: "amstex",
-  amsproc: "amscls",
-  amstext: "amsmath",
-  amsthm: "amscls",
-  annotation: "beebe",
-  apa5: "apa",
-  apabst: "beebe",
-  aramaic: "archaic",
-  array: "tools",
-  arrayjob: "arrayjobx",
-  arrow: "eplain",
-  article: "latex",
-  at: "mdwtools",
-  attrib: "frankenstein",
-  auncial: "bookhands",
-  authblk: "preprint",
-  autoinst: "fontools",
-  autolist: "shipunov",
-  backref: "hyperref",
-  bahyph: "hyphen-basque",
-  balance: "preprint",
-  base: "plain",
-  bbs: "beebe",
-  bdfchess: "chess",
-  beletter: "ltxmisc",
-  "bengali-pandey": "bengali",
-  "besjournals-bst": "besjournals",
-  bibcheck: "ltxmisc",
-  biblio: "beebe",
-  bibtex8bit: "bibtex8",
-  bicaption: "caption",
-  bigdelim: "multirow",
-  bigstrut: "multirow",
-  binhex: "kastrup",
-  biolinum: "libertine",
-  biolist: "shipunov",
-  blkcntrl: "frankenstein",
-  bm: "tools",
-  bmpsize: "oberdiek",
-  boldline: "shipunov",
-  book: "latex",
-  boxedminipage2e: "boxedminipage",
-  cahyph: "hyphen-spanish",
-  calc: "tools",
-  caption2: "caption",
-  carolmin: "bookhands",
-  "carolmin-t1": "carolmin-ps",
-  "cassette-shipunov": "shipunov",
-  catalan: "hyphen-spanish",
-  cbe: "beebe",
-  "cbgreek-complete": "cbfonts",
-  ccref: "crefthe",
-  cdcover: "cd-cover",
-  cdlabeler: "eijkhout",
-  centernot: "oberdiek",
-  cfgguide: "latex",
-  chapterbib: "cite",
-  chemarr: "oberdiek",
-  chemscheme: "chemstyle",
-  "cite-bundle": "cite",
-  cjk: "cjkutils",
-  "cjk-fonts": "cns",
-  classes: "latex",
-  classif2: "shipunov",
-  classlist: "oberdiek",
-  clsguide: "latex",
-  "cm-mf": "cm",
-  "cm-pk": "cm",
-  "cm-tfm": "cm",
-  "cmextra-latex": "latex",
-  cmfrak: "gothic",
-  cmtt: "mdwtools",
-  "cmyk-hax": "tex-ps",
-  collect: "sauerj",
-  colonequals: "oberdiek",
-  color: "graphics",
-  colordvi: "dvips",
-  compsci: "frankenstein",
-  "concrete-macros": "ltxmisc",
-  csfonts: "cs",
-  "csfonts-t1": "cs",
-  "csname-doc": "plain-doc",
-  cspsfonts: "cslatex",
-  ctib4tex: "ctib",
-  cuted: "sttools",
-  cvsty: "cv",
-  cwebbin: "cweb",
-  cypriot: "archaic",
-  cyrguide: "latex",
-  dblfnote: "yafoot",
-  dblfont: "bosisio",
-  dbprocess: "eijkhout",
-  dcolumn: "tools",
-  dcounter: "ncctools",
-  delarray: "tools",
-  desclist: "ncctools",
-  devanagari: "velthuis",
-  diagxy: "barr",
-  dialogue: "frankenstein",
-  dkhyphen: "hyphen-danish",
-  doafter: "mdwtools",
-  doc: "latex",
-  docstrip: "latex",
-  dotlessj: "carlisle",
-  drcaps: "shipunov",
-  drftcite: "cite",
-  duplicat: "piff",
-  dvibook: "seetexk",
-  dviconcat: "seetexk",
-  dviout: "dviout.windows",
-  dvipscol: "oberdiek",
-  dvipsk: "dvips",
-  dvitype: "texware",
-  "e-tex": "etex",
-  easybib: "easy",
-  easybmat: "easy",
-  easyeqn: "easy",
-  easymat: "easy",
-  easytable: "easy",
-  easyvector: "easy",
-  egothic: "bookhands",
-  eledpar: "eledmac",
-  elhyphen: "hyphen-greek",
-  engord: "oberdiek",
-  enparen: "oberdiek",
-  enumerate: "tools",
-  envmath: "bosisio",
-  eolgrab: "oberdiek",
-  epsfig: "graphics",
-  epsfx: "tex-ps",
-  eptex: "ptex",
-  etruscan: "archaic",
-  euptex: "uptex",
-  evenpage: "bosisio",
-  expkv: "expkv-bundle",
-  "expkv-cs": "expkv-bundle",
-  "expkv-def": "expkv-bundle",
-  "expkv-opt": "expkv-bundle",
-  expl3: "l3kernel",
-  exscale: "latex",
-  extdash: "ncctools",
-  fancyheadings: "fancyhdr",
-  "faq-es": "es-tex-faq",
-  fepslatex: "epslatex-fr",
-  fibnum: "oberdiek",
-  fifinddo: "nicetext",
-  figcaps: "preprint",
-  fihyph: "hyphen-finnish",
-  fileerr: "tools",
-  findfont: "luafindfont",
-  findpkg: "texfindpkg",
-  finplain: "finbib",
-  "fix-cm": "latex",
-  fixltx2e: "latex",
-  flags: "oberdiek",
-  flashcard: "ltxmisc",
-  floatpag: "sttools",
-  flushend: "sttools",
-  fnlineno: "lineno",
-  fnpos: "yafoot",
-  fntguide: "latex",
-  fontchart: "plain",
-  fontenc: "latex",
-  fontsmpl: "tools",
-  footnote: "mdwtools",
-  ftnright: "tools",
-  fullpage: "preprint",
-  gentium: "gentium-tug",
-  "geometry-de": "geometry",
-  ghostscript: "tlgs.windows",
-  ghyphen: "dehyph",
-  gkpmac: "plain",
-  glhyph: "hyphen-spanish",
-  "glossaries-accsupp": "glossaries",
-  gnhyph: "dehyph",
-  graphicx: "graphics",
-  graphpap: "latex",
-  "greek-makeindex": "mkgrkindex",
-  greek4cbc: "archaic",
-  greek6cbc: "archaic",
-  greekctr: "jknapltx",
-  grfguide: "graphics",
-  helvet: "psnfss",
-  hhline: "tools",
-  hieroglf: "archaic",
-  hint: "hitex",
-  holtpolt: "jknapltx",
-  holtxdoc: "oberdiek",
-  hrhyph: "hyphen-croatian",
-  humanbio: "beebe",
-  humanist: "bookhands",
-  humannat: "beebe",
-  huncial: "bookhands",
-  hungarian: "hyphen-hungarian",
-  hypbmsec: "oberdiek",
-  hypgotoe: "oberdiek",
-  hyphsubst: "oberdiek",
-  icehyph: "hyphen-icelandic",
-  icomma: "was",
-  ieeetrantools: "ieeetran",
-  ifdraft: "oberdiek",
-  ifetex: "iftex",
-  iflang: "oberdiek",
-  ifluatex: "iftex",
-  ifpdf: "iftex",
-  ifthen: "latex",
-  ifvtex: "iftex",
-  ifxetex: "iftex",
-  impatient: [
-    "impatient-cn",
-    "impatient-fr"
-  ],
-  indentfirst: "tools",
-  inputenc: "latex",
-  ithyph: "hyphen-italian",
-  "japanese-otf-uptex": "japanese-otf",
-  jknappen: "jknapltx",
-  keyval: "graphics",
-  "knuth-letter": "plain",
-  "knuth-local": "cmextra",
-  "koma-script-examples-5": "koma-script-examples",
-  "ksfh-nat": "ksfh_nat",
-  l3keys2e: "l3packages",
-  lahyph: "hyphen-latin",
-  "latex-amsmath": "amsmath",
-  "latex-base": "latex",
-  "latex-cyrillic": "cyrillic",
-  "latex-doc": "latex",
-  "latex-firstaid": "firstaid",
-  "latex-graphics": "graphics",
-  "latex-tools": "tools",
-  "latex2e-help-texinfo": "latex2e-help-texinfo-spanish",
-  latin1jk: "jknapltx",
-  latin2jk: "jknapltx",
-  latin3jk: "jknapltx",
-  "lato-math": "lete-sans-math",
-  "lcdf-typetools": "lcdftypetools",
-  ledarab: "ledmac",
-  ledpar: "ledmac",
-  letter: "latex",
-  letterformat: "plain",
-  "levy-font": "levy",
-  "lgc-examples": "latex-graphics-companion",
-  linearb: "archaic",
-  linsys: "ltxmisc",
-  lips: "frankenstein",
-  "lithuanian-babel": "babel-lithuanian",
-  llmk: "light-latex-make",
-  lmodern: "lm",
-  logsys: "coordsys",
-  longtable: "tools",
-  lscape: "graphics",
-  "lshort-zh-cn": "lshort-chinese",
-  ltugboat: "tugboat",
-  ltxdoc: "latex",
-  "lwc-examples": "latex-web-companion",
-  makedoc: "nicetext",
-  makeidx: "latex",
-  makeindexk: "makeindex",
-  manual: "manfnt-font",
-  manyfoot: "ncctools",
-  mathalfa: "mathalpha",
-  mathbbol: "jknapltx",
-  mathptmx: "psnfss",
-  mathrsfs: "jknapltx",
-  mboxfill: "ncctools",
-  mdwlist: "mdwtools",
-  mdwmath: "mdwtools",
-  mdwtab: "mdwtools",
-  memhfixc: "memoir",
-  metainfo: "sauerj",
-  mf: "metafont",
-  "mf-ps": "roex",
-  minimal: "latex",
-  mirr: "tex-ps",
-  "mltex-ltx": "mltex",
-  modguide: "latex",
-  moredefs: "frankenstein",
-  mp: "metapost",
-  mpost: "metapost",
-  multicol: "tools",
-  myfilist: "fileinfo",
-  nameref: "hyperref",
-  namunsrt: "beebe",
-  natmove: "achemso",
-  nbaseprt: "numprint",
-  nccbbb: "ncctools",
-  nccboxes: "ncctools",
-  ncccomma: "ncctools",
-  ncccropbox: "ncctools",
-  ncccropmark: "ncctools",
-  nccfancyhdr: "ncctools",
-  nccfloats: "ncctools",
-  nccfoots: "ncctools",
-  nccmath: "ncctools",
-  nccparskip: "ncctools",
-  nccpic: "ncctools",
-  nccrules: "ncctools",
-  nccsect: "ncctools",
-  nccstretch: "ncctools",
-  nccthm: "ncctools",
-  nehyph: "hyphen-dutch",
-  "neo-euler": "euler-math",
-  newclude: "frankenstein",
-  newcm: "newcomputermodern",
-  newproof: "piff",
-  ngerman: "german",
-  nicefrac: "units",
-  niceverb: "nicetext",
-  nohyph: "hyphen-norwegian",
-  nohyphbx: "hyphen-norwegian",
-  oands: "archaic",
-  oldprsn: "archaic",
-  omega: "omegaware",
-  one2many: "12many",
-  onepagem: "piff",
-  optparams: "sauerj",
-  overcite: "cite",
-  parboxx: "jknapltx",
-  parcolumns: "sauerj",
-  pdfcolparallel: "oberdiek",
-  pdfcolparcolumns: "oberdiek",
-  pdfcrypt: "oberdiek",
-  perpage: "bigfoot",
-  pfnote: "yafoot",
-  pgfkeys: "pgf",
-  pgfplotstable: "pgfplots",
-  pgothic: "bookhands",
-  phoenician: "archaic",
-  picmac: "plain",
-  "pictex-autoarea": "autoarea",
-  pictexwd: "pictex",
-  pifont: "psnfss",
-  pl: "plweb",
-  "pl-mf": "pl",
-  plfonts: "pl",
-  plhyph: "hyphen-polish",
-  plpsfont: "pl",
-  poligraf: "tex-ps",
-  polishlipsum: "bredzenie",
-  proc: "latex",
-  processkv: "sauerj",
-  protecteddef: "oberdiek",
-  protosem: "archaic",
-  psfont: "altfont",
-  psmerge: "psutils",
-  "pst-xkey": "xkeyval",
-  "pstricks-base": "pstricks",
-  "pstricks-calcnotes": "pstricks_calcnotes",
-  "r-und-s": "r_und_s",
-  ratex: "rtklage",
-  readprov: "fileinfo",
-  refer: "beebe",
-  repeat: "eijkhout",
-  report: "latex",
-  resizegather: "oberdiek",
-  "revtex4-0": "revtex4",
-  rotchiffre: "oberdiek",
-  rubikcube: "rubik",
-  rubikrotation: "rubik",
-  rubiktwocube: "rubik",
-  "rule-d": "gs1",
-  runic: "archaic",
-  sans: "jknapltx",
-  sarabian: "archaic",
-  scalefnt: "carlisle",
-  schwell: "gothic",
-  scraddr: "koma-script",
-  scrartcl: "koma-script",
-  scrarticle: "koma-script",
-  scrbase: "koma-script",
-  scrbook: "koma-script",
-  scrdate: "koma-script",
-  scrextend: "koma-script",
-  scrindex: "oberdiek",
-  scrjura: "koma-script",
-  scrlayer: "koma-script",
-  "scrlayer-notecolumn": "koma-script",
-  "scrlayer-scrpage": "koma-script",
-  scrletter: "koma-script",
-  scrlfile: "koma-script",
-  scrlttr2: "koma-script",
-  scrreport: "koma-script",
-  scrreprt: "koma-script",
-  scrtime: "koma-script",
-  semtrans: "jknapltx",
-  "serbian-book": "srbook-mem",
-  setouterhbox: "oberdiek",
-  settobox: "oberdiek",
-  sgmlcmpt: "jknapltx",
-  shellesc: "tools",
-  shortvrb: "latex",
-  showframe: "eso-pic",
-  showkeys: "tools",
-  slashed: "carlisle",
-  slemph: "frankenstein",
-  slides: "latex",
-  smartmn: "jknapltx",
-  soulutf8: "soul",
-  source2e: "latex",
-  spanish: "babel-spanish",
-  sqrcaps: "bookhands",
-  srhyphc: "hyphen-serbian",
-  stackrel: "oberdiek",
-  stampinclude: "oberdiek",
-  startlatex2e: "yet-another-guide-latex2e",
-  structuredlog: "latex",
-  subcaption: "caption",
-  sueterlin: "gothic",
-  suffix: "bigfoot",
-  sverb: "mdwtools",
-  sympytex: "sympytexpackage",
-  "syntax-mdw": "mdwtools",
-  syntax2: "syntax",
-  syntonly: "latex",
-  t1enc: "latex",
-  t2: "cyrplain",
-  tabto: "tabto-ltx",
-  tabularht: "oberdiek",
-  tabularkv: "oberdiek",
-  tabularx: "tools",
-  tangle: "web",
-  tccompat: "jknapltx",
-  tclldoc: "tcldoc",
-  testflow: "ieeetran",
-  "tex-gyre-adventor": "tex-gyre",
-  "tex-gyre-bonum": "tex-gyre",
-  "tex-gyre-chorus": "tex-gyre",
-  "tex-gyre-cursor": "tex-gyre",
-  "tex-gyre-heros": "tex-gyre",
-  "tex-gyre-math-pagella": "tex-gyre-math",
-  "tex-gyre-math-termes": "tex-gyre-math",
-  "tex-gyre-pagella": "tex-gyre",
-  "tex-gyre-schola": "tex-gyre",
-  "tex-gyre-termes": "tex-gyre",
-  "tex-references": "tex-refs",
-  "texinfo-latest": "texinfo",
-  tgothic: "bookhands",
-  theorem: "tools",
-  thepdfnumber: "oberdiek",
-  thrmappendix: "ltxmisc",
-  tikz: "pgf",
-  time: "piff",
-  titleps: "titlesec",
-  titles: "frankenstein",
-  titletoc: "titlesec",
-  tkhyph: "hyphen-turkish",
-  "tlc2-examples": "tlc2",
-  tocbasic: "koma-script",
-  tocenter: "ncctools",
-  topcapt: "ltxmisc",
-  topsection: "ncctools",
-  trace: "tools",
-  trans: "tex-ps",
-  "treetex-plain": "treetex",
-  trig: "graphics",
-  twoopt: "oberdiek",
-  "twoup-gen": "2up",
-  twoupltx: "twoup",
-  type1ec: "cm-super",
-  typearea: "koma-script",
-  ugarite: "archaic",
-  uncial: "bookhands",
-  upgreek: "was",
-  upref: "amscls",
-  "urw-antiqua": "antiqua",
-  "urw-base35": [
-    "avantgar",
-    "bookman",
-    "courier",
-    "helvetic",
-    "ncntrsbk",
-    "palatino",
-    "symbol",
-    "times",
-    "zapfchan",
-    "zapfding"
-  ],
-  "urw-grotesq": "grotesq",
-  usrguide: "latex",
-  varioref: "tools",
-  verbatim: "tools",
-  vfware: "fontware",
-  viking: "archaic",
-  vowel: "tipa",
-  vrbexin: "ltxmisc",
-  wasy2: "wasy",
-  "wasy2-ps": "wasy-type1",
-  watermark: "ncctools",
-  weave: "web",
-  wiki: "nicetext",
-  wncyr: "amsfonts",
-  xdvik: "xdvi",
-  xdvipdfmx: "dvipdfmx",
-  xfp: "l3packages",
-  xintexpr: "xint",
-  xkvltxp: "xkeyval",
-  xkvview: "xkeyval",
-  xparse: "l3packages",
-  xput: "pagelayout",
-  xr: "tools",
-  "xr-hyper": "hyperref",
-  xspace: "tools",
-  xtemplate: "l3packages",
-  yfrak: "gothic",
-  ygoth: "gothic",
-  yinit: "gothic",
-  young: "jknapltx",
-  yswab: "gothic",
-  zahl2string: "sauerj"
+var package_names_default = {
+  toTL: {
+    a4: "ntgclass",
+    abbrevs: "frankenstein",
+    abstbook: "ltxmisc",
+    "abstyles-babel": "abstyles",
+    "abstyles-orig": "abstyles",
+    accenti: "bosisio",
+    achicago: "frankenstein",
+    "achicago-bst": "frankenstein",
+    afterpackage: "ncctools",
+    afterpage: "tools",
+    aliascnt: "oberdiek",
+    alltt: "latex",
+    alphanum: "jura",
+    altverse: "shipunov",
+    amsart: "amscls",
+    amsbook: "amscls",
+    amsbsy: "amsmath",
+    amscd: "amsmath",
+    amslatex: "amsmath",
+    "amslatexdoc-vietnamese": "amsldoc-vn",
+    amsmidx: "amscls",
+    amsopn: "amsmath",
+    amsppt: "amstex",
+    amsppt1: "amstex",
+    amsproc: "amscls",
+    amstext: "amsmath",
+    amsthm: "amscls",
+    annotation: "beebe",
+    apa5: "apa",
+    apabst: "beebe",
+    aramaic: "archaic",
+    array: "tools",
+    arrayjob: "arrayjobx",
+    arrow: "eplain",
+    article: "latex",
+    at: "mdwtools",
+    attrib: "frankenstein",
+    auncial: "bookhands",
+    authblk: "preprint",
+    autoinst: "fontools",
+    autolist: "shipunov",
+    backref: "hyperref",
+    bahyph: "hyphen-basque",
+    balance: "preprint",
+    base: "plain",
+    bbs: "beebe",
+    bdfchess: "chess",
+    beletter: "ltxmisc",
+    "bengali-pandey": "bengali",
+    "besjournals-bst": "besjournals",
+    bibcheck: "ltxmisc",
+    biblio: "beebe",
+    bibtex8bit: "bibtex8",
+    bicaption: "caption",
+    bigdelim: "multirow",
+    bigstrut: "multirow",
+    binhex: "kastrup",
+    biolinum: "libertine",
+    biolist: "shipunov",
+    blkcntrl: "frankenstein",
+    bm: "tools",
+    bmpsize: "oberdiek",
+    boldline: "shipunov",
+    book: "latex",
+    boxedminipage2e: "boxedminipage",
+    cahyph: "hyphen-spanish",
+    calc: "tools",
+    caption2: "caption",
+    carolmin: "bookhands",
+    "carolmin-t1": "carolmin-ps",
+    "cassette-shipunov": "shipunov",
+    catalan: "hyphen-spanish",
+    cbe: "beebe",
+    "cbgreek-complete": "cbfonts",
+    ccref: "crefthe",
+    cdcover: "cd-cover",
+    cdlabeler: "eijkhout",
+    centernot: "oberdiek",
+    cfgguide: "latex",
+    chapterbib: "cite",
+    chemarr: "oberdiek",
+    chemscheme: "chemstyle",
+    "cite-bundle": "cite",
+    cjk: "cjkutils",
+    "cjk-fonts": "cns",
+    classes: "latex",
+    classif2: "shipunov",
+    classlist: "oberdiek",
+    clsguide: "latex",
+    "cm-mf": "cm",
+    "cm-pk": "cm",
+    "cm-tfm": "cm",
+    "cmextra-latex": "latex",
+    cmfrak: "gothic",
+    cmtt: "mdwtools",
+    "cmyk-hax": "tex-ps",
+    collect: "sauerj",
+    colonequals: "oberdiek",
+    color: "graphics",
+    colordvi: "dvips",
+    compsci: "frankenstein",
+    "concrete-macros": "ltxmisc",
+    csfonts: "cs",
+    "csfonts-t1": "cs",
+    "csname-doc": "plain-doc",
+    cspsfonts: "cslatex",
+    ctib4tex: "ctib",
+    cuted: "sttools",
+    cvsty: "cv",
+    cwebbin: "cweb",
+    cypriot: "archaic",
+    cyrguide: "latex",
+    dblfnote: "yafoot",
+    dblfont: "bosisio",
+    dbprocess: "eijkhout",
+    dcolumn: "tools",
+    dcounter: "ncctools",
+    delarray: "tools",
+    desclist: "ncctools",
+    devanagari: "velthuis",
+    diagxy: "barr",
+    dialogue: "frankenstein",
+    dkhyphen: "hyphen-danish",
+    doafter: "mdwtools",
+    doc: "latex",
+    docstrip: "latex",
+    dotlessj: "carlisle",
+    drcaps: "shipunov",
+    drftcite: "cite",
+    duplicat: "piff",
+    dvibook: "seetexk",
+    dviconcat: "seetexk",
+    dviout: "dviout.windows",
+    dvipscol: "oberdiek",
+    dvipsk: "dvips",
+    dvitype: "texware",
+    "e-tex": "etex",
+    easybib: "easy",
+    easybmat: "easy",
+    easyeqn: "easy",
+    easymat: "easy",
+    easytable: "easy",
+    easyvector: "easy",
+    egothic: "bookhands",
+    eledpar: "eledmac",
+    elhyphen: "hyphen-greek",
+    engord: "oberdiek",
+    enparen: "oberdiek",
+    enumerate: "tools",
+    envmath: "bosisio",
+    eolgrab: "oberdiek",
+    epsfig: "graphics",
+    epsfx: "tex-ps",
+    eptex: "ptex",
+    etruscan: "archaic",
+    euptex: "uptex",
+    evenpage: "bosisio",
+    expkv: "expkv-bundle",
+    "expkv-cs": "expkv-bundle",
+    "expkv-def": "expkv-bundle",
+    "expkv-opt": "expkv-bundle",
+    expl3: "l3kernel",
+    exscale: "latex",
+    extdash: "ncctools",
+    fancyheadings: "fancyhdr",
+    "faq-es": "es-tex-faq",
+    fepslatex: "epslatex-fr",
+    fibnum: "oberdiek",
+    fifinddo: "nicetext",
+    figcaps: "preprint",
+    fihyph: "hyphen-finnish",
+    fileerr: "tools",
+    findfont: "luafindfont",
+    findpkg: "texfindpkg",
+    finplain: "finbib",
+    "fix-cm": "latex",
+    fixltx2e: "latex",
+    flags: "oberdiek",
+    flashcard: "ltxmisc",
+    floatpag: "sttools",
+    flushend: "sttools",
+    fnlineno: "lineno",
+    fnpos: "yafoot",
+    fntguide: "latex",
+    fontchart: "plain",
+    fontenc: "latex",
+    fontsmpl: "tools",
+    footnote: "mdwtools",
+    ftnright: "tools",
+    fullpage: "preprint",
+    gentium: "gentium-tug",
+    "geometry-de": "geometry",
+    ghostscript: "tlgs.windows",
+    ghyphen: "dehyph",
+    gkpmac: "plain",
+    glhyph: "hyphen-spanish",
+    "glossaries-accsupp": "glossaries",
+    gnhyph: "dehyph",
+    graphicx: "graphics",
+    graphpap: "latex",
+    "greek-makeindex": "mkgrkindex",
+    greek4cbc: "archaic",
+    greek6cbc: "archaic",
+    greekctr: "jknapltx",
+    grfguide: "graphics",
+    helvet: "psnfss",
+    hhline: "tools",
+    hieroglf: "archaic",
+    hint: "hitex",
+    holtpolt: "jknapltx",
+    holtxdoc: "oberdiek",
+    hrhyph: "hyphen-croatian",
+    humanbio: "beebe",
+    humanist: "bookhands",
+    humannat: "beebe",
+    huncial: "bookhands",
+    hungarian: "hyphen-hungarian",
+    hypbmsec: "oberdiek",
+    hypgotoe: "oberdiek",
+    hyphsubst: "oberdiek",
+    icehyph: "hyphen-icelandic",
+    icomma: "was",
+    ieeetrantools: "ieeetran",
+    ifdraft: "oberdiek",
+    ifetex: "iftex",
+    iflang: "oberdiek",
+    ifluatex: "iftex",
+    ifpdf: "iftex",
+    ifthen: "latex",
+    ifvtex: "iftex",
+    ifxetex: "iftex",
+    impatient: [
+      "impatient-cn",
+      "impatient-fr"
+    ],
+    indentfirst: "tools",
+    inputenc: "latex",
+    ithyph: "hyphen-italian",
+    "japanese-otf-uptex": "japanese-otf",
+    jknappen: "jknapltx",
+    keyval: "graphics",
+    "knuth-letter": "plain",
+    "knuth-local": "cmextra",
+    "koma-script-examples-5": "koma-script-examples",
+    "ksfh-nat": "ksfh_nat",
+    l3keys2e: "l3packages",
+    lahyph: "hyphen-latin",
+    "latex-amsmath": "amsmath",
+    "latex-base": "latex",
+    "latex-cyrillic": "cyrillic",
+    "latex-doc": "latex",
+    "latex-firstaid": "firstaid",
+    "latex-graphics": "graphics",
+    "latex-tools": "tools",
+    "latex2e-help-texinfo": "latex2e-help-texinfo-spanish",
+    latin1jk: "jknapltx",
+    latin2jk: "jknapltx",
+    latin3jk: "jknapltx",
+    "lato-math": "lete-sans-math",
+    "lcdf-typetools": "lcdftypetools",
+    ledarab: "ledmac",
+    ledpar: "ledmac",
+    letter: "latex",
+    letterformat: "plain",
+    "levy-font": "levy",
+    "lgc-examples": "latex-graphics-companion",
+    linearb: "archaic",
+    linsys: "ltxmisc",
+    lips: "frankenstein",
+    "lithuanian-babel": "babel-lithuanian",
+    llmk: "light-latex-make",
+    lmodern: "lm",
+    logsys: "coordsys",
+    longtable: "tools",
+    lscape: "graphics",
+    "lshort-zh-cn": "lshort-chinese",
+    ltugboat: "tugboat",
+    ltxdoc: "latex",
+    "lwc-examples": "latex-web-companion",
+    makedoc: "nicetext",
+    makeidx: "latex",
+    makeindexk: "makeindex",
+    manual: "manfnt-font",
+    manyfoot: "ncctools",
+    mathalfa: "mathalpha",
+    mathbbol: "jknapltx",
+    mathptmx: "psnfss",
+    mathrsfs: "jknapltx",
+    mboxfill: "ncctools",
+    mdwlist: "mdwtools",
+    mdwmath: "mdwtools",
+    mdwtab: "mdwtools",
+    memhfixc: "memoir",
+    metainfo: "sauerj",
+    mf: "metafont",
+    "mf-ps": "roex",
+    minimal: "latex",
+    mirr: "tex-ps",
+    "mltex-ltx": "mltex",
+    modguide: "latex",
+    moredefs: "frankenstein",
+    mp: "metapost",
+    mpost: "metapost",
+    multicol: "tools",
+    myfilist: "fileinfo",
+    nameref: "hyperref",
+    namunsrt: "beebe",
+    natmove: "achemso",
+    nbaseprt: "numprint",
+    nccbbb: "ncctools",
+    nccboxes: "ncctools",
+    ncccomma: "ncctools",
+    ncccropbox: "ncctools",
+    ncccropmark: "ncctools",
+    nccfancyhdr: "ncctools",
+    nccfloats: "ncctools",
+    nccfoots: "ncctools",
+    nccmath: "ncctools",
+    nccparskip: "ncctools",
+    nccpic: "ncctools",
+    nccrules: "ncctools",
+    nccsect: "ncctools",
+    nccstretch: "ncctools",
+    nccthm: "ncctools",
+    nehyph: "hyphen-dutch",
+    "neo-euler": "euler-math",
+    newclude: "frankenstein",
+    newcm: "newcomputermodern",
+    newproof: "piff",
+    ngerman: "german",
+    nicefrac: "units",
+    niceverb: "nicetext",
+    nohyph: "hyphen-norwegian",
+    nohyphbx: "hyphen-norwegian",
+    oands: "archaic",
+    oldprsn: "archaic",
+    omega: "omegaware",
+    one2many: "12many",
+    onepagem: "piff",
+    optparams: "sauerj",
+    overcite: "cite",
+    parboxx: "jknapltx",
+    parcolumns: "sauerj",
+    pdfcolparallel: "oberdiek",
+    pdfcolparcolumns: "oberdiek",
+    pdfcrypt: "oberdiek",
+    perpage: "bigfoot",
+    pfnote: "yafoot",
+    pgfkeys: "pgf",
+    pgfplotstable: "pgfplots",
+    pgothic: "bookhands",
+    phoenician: "archaic",
+    picmac: "plain",
+    "pictex-autoarea": "autoarea",
+    pictexwd: "pictex",
+    pifont: "psnfss",
+    pl: "plweb",
+    "pl-mf": "pl",
+    plfonts: "pl",
+    plhyph: "hyphen-polish",
+    plpsfont: "pl",
+    poligraf: "tex-ps",
+    polishlipsum: "bredzenie",
+    proc: "latex",
+    processkv: "sauerj",
+    protecteddef: "oberdiek",
+    protosem: "archaic",
+    psfont: "altfont",
+    psmerge: "psutils",
+    "pst-xkey": "xkeyval",
+    "pstricks-base": "pstricks",
+    "pstricks-calcnotes": "pstricks_calcnotes",
+    "r-und-s": "r_und_s",
+    ratex: "rtklage",
+    readprov: "fileinfo",
+    refer: "beebe",
+    repeat: "eijkhout",
+    report: "latex",
+    resizegather: "oberdiek",
+    "revtex4-0": "revtex4",
+    rotchiffre: "oberdiek",
+    rubikcube: "rubik",
+    rubikrotation: "rubik",
+    rubiktwocube: "rubik",
+    "rule-d": "gs1",
+    runic: "archaic",
+    sans: "jknapltx",
+    sarabian: "archaic",
+    scalefnt: "carlisle",
+    schwell: "gothic",
+    scraddr: "koma-script",
+    scrartcl: "koma-script",
+    scrarticle: "koma-script",
+    scrbase: "koma-script",
+    scrbook: "koma-script",
+    scrdate: "koma-script",
+    scrextend: "koma-script",
+    scrindex: "oberdiek",
+    scrjura: "koma-script",
+    scrlayer: "koma-script",
+    "scrlayer-notecolumn": "koma-script",
+    "scrlayer-scrpage": "koma-script",
+    scrletter: "koma-script",
+    scrlfile: "koma-script",
+    scrlttr2: "koma-script",
+    scrreport: "koma-script",
+    scrreprt: "koma-script",
+    scrtime: "koma-script",
+    semtrans: "jknapltx",
+    "serbian-book": "srbook-mem",
+    setouterhbox: "oberdiek",
+    settobox: "oberdiek",
+    sgmlcmpt: "jknapltx",
+    shellesc: "tools",
+    shortvrb: "latex",
+    showframe: "eso-pic",
+    showkeys: "tools",
+    slashed: "carlisle",
+    slemph: "frankenstein",
+    slides: "latex",
+    smartmn: "jknapltx",
+    soulutf8: "soul",
+    source2e: "latex",
+    spanish: "babel-spanish",
+    sqrcaps: "bookhands",
+    srhyphc: "hyphen-serbian",
+    stackrel: "oberdiek",
+    stampinclude: "oberdiek",
+    startlatex2e: "yet-another-guide-latex2e",
+    structuredlog: "latex",
+    subcaption: "caption",
+    sueterlin: "gothic",
+    suffix: "bigfoot",
+    sverb: "mdwtools",
+    sympytex: "sympytexpackage",
+    "syntax-mdw": "mdwtools",
+    syntax2: "syntax",
+    syntonly: "latex",
+    t1enc: "latex",
+    t2: "cyrplain",
+    tabto: "tabto-ltx",
+    tabularht: "oberdiek",
+    tabularkv: "oberdiek",
+    tabularx: "tools",
+    tangle: "web",
+    tccompat: "jknapltx",
+    tclldoc: "tcldoc",
+    testflow: "ieeetran",
+    "tex-gyre-adventor": "tex-gyre",
+    "tex-gyre-bonum": "tex-gyre",
+    "tex-gyre-chorus": "tex-gyre",
+    "tex-gyre-cursor": "tex-gyre",
+    "tex-gyre-heros": "tex-gyre",
+    "tex-gyre-math-pagella": "tex-gyre-math",
+    "tex-gyre-math-termes": "tex-gyre-math",
+    "tex-gyre-pagella": "tex-gyre",
+    "tex-gyre-schola": "tex-gyre",
+    "tex-gyre-termes": "tex-gyre",
+    "tex-references": "tex-refs",
+    "texinfo-latest": "texinfo",
+    tgothic: "bookhands",
+    theorem: "tools",
+    thepdfnumber: "oberdiek",
+    thrmappendix: "ltxmisc",
+    tikz: "pgf",
+    time: "piff",
+    titleps: "titlesec",
+    titles: "frankenstein",
+    titletoc: "titlesec",
+    tkhyph: "hyphen-turkish",
+    "tlc2-examples": "tlc2",
+    tocbasic: "koma-script",
+    tocenter: "ncctools",
+    topcapt: "ltxmisc",
+    topsection: "ncctools",
+    trace: "tools",
+    trans: "tex-ps",
+    "treetex-plain": "treetex",
+    trig: "graphics",
+    twoopt: "oberdiek",
+    "twoup-gen": "2up",
+    twoupltx: "twoup",
+    type1ec: "cm-super",
+    typearea: "koma-script",
+    ugarite: "archaic",
+    uncial: "bookhands",
+    upgreek: "was",
+    upref: "amscls",
+    "urw-antiqua": "antiqua",
+    "urw-base35": [
+      "avantgar",
+      "bookman",
+      "courier",
+      "helvetic",
+      "ncntrsbk",
+      "palatino",
+      "symbol",
+      "times",
+      "zapfchan",
+      "zapfding"
+    ],
+    "urw-grotesq": "grotesq",
+    usrguide: "latex",
+    varioref: "tools",
+    verbatim: "tools",
+    vfware: "fontware",
+    viking: "archaic",
+    vowel: "tipa",
+    vrbexin: "ltxmisc",
+    wasy2: "wasy",
+    "wasy2-ps": "wasy-type1",
+    watermark: "ncctools",
+    weave: "web",
+    wiki: "nicetext",
+    wncyr: "amsfonts",
+    xdvik: "xdvi",
+    xdvipdfmx: "dvipdfmx",
+    xfp: "l3packages",
+    xintexpr: "xint",
+    xkvltxp: "xkeyval",
+    xkvview: "xkeyval",
+    xparse: "l3packages",
+    xput: "pagelayout",
+    xr: "tools",
+    "xr-hyper": "hyperref",
+    xspace: "tools",
+    xtemplate: "l3packages",
+    yfrak: "gothic",
+    ygoth: "gothic",
+    yinit: "gothic",
+    young: "jknapltx",
+    yswab: "gothic",
+    zahl2string: "sauerj"
+  },
+  generated: "2024-11-26T16:25:35.991Z"
 };
 
 // node_modules/@teppeis/multimaps/dist/esm/multimap.js
@@ -80352,11 +80828,11 @@ var Multimap = class _Multimap {
     return this.map.delete(key);
   }
   deleteEntry(key, value) {
-    const current2 = this.get(key);
-    if (!this.operator.delete(value, current2)) {
+    const current = this.get(key);
+    if (!this.operator.delete(value, current)) {
       return false;
     }
-    this.map.set(key, current2);
+    this.map.set(key, current);
     this.size_--;
     return true;
   }
@@ -80458,6 +80934,7 @@ async function install(packages) {
     );
     let rest = new Set(error.packages);
     rest = await tryToInstallWith(rest, async (name2) => {
+      const toTL = package_names_default.toTL;
       return toTL[name2];
     });
     if (rest !== void 0 && rest.size > 0) {
@@ -80923,7 +81400,7 @@ __name(randomString, "randomString");
 // packages/action/src/runs/main/config.ts
 var import_glob = __toESM(require_glob2(), 1);
 import { readFile as readFile4 } from "node:fs/promises";
-import { platform as platform7 } from "node:os";
+import { arch as arch5, platform as platform7 } from "node:os";
 
 // node_modules/unist-util-stringify-position/lib/index.js
 function stringifyPosition(value) {
@@ -81389,11 +81866,21 @@ function getRepository() {
   try {
     url2 = new URL(input);
   } catch (cause) {
-    throw new Error("Invalid input for repository", { cause });
+    const error = new TypeError("Invalid input for `repository`", { cause });
+    error["input"] = input;
+    throw error;
   }
-  if (!url2.pathname.endsWith("/")) {
-    url2.pathname = path13.posix.join(url2.pathname, "/");
+  if (!["http:", "https:"].includes(url2.protocol)) {
+    const error = new TypeError(
+      "Currently only http/https repositories are supported"
+    );
+    error["repository"] = url2;
+    throw error;
   }
+  url2.pathname = path13.posix.join(
+    path13.posix.normalize(url2.pathname).replace(new RegExp("\\/archive\\/?|\\/tlpkg(?:\\/(?:texlive\\.tlpdb)?)?$", "v"), ""),
+    path13.posix.sep
+  );
   return url2;
 }
 __name(getRepository, "getRepository");
@@ -81435,13 +81922,6 @@ var Config;
     init();
     const releases = await ReleaseData.setup();
     const repository = getRepository();
-    if (repository !== void 0 && !["http:", "https:"].includes(repository.protocol)) {
-      const error = new TypeError(
-        "Currently only http/https repositories are supported"
-      );
-      error["repository"] = repository;
-      throw error;
-    }
     const config = {
       cache: getCache(),
       packages: await collectPackages(),
@@ -81525,7 +82005,7 @@ async function collectPackages() {
 }
 __name(collectPackages, "collectPackages");
 async function resolveVersion(version3, repository) {
-  const { latest, next: next2 } = ReleaseData.use();
+  const { latest, next } = ReleaseData.use();
   if (version3 === void 0 && repository !== void 0) {
     return await checkRemoteVersion(repository);
   }
@@ -81536,12 +82016,24 @@ async function resolveVersion(version3, repository) {
     if (version3 < "2008") {
       throw new RangeError("Versions prior to 2008 are not supported");
     }
-    if (platform7() === "darwin" && version3 < "2013") {
-      throw new RangeError(
-        "Versions prior to 2013 does not work on 64-bit macOS"
-      );
+    switch (platform7()) {
+      case "linux":
+        if (arch5() === "arm64" && version3 < "2017") {
+          throw new RangeError(
+            "Versions prior to 2017 does not support AArch64 Linux"
+          );
+        }
+        break;
+      case "darwin":
+        if (version3 < "2013") {
+          throw new RangeError(
+            "Versions prior to 2013 does not work on 64-bit macOS"
+          );
+        }
+        break;
+      default:
     }
-    if (version3 <= next2.version) {
+    if (version3 <= next.version) {
       return version3;
     }
   }
@@ -81549,7 +82041,7 @@ async function resolveVersion(version3, repository) {
 }
 __name(resolveVersion, "resolveVersion");
 async function checkRemoteVersion(repository) {
-  const { latest, next: next2 } = ReleaseData.use();
+  const { latest, next } = ReleaseData.use();
   const historic2 = new RegExp("\\/historic\\/systems\\/texlive\\/(\\d{4})\\/", "v");
   const match3 = historic2.exec(repository.pathname);
   if (Version.isVersion(match3?.[1])) {
@@ -81557,7 +82049,7 @@ async function checkRemoteVersion(repository) {
   }
   info2("Checking for remote version: %s", repository.href);
   const result = await Promise.all(
-    [latest, next2].map(async ({ version: version4 }) => {
+    [latest, next].map(async ({ version: version4 }) => {
       const headers = await tlnet_exports.checkVersionFile(repository, version4);
       return headers === void 0 ? void 0 : version4;
     })
@@ -81644,7 +82136,7 @@ var Installer = class {
         case 1:
           return await tlnet_exports.ctan({ master: false });
         case 2:
-          return new URL(ctan.path, ctan.default);
+          return new URL(tlnet_default.ctan.path, tlnet_default.ctan.default);
       }
     }
     throw new Error("Failed to find a suitable repository");
