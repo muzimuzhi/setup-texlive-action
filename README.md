@@ -18,11 +18,11 @@ Linux, Windows, and macOS are supported.
 
 [TeX Live]: https://tug.org/texlive/
 [`TEXDIR`]: https://tug.org/texlive/doc/texlive-en/texlive-en.html#x1-250003.2.3 "3.2.3 Directories"
-[ci-badge]: https://github.com/teatimeguest/setup-texlive-action/actions/workflows/ci.yml/badge.svg
-[ci]: https://github.com/teatimeguest/setup-texlive-action/actions/workflows/ci.yml
-[codecov-badge]: https://codecov.io/gh/teatimeguest/setup-texlive-action/branch/main/graph/badge.svg?token=97878QAWCF
-[codecov]: https://codecov.io/gh/teatimeguest/setup-texlive-action
-[marketplace-badge]: https://img.shields.io/github/v/release/teatimeguest/setup-texlive-action?logo=githubactions&label=Marketplace&labelColor=2e353b&color=2088ff
+[ci-badge]: https://github.com/muzimuzhi/setup-texlive-action/actions/workflows/ci.yml/badge.svg
+[ci]: https://github.com/muzimuzhi/setup-texlive-action/actions/workflows/ci.yml
+[codecov-badge]: https://codecov.io/gh/muzimuzhi/setup-texlive-action/branch/main/graph/badge.svg?token=97878QAWCF
+[codecov]: https://codecov.io/gh/muzimuzhi/setup-texlive-action
+[marketplace-badge]: https://img.shields.io/github/v/release/muzimuzhi/setup-texlive-action?logo=githubactions&label=Marketplace&labelColor=2e353b&color=2088ff
 [marketplace]: https://github.com/marketplace/actions/setup-texlive-action
 
 ## Breaking Changes in V3
@@ -72,7 +72,7 @@ a cache is found that exactly matches the specified version and package set.
 To simply check if a cache was found, use `cache-restored` instead:
 
 ```yaml
-- uses: teatimeguest/setup-texlive-action@v3
+- uses: muzimuzhi/setup-texlive-action@v3
   id: setup
 
 - if: fromJSON(steps.setup.outputs.cache-restored)
@@ -139,7 +139,7 @@ To emulate the previous behavior,
 specify the user directories explicitly using environment variables:
 
 ```yaml
-- uses: teatimeguest/setup-texlive-action@v3
+- uses: muzimuzhi/setup-texlive-action@v3
   env:
     TEXLIVE_INSTALL_TEXMFHOME: ~/texmf
     TEXLIVE_INSTALL_TEXMFCONFIG: ~/.local/texlive/<version>/texmf-config
@@ -169,7 +169,7 @@ The `package-file` input now accepts
 
 ```yaml
 - uses: actions/checkout@v4
-- uses: teatimeguest/setup-texlive-action@v3
+- uses: muzimuzhi/setup-texlive-action@v3
   with:
     package-file: |
       .github/tl_packages
@@ -207,7 +207,7 @@ since special characters such as `*` and `?` will need to be escaped.
 
 ```yaml
 - name: Setup TeX Live
-  uses: teatimeguest/setup-texlive-action@v3
+  uses: muzimuzhi/setup-texlive-action@v3
   with:
     packages: scheme-basic
 ```
@@ -218,7 +218,7 @@ To make it suitable for CI use, by default, the action will only set up
 If you want to install some TeX packages, you can use the `packages` input:
 
 ```yaml
-- uses: teatimeguest/setup-texlive-action@v3
+- uses: muzimuzhi/setup-texlive-action@v3
   with:
     packages: |
       scheme-basic
@@ -242,7 +242,7 @@ You can also specify packages by file using the `package-file` input:
 
 ```yaml
 - uses: actions/checkout@v4
-- uses: teatimeguest/setup-texlive-action@v3
+- uses: muzimuzhi/setup-texlive-action@v3
   with:
     package-file: |
       .github/tl_packages
@@ -264,7 +264,7 @@ using [actions/github-script], see [this script][e2e/index.cjs].
 If you want to disable caching, set the `cache` input to `false`:
 
 ```yaml
-- uses: teatimeguest/setup-texlive-action@v3
+- uses: muzimuzhi/setup-texlive-action@v3
   with:
     cache: false
 ```
@@ -273,7 +273,7 @@ If you want to disable caching, set the `cache` input to `false`:
 [REST API]: https://docs.github.com/en/rest/actions/cache?apiVersion=2022-11-28#delete-github-actions-caches-for-a-repository-using-a-cache-key
 [`@actions/cache`]: https://github.com/actions/toolkit/tree/main/packages/cache
 [actions/github-script]: https://github.com/actions/github-script
-[e2e/index.cjs]: https://github.com/teatimeguest/setup-texlive-action/blob/v3.3.0/packages/e2e/index.cjs
+[e2e/index.cjs]: https://github.com/muzimuzhi/setup-texlive-action/blob/v3.3.0/packages/e2e/index.cjs
 [post-process]: https://docs.github.com/en/actions/sharing-automations/creating-actions/metadata-syntax-for-github-actions#runspost
 [web interface]: https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows#deleting-cache-entries
 
@@ -282,7 +282,7 @@ If you want to disable caching, set the `cache` input to `false`:
 You can use an older version of TeX Live by setting the `version` input:
 
 ```yaml
-- uses: teatimeguest/setup-texlive-action@v3
+- uses: muzimuzhi/setup-texlive-action@v3
   with:
     version: 2008
 ```
@@ -544,7 +544,7 @@ Alternatively, you can pin the main repository
 using the `repository` input to avoid using problematic repositories:
 
 ```yaml
-- uses: teatimeguest/setup-texlive-action@v3
+- uses: muzimuzhi/setup-texlive-action@v3
   with:
     repository: https://example.com/path/to/systems/texlive/tlnet/
 ```
@@ -596,7 +596,7 @@ See the [GitHub Docs][enabling-debug-logging] for more information.
 
 ## Changelog
 
-See the [releases page](https://github.com/teatimeguest/setup-texlive-action/releases).
+See the [releases page](https://github.com/muzimuzhi/setup-texlive-action/releases).
 
 ## License
 
