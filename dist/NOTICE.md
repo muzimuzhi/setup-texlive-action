@@ -87,7 +87,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 URL: <https://www.npmjs.com/package/@actions/cache>
 
-### v4.0.3
+### v4.0.2
 
 License: `MIT`
 
@@ -625,16 +625,16 @@ SOFTWARE.
 
 URL: <https://www.npmjs.com/package/@azure/storage-blob>
 
-### v12.27.0
+### v12.26.0
 
 Copyright (c) Microsoft Corporation
 
 License: `MIT`
 
 ```
-Copyright (c) Microsoft Corporation.
+The MIT License (MIT)
 
-MIT License
+Copyright (c) 2020 Microsoft
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -646,7 +646,7 @@ furnished to do so, subject to the following conditions:
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
@@ -691,7 +691,7 @@ IN THE SOFTWARE.
 
 URL: <https://www.npmjs.com/package/@protobuf-ts/runtime>
 
-### v2.9.6
+### v2.9.5
 
 Copyright (c) Timo Stamm \<ts@timostamm.com\>
 
@@ -878,7 +878,7 @@ License: `(Apache-2.0 AND BSD-3-Clause)`
 
 URL: <https://www.npmjs.com/package/@protobuf-ts/runtime-rpc>
 
-### v2.9.6
+### v2.9.5
 
 Copyright (c) Timo Stamm \<ts@timostamm.com\>
 
@@ -1241,7 +1241,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### v1.1.12
+### v1.1.11
 
 Copyright (c) Julian Gruber \<mail@juliangruber.com\> (http://juliangruber.com)
 
@@ -1514,7 +1514,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 URL: <https://www.npmjs.com/package/fast-xml-parser>
 
-### v5.2.0
+### v5.0.9
 
 Copyright (c) Amit Gupta (https://solothought.com)
 
@@ -1756,7 +1756,7 @@ SOFTWARE.
 
 URL: <https://www.npmjs.com/package/semver>
 
-### v7.7.2
+### v7.7.1
 
 Copyright (c) GitHub Inc.
 
@@ -1913,7 +1913,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 URL: <https://www.npmjs.com/package/temporal-polyfill>
 
-### v0.3.0
+### v0.2.5
 
 Copyright (c) Adam Shaw \<arshaw@users.noreply.github.com\> (http://arshaw.com/)
 
@@ -1981,7 +1981,7 @@ SOFTWARE.
 
 URL: <https://www.npmjs.com/package/ts-pattern>
 
-### v5.7.1
+### v5.6.2
 
 Copyright (c) Gabriel Vergnaud
 
@@ -2106,7 +2106,7 @@ SOFTWARE.
 
 URL: <https://www.npmjs.com/package/undici>
 
-### v5.29.0
+### v5.28.5
 
 License: `MIT`
 
