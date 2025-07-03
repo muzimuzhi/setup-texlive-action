@@ -21,7 +21,7 @@
     "version": "bash scripts/bump-version.sh",
     "postversion": "bash scripts/bump-version.sh"
   },
-  "author": "@muzimuzhi",
+  "author": "@TeX-Live",
   "license": "MIT",
   "type": "module",
   "main": "dist/index.mjs",
