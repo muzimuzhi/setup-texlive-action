@@ -23,7 +23,7 @@ jobs:
     # The `-latest` runners are tested in a separate workflow file[^2].
     #
     # [^1]: <https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners#standard-github-hosted-runners-for-public-repositories>
-    # [^2]: <https://github.com/muzimuzhi/setup-texlive-action/blob/main/.github/workflows/e2e.yml>
+    # [^2]: <https://github.com/TeX-Live/setup-texlive-action/blob/main/.github/workflows/e2e.yml>
     #
     if: ${{ !inputs.runner }}
     strategy:

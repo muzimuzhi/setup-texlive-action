@@ -1,6 +1,6 @@
 name: Setup TeXLive Action 2
 description: A GitHub Action to set up TeX Live.
-author: '@muzimuzhi'
+author: '@TeX-Live'
 inputs:
   cache:
     description: >-
