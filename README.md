@@ -1,3 +1,13 @@
+> [!CAUTION]
+> Seeking More Maintainers
+>
+> This is a temp replacement for the deleted `teatimeguest/setup-texlive-action` action and
+> [repo](https://github.com/teatimeguest/setup-texlive-action).
+>
+> For now I (@muzimuzhi) am lacking the required Node.js/TypsScript skills to add features to or fix
+> possible bugs in this JavaScript action. I'm even unable to adapt code and tests after running
+> the attractive `npm audit fix`.
+
 # setup-texlive-action
 
 > A GitHub Action to set up TeX Live
