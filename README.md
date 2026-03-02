@@ -330,7 +330,7 @@ with small patches to fix minor problems.
 
 <!-- &zwj; U+200D ZERO WIDTH JOINER -->
 
-`2008`&ndash;&zwj;`2025`
+`2008`&ndash;&zwj;`2026`
 
 </td>
         <td rowspan="2"></td>
@@ -341,7 +341,7 @@ with small patches to fix minor problems.
         <td><code>ubuntu-&zwj;24.04-&zwj;arm</code></td>
         <td rowspan="2">
 
-`2017`&ndash;`2025`
+`2017`&ndash;`2026`
 
 </td>
         <td rowspan="2">
@@ -356,7 +356,7 @@ Versions prior to `2017` does not support AArch64 (ARM64).
         <td><code>windows-2025</code></td>
         <td rowspan="3">
 
-`2008`&ndash;`2025`
+`2008`&ndash;`2026`
 
 </td>
         <td rowspan="3"></td>
@@ -368,7 +368,7 @@ Versions prior to `2017` does not support AArch64 (ARM64).
         <td><code>macos-26</code></td>
         <td rowspan="3">
 
-`2013`&ndash;`2025`
+`2013`&ndash;`2026`
 
 </td>
         <td rowspan="3">
@@ -412,7 +412,7 @@ All inputs are optional.
 | `texdir`              | String | TeX Live system installation directory. This has the same effect as the installer's [`-texdir`] option and takes precedence over the `prefix` input and related environment variables.                                   |
 | `tlcontrib`           | Bool   | <p>Set up [TLContrib] as an additional TeX package repository. This input will be ignored for older versions.</p> **Default:**&ensp;`false`                                                                              |
 | `update-all-packages` | Bool   | <p>Update all TeX packages when cache restored. Defaults to `false`, and the action will update only `tlmgr`.</p> **Default:**&ensp;`false`                                                                              |
-| `version`             | String | <p>TeX Live version to install. Supported values are `2008` to `2025`, and `latest`.</p> **Default:**&ensp;`latest` if the `repository` input is not set, otherwise the remote version will be assumed.                  |
+| `version`             | String | <p>TeX Live version to install. Supported values are `2008` to `2026`, and `latest`.</p> **Default:**&ensp;`latest` if the `repository` input is not set, otherwise the remote version will be assumed.                  |
 
 <!-- TODO
   - Provide a separate subsection on the input syntax and file format.
