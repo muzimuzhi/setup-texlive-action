@@ -14,7 +14,7 @@
     "./src/custom-inspect.ts"
   ],
   "dependencies": {
-    "@actions/core": "^2.0.2",
+    "@actions/core": "^3.0.0",
     "ansi-styles": "^6.2.3",
     "clean-stack": "^6.0.0",
     "ts-pattern": "^5.9.0"
