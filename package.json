@@ -16,7 +16,7 @@
     "link-check": "markdown-link-check README.md",
     "lint": "cd packages && eslint .",
     "test": "cd packages && vitest",
-    "prepack": "run-p --aggregate-output -c build licenses",
+    "prepack": "run-p --aggregate-output -c build 'build --workspace packages/data' licenses",
     "preversion": "npm ci && npm run prepack",
     "version": "bash scripts/bump-version.sh",
     "tag": "bash scripts/bump-version.sh"
