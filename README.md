@@ -95,7 +95,7 @@ a cache is found that exactly matches the specified version and package set.
 To simply check if a cache was found, use `cache-restored` instead:
 
 ```yaml
-- uses: TeX-Live/setup-texlive-action@v3
+- uses: TeX-Live/setup-texlive-action@v4
   id: setup
 
 - if: fromJSON(steps.setup.outputs.cache-restored)
@@ -162,7 +162,7 @@ To emulate the previous behavior,
 specify the user directories explicitly using environment variables:
 
 ```yaml
-- uses: TeX-Live/setup-texlive-action@v3
+- uses: TeX-Live/setup-texlive-action@v4
   env:
     TEXLIVE_INSTALL_TEXMFHOME: ~/texmf
     TEXLIVE_INSTALL_TEXMFCONFIG: ~/.local/texlive/<version>/texmf-config
@@ -192,7 +192,7 @@ The `package-file` input now accepts
 
 ```yaml
 - uses: actions/checkout@v4
-- uses: TeX-Live/setup-texlive-action@v3
+- uses: TeX-Live/setup-texlive-action@v4
   with:
     package-file: |
       .github/tl_packages
@@ -230,7 +230,7 @@ since special characters such as `*` and `?` will need to be escaped.
 
 ```yaml
 - name: Setup TeX Live
-  uses: TeX-Live/setup-texlive-action@v3
+  uses: TeX-Live/setup-texlive-action@v4
   with:
     packages: scheme-basic
 ```
@@ -241,7 +241,7 @@ To make it suitable for CI use, by default, the action will only set up
 If you want to install some TeX packages, you can use the `packages` input:
 
 ```yaml
-- uses: TeX-Live/setup-texlive-action@v3
+- uses: TeX-Live/setup-texlive-action@v4
   with:
     packages: |
       scheme-basic
@@ -265,7 +265,7 @@ You can also specify packages by file using the `package-file` input:
 
 ```yaml
 - uses: actions/checkout@v4
-- uses: TeX-Live/setup-texlive-action@v3
+- uses: TeX-Live/setup-texlive-action@v4
   with:
     package-file: |
       .github/tl_packages
@@ -287,7 +287,7 @@ using [actions/github-script], see [this script][e2e/index.cjs].
 If you want to disable caching, set the `cache` input to `false`:
 
 ```yaml
-- uses: TeX-Live/setup-texlive-action@v3
+- uses: TeX-Live/setup-texlive-action@v4
   with:
     cache: false
 ```
@@ -305,7 +305,7 @@ If you want to disable caching, set the `cache` input to `false`:
 You can use an older version of TeX Live by setting the `version` input:
 
 ```yaml
-- uses: TeX-Live/setup-texlive-action@v3
+- uses: TeX-Live/setup-texlive-action@v4
   with:
     version: 2008
 ```
@@ -567,7 +567,7 @@ Alternatively, you can pin the main repository
 using the `repository` input to avoid using problematic repositories:
 
 ```yaml
-- uses: TeX-Live/setup-texlive-action@v3
+- uses: TeX-Live/setup-texlive-action@v4
   with:
     repository: https://example.com/path/to/systems/texlive/tlnet/
 ```
