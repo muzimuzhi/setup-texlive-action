@@ -1,7 +1,7 @@
 {
   "name": "setup-texlive-action",
   "private": true,
-  "version": "3.4.2",
+  "version": "4.0.0",
   "description": "A GitHub Action to set up TeX Live",
   "scripts": {
     "build": "node scripts/build.mjs",
@@ -19,7 +19,7 @@
     "prepack": "run-p --aggregate-output -c build licenses",
     "preversion": "npm ci && npm run prepack",
     "version": "bash scripts/bump-version.sh",
-    "postversion": "bash scripts/bump-version.sh"
+    "tag": "bash scripts/bump-version.sh"
   },
   "author": "@TeX-Live",
   "license": "MIT",

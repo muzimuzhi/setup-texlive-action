@@ -42,6 +42,12 @@ Linux, Windows, and macOS are supported.
 [marketplace-badge]: https://img.shields.io/github/v/release/TeX-Live/setup-texlive-action?logo=githubactions&label=Marketplace&labelColor=2e353b&color=2088ff
 [marketplace]: https://github.com/marketplace/actions/setup-texlive-action
 
+## Breaking Changes in V4
+
+> In most cases, you can upgrade from v3 to v4 without changing your workflow.
+
+- Use Node.js v24 as runtime.
+
 ## Breaking Changes in V3
 
 > In most cases, you can upgrade from v2 to v3 without changing your workflow.
