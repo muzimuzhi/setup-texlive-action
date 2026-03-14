@@ -12,6 +12,7 @@ export default mergeConfig(sharedConfig, {
     server: {
       deps: {
         cacheDir: '../node_modules/.vite',
+        inline: [/@setup-texlive-action\/.*/],
       },
     },
     coverage: {
