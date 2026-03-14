@@ -1,16 +1,35 @@
 import { vi } from 'vitest';
 
-const actual = await vi.importActual<typeof import('@actions/core')>(
-  '@actions/core',
+import type { InputOptions } from '@actions/core';
+
+export const getInput = vi.fn((name: string, options?: InputOptions): string => {
+  const val =
+    globalThis.process.env[`INPUT_${name.replace(/ /g, '_').toUpperCase()}`]
+    ?? '';
+  if (options?.required === true && !val) {
+    throw new Error(`Input required and not supplied: ${name}`);
+  }
+  return options?.trimWhitespace === false ? val : val.trim();
+});
+
+export const getBooleanInput = vi.fn(
+  (name: string, options?: InputOptions): boolean => {
+    const trueValue = ['true', 'True', 'TRUE'];
+    const falseValue = ['false', 'False', 'FALSE'];
+    const val = getInput(name, options);
+    if (trueValue.includes(val)) return true;
+    if (falseValue.includes(val)) return false;
+    throw new TypeError(
+      `Input does not meet YAML 1.2 "Core Schema" specification: ${name}`,
+    );
+  },
 );
 
 export const addPath = vi.fn();
 export const debug = vi.fn();
 export const error = vi.fn();
 export const exportVariable = vi.fn();
-export const getBooleanInput = vi.fn(actual.getBooleanInput);
-export const getInput = vi.fn(actual.getInput);
-export const getState = vi.fn().mockResolvedValue('');
+export const getState = vi.fn().mockReturnValue('');
 export const group = vi.fn(async (name, fn) => await fn());
 export const info = vi.fn();
 export const isDebug = vi.fn().mockReturnValue(false);
