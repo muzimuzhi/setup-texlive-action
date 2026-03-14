@@ -4,7 +4,7 @@ import type { InputOptions } from '@actions/core';
 
 export const getInput = vi.fn((name: string, options?: InputOptions): string => {
   const val =
-    globalThis.process.env[`INPUT_${name.replace(/ /g, '_').toUpperCase()}`]
+    globalThis.process.env[`INPUT_${name.replace(/ /gu, '_').toUpperCase()}`]
     ?? '';
   if (options?.required === true && !val) {
     throw new Error(`Input required and not supplied: ${name}`);
