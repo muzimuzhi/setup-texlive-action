@@ -5,6 +5,7 @@
   "description": "A GitHub Action to set up TeX Live",
   "scripts": {
     "build": "node scripts/build.mjs",
+    "build:data": "npm run build -w packages/data",
     "changelog": "git cliff -c packages/config/cliff.toml -u -s all",
     "check": "tsc -p packages/tsconfig.json --noEmit",
     "dprint": "dprint -c packages/config/dprint/dprint.jsonc",
@@ -16,8 +17,8 @@
     "link-check": "markdown-link-check README.md",
     "lint": "cd packages && eslint .",
     "test": "cd packages && vitest",
-    "prepack": "run-p --aggregate-output -c build 'build --workspace packages/data' licenses",
-    "preversion": "npm ci && npm run prepack",
+    "prepack": "run-p --aggregate-output -c build licenses",
+    "preversion": "npm ci && npm run build:data && npm run prepack",
     "version": "bash scripts/bump-version.sh",
     "tag": "bash scripts/bump-version.sh"
   },
