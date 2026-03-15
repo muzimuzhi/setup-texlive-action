@@ -11,6 +11,7 @@ case "${npm_lifecycle_event}" in
     git ls-files -z dist |
       xargs -0 git update-index --no-assume-unchanged --
     git add dist package-lock.json package.json
+    git add packages/data/data/package-names.json
     if ! git diff --quiet --cached; then
         git commit -m "chore(release): prepare for ${version}"
     fi
