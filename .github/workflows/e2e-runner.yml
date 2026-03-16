@@ -16,27 +16,36 @@ permissions:
 jobs:
   all-nonlatest-runners:
     #
-    # Tests on GitHub-hosted runners[^1][^2]
+    # Tests on GitHub-hosted runners[^1][^2][^3]
     # - including runners in public preview, but
     # - excluding the `-latest` runners.
     #
-    # The `-latest` runners are tested in a separate workflow file[^3].
+    # The `-latest` runners are tested in a separate workflow file[^4].
     #
-    # [^1]: <https://github.com/actions/runner-images?tab=readme-ov-file#available-images>
-    # [^2]: <https://github.com/actions/partner-runner-images?tab=readme-ov-file#available-images>
-    # [^3]: <https://github.com/TeX-Live/setup-texlive-action/blob/main/.github/workflows/e2e.yml>
+    # [^1]: <https://docs.github.com/en/actions/reference/runners/github-hosted-runners>
+    # [^2]: <https://github.com/actions/runner-images?tab=readme-ov-file#available-images>
+    # [^3]: <https://github.com/actions/partner-runner-images?tab=readme-ov-file#available-images>
+    # [^4]: <file:///./e2e.yml>
     #
     if: ${{ !inputs.runner }}
     strategy:
       matrix:
         runner:
+          # GitHub-hosted runners
+          # - ubuntu-24.04 # current ubuntu-latest
           - ubuntu-22.04
           - ubuntu-24.04-arm
           - ubuntu-22.04-arm
-          - windows-2025
-          - windows-11-arm
+          - ubuntu-slim
           - macos-26
+          - macos-26-intel
+          - macos-15-intel
+          # - macos-15 # current macos-latest
           - macos-14
+          - windows-2025-vs2026
+          # - windows-2025 # current windows-latest
+          - windows-2022
+          - windows-11-arm
       fail-fast: false
     runs-on: ${{ matrix.runner }}
     name: ${{ matrix.runner }}
