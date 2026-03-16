@@ -339,7 +339,7 @@ with small patches to fix minor problems.
 `2008`&ndash;&zwj;`2026`
 
 </td>
-        <td></td>
+        <td rowspan="2"></td>
       </tr>
       <tr><td><code>ubuntu-slim</code></td></tr>
       <tr>
@@ -364,6 +364,7 @@ Versions prior to `2017` does not support AArch64 (ARM64).
 `2008`&ndash;`2026`
 
 </td>
+        <td></td>
       </tr>
       <tr>
         <td><code>windows-11-arm</code></td>
@@ -381,7 +382,7 @@ Versions prior to `2017` does not support AArch64 (ARM64).
       <tr>
         <th rowspan="2">macOS</th>
         <td><code>macos-latest</code></td>
-        <td>
+        <td rowspan="2">
 
 `2013`&ndash;`2026`
 
@@ -400,7 +401,7 @@ will not work due to _<q>Bad CPU type in executable.</q>_
         <td colspan="4">
           <p />
           <sub>
-            For full list of runners, see
+            *For full list of runners, see
             <q><a href="https://docs.github.com/en/actions/reference/runners/github-hosted-runners">GitHub-hosted runners reference</a></q>.
           </sub>
         </td>
