@@ -323,15 +323,15 @@ with small patches to fix minor problems.
     <thead>
       <tr>
         <th>OS</th>
-        <th>Runner</th>
+        <th>Runner examples<sup>*</sup></th>
         <th>Versions</th>
         <th>Note</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <th rowspan="4">Linux</th>
-        <td><code>ubuntu-24.04</code>*</td>
+        <th rowspan="3">Linux</th>
+        <td><code>ubuntu-latest</code></td>
         <td rowspan="2">
 
 <!-- &zwj; U+200D ZERO WIDTH JOINER -->
@@ -339,64 +339,69 @@ with small patches to fix minor problems.
 `2008`&ndash;&zwj;`2026`
 
 </td>
-        <td rowspan="2"></td>
+        <td></td>
       </tr>
-      <tr><td><code>ubuntu-22.04</code></td></tr>
+      <tr><td><code>ubuntu-slim</code></td></tr>
       <tr>
         <!-- &zwj; U+200D ZERO WIDTH JOINER -->
         <td><code>ubuntu-&zwj;24.04-&zwj;arm</code></td>
-        <td rowspan="2">
+        <td>
 
 `2017`&ndash;`2026`
 
 </td>
-        <td rowspan="2">
+        <td>
 
 Versions prior to `2017` does not support AArch64 (ARM64).
 
 </td>
       </tr>
-      <tr><td><code>ubuntu-22.04-arm</code></td></tr>
       <tr>
-        <th rowspan="3">Windows</th>
-        <td><code>windows-2025</code></td>
-        <td rowspan="3">
+        <th rowspan="2">Windows</th>
+        <td><code>windows-latest</code></td>
+        <td>
 
 `2008`&ndash;`2026`
 
 </td>
-        <td rowspan="3"></td>
       </tr>
-      <tr><td><code>windows-2022</code>*</td></tr>
-      <tr><td><code>windows-11-arm</code></td></tr>
       <tr>
-        <th rowspan="3">macOS</th>
-        <td><code>macos-26</code></td>
-        <td rowspan="3">
+        <td><code>windows-11-arm</code></td>
+        <td>
+
+`2017`&ndash;`2026`
+
+</td>
+        <td>
+
+Versions prior to `2017` does not support AArch64 (ARM64).
+
+</td>
+      </tr>
+      <tr>
+        <th rowspan="2">macOS</th>
+        <td><code>macos-latest</code></td>
+        <td>
 
 `2013`&ndash;`2026`
 
 </td>
-        <td rowspan="3">
+        <td rowspan="2">
 
 Versions prior to `2013` are for 32-bit systems and
 will not work due to _<q>Bad CPU type in executable.</q>_
 
 </td>
       </tr>
-      <tr><td><code>macos-15</code>*</td></tr>
-      <tr><td><code>macos-14</code></td></tr>
+      <tr><td><code>macos-26-intel</code></td></tr>
     </tbody>
     <tfoot>
       <tr>
         <td colspan="4">
           <p />
           <sub>
-            The runners marked with "*" are
-            the current <code>-latest</code> runners (i.e.,
-            <code>ubuntu-latest</code>,
-            <code>windows-latest</code>, and
-            <code>macos-latest</code>).
+            For full list of runners, see
+            <q><a href="https://docs.github.com/en/actions/reference/runners/github-hosted-runners">GitHub-hosted runners reference</a></q>.
           </sub>
         </td>
       </tr>
