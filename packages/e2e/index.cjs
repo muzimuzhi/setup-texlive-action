@@ -2,9 +2,9 @@
  * Delete all caches created by this action.
  *
  * @param {object} args
- * @param {import('@actions/github').context} args.context
- * @param {import('@actions/core')} args.core
- * @param {ReturnType<import('@actions/github').getOctokit>} args.github
+ * @param {import('@actions/github', { with: { 'resolution-mode': 'import' } }).context} args.context
+ * @param {import('@actions/core', { with: { 'resolution-mode': 'import' } })} args.core
+ * @param {ReturnType<import('@actions/github', { with: { 'resolution-mode': 'import' } }).getOctokit>} args.github
  */
 async function deleteCaches(args) {
   const { context, core, github: { paginate, rest } } = args;
