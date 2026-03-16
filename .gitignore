@@ -3,3 +3,4 @@ lib
 node_modules
 *.tgz
 *.tsbuildinfo
+RELEASE_NOTE.md
