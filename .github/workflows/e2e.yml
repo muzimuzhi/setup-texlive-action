@@ -21,7 +21,7 @@ jobs:
       windows-latest: ${{ steps.status.outputs.windows-latest || '' }}
       macos-latest: ${{ steps.status.outputs.macos-latest || '' }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Setup TeX Live
         id: setup
         uses: ./
@@ -55,7 +55,7 @@ jobs:
       fail-fast: false
     runs-on: ${{ matrix.runner }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Setup TeX Live
         id: setup
         uses: ./
@@ -74,7 +74,7 @@ jobs:
       contents: read
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install package
         run: >-
           npm ci
@@ -82,7 +82,7 @@ jobs:
           --engine-strict=false
           --ignore-scripts
           -w packages/e2e
-      - uses: actions/github-script@v8
+      - uses: actions/github-script@v9
         with:
           script: |
             const { deleteCaches } = require('@setup-texlive-action/e2e');
@@ -94,7 +94,7 @@ jobs:
       fail-fast: false
     runs-on: ${{ matrix.runner }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Setup TeX Live
         uses: ./
         with:

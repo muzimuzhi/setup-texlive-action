@@ -30,7 +30,7 @@ jobs:
       https_proxy: http://squid-proxy:3128
       http_proxy: http://squid-proxy:3128
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install requirements
         if: github.actor != 'nektos/act'
         run: |
