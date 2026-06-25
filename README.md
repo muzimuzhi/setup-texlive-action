@@ -191,7 +191,7 @@ The `package-file` input now accepts
 [glob patterns][glob] to specify multiple files:
 
 ```yaml
-- uses: actions/checkout@v4
+- uses: actions/checkout@v7
 - uses: TeX-Live/setup-texlive-action@v4
   with:
     package-file: |
@@ -264,7 +264,7 @@ If you want to install some TeX packages, you can use the `packages` input:
 You can also specify packages by file using the `package-file` input:
 
 ```yaml
-- uses: actions/checkout@v4
+- uses: actions/checkout@v7
 - uses: TeX-Live/setup-texlive-action@v4
   with:
     package-file: |
