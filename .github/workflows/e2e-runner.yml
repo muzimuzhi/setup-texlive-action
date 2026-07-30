@@ -52,7 +52,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Setup TeX Live
-        uses: ./
+        uses: $/.
         with:
           cache: false
           version: ${{ inputs.texlive-version }}
@@ -67,7 +67,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Setup TeX Live
-        uses: ./
+        uses: $/.
         with:
           cache: false
           version: ${{ inputs.texlive-version }}
