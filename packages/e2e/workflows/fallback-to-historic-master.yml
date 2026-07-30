@@ -6,7 +6,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Setup TeX Live
         id: setup
-        uses: ./
+        uses: $/.
         with:
           version: 2025
       - if: fromJSON(steps.setup.outputs.cache-restored)
@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Setup TeX Live
         id: setup
-        uses: ./
+        uses: $/.
         with:
           version: 2025
       - if: ${{ !fromJSON(steps.setup.outputs.cache-hit) }}

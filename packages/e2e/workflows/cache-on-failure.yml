@@ -6,7 +6,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Setup TeX Live
         id: setup
-        uses: ./
+        uses: $/.
       - name: Check that a new installation has been made
         run: exit ${{ fromJSON(steps.setup.outputs.cache-restored) || 1 && 0 }}
       - name: Always fails

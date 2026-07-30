@@ -4,4 +4,4 @@ permissions:
   contents: read
 jobs:
   pull-request:
-    uses: ./.github/workflows/ci.yml
+    uses: $/.github/workflows/ci.yml

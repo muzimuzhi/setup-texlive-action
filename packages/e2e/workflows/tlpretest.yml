@@ -5,7 +5,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Setup TeX Live
-        uses: ./
+        uses: $/.
         with:
           repository: https://ftp.math.utah.edu/pub/tlpretest/
           version: 2027

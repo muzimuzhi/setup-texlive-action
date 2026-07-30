@@ -37,6 +37,6 @@ jobs:
           apt update
           apt install -y --no-install-recommends perl wget xz-utils
       - name: Setup TeX Live
-        uses: ./
+        uses: $/.
         with:
           cache: false
