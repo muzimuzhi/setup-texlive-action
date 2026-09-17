@@ -21,7 +21,6 @@ jobs:
       windows-latest: ${{ steps.status.outputs.windows-latest || '' }}
       macos-latest: ${{ steps.status.outputs.macos-latest || '' }}
     steps:
-      - uses: actions/checkout@v7
       - name: Setup TeX Live
         id: setup
         uses: $/.
@@ -55,7 +54,6 @@ jobs:
       fail-fast: false
     runs-on: ${{ matrix.runner }}
     steps:
-      - uses: actions/checkout@v7
       - name: Setup TeX Live
         id: setup
         uses: $/.
@@ -94,7 +92,6 @@ jobs:
       fail-fast: false
     runs-on: ${{ matrix.runner }}
     steps:
-      - uses: actions/checkout@v7
       - name: Setup TeX Live
         uses: $/.
         with:

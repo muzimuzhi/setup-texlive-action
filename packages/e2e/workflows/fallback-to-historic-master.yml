@@ -3,7 +3,6 @@ jobs:
   save-cache:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
       - name: Setup TeX Live
         id: setup
         uses: $/.
@@ -20,7 +19,6 @@ jobs:
       image: node:20.0
       options: --add-host=ftp.math.utah.edu:127.0.0.1
     steps:
-      - uses: actions/checkout@v4
       - name: Setup TeX Live
         id: setup
         uses: $/.

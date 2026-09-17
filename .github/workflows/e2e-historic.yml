@@ -45,7 +45,6 @@ jobs:
       max-parallel: 4
     runs-on: ${{ matrix.runner }}
     steps:
-      - uses: actions/checkout@v7
       - name: Setup TeX Live
         uses: $/.
         with:
