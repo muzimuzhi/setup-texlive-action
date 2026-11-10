@@ -11,7 +11,7 @@ const originalRun = Reflect.get(Act.prototype, 'run') as typeof run;
 // Ensure that a new cache entry is created each time
 vi
   .spyOn(Act.prototype, 'run' as keyof Act)
-  .mockImplementation(run as ReturnType<typeof vi.fn>);
+  .mockImplementation(run as never);
 
 // Prevent `act-js` from creating `.actrc` file in home directory
 vi

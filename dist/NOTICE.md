@@ -1596,7 +1596,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 URL: <https://www.npmjs.com/package/debug>
 
-### v4.4.0
+### v4.4.3
 
 Copyright (c) Josh Junon (https://github.com/qix-)
 
