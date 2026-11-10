@@ -5,7 +5,7 @@ import sharedConfig from '@setup-texlive-action/config/vitest';
 export default mergeConfig(sharedConfig, {
   test: {
     include: [],
-    workspace: [
+    projects: [
       '*/vitest.config.{js,mjs,ts}',
       '!e2e/vitest.config.mjs',
     ],
